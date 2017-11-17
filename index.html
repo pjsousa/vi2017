@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<head>
+  <!-- Include bootstrap, handsontable e d3 -->
+  
+  <script src="libs/jquery-3.2.1.min.js" charset="utf-8"></script>
+  <!-- <script src="libs/bootstrap.min.js" charset="utf-8"></script> -->
+  <script src="libs/handsontable.full.min.js" charset="utf-8"></script>
+  <script src="libs/d3.v4.min.js" charset="utf-8"></script>
+
+  <link rel="stylesheet" type="text/css" href="libs/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="libs/handsontable.full.min.css" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<meta charset="utf-8">
+<body>
+  <div id="t1">
+    ISTO É O PLACEHOLDER DA T1
+  </div>
+  <div id="t2">
+    ISTO É O PLACEHOLDER DA T2
+  </div>
+  <div id="t3">
+    ISTO É O PLACEHOLDER DA T3
+  </div>
+  <div id="t4">
+    ISTO É O PLACEHOLDER DA T4
+  </div>
+  <div id="t5">
+    ISTO É O PLACEHOLDER DA T5
+  </div>
+  <div id="t6">
+    ISTO É O PLACEHOLDER DA T6
+  </div>
+  <div id="cleveland">
+    ISTO É O PLACEHOLDER DA CLEVELAND
+  </div>
+  <div id="detail">
+    ISTO É O PLACEHOLDER DA DETAIL
+  </div>
+
+  <!-- Os "includes" das nossas sources -->
+  <script src="javascript/app.js" ></script>
+  <script src="javascript/datahandler.js" ></script>
+  <script src="javascript/t1.js" ></script>
+  <script src="javascript/t2.js" ></script>
+  <script src="javascript/t3.js" ></script>
+  <script src="javascript/t4.js" ></script>
+  <script src="javascript/t5.js" ></script>
+  <script src="javascript/t6.js" ></script>
+  <script src="javascript/cleveland.js" ></script>
+  <script src="javascript/detail.js" ></script>
+  <script>
+    $(document).ready(function(){
+      // esta função vai disparar quando todo o HTML tiver carregado e quando todas as 
+      // sources files estiverem do nosso lado.
+      
+      // step 1. fetch data
+      data_utils.fetch_alldata();
+      // step 2. the world!
+      // 
+    })
+  </script>
+</body>
