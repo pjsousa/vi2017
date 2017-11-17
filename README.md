@@ -10,15 +10,8 @@
 ├── index.html          (main html file)
 ├── javascript          (folder with javascript sources)
 │   ├── app.js          (main app)
-│   ├── cleveland.js    
 │   ├── datahandler.js  (file with utils to fetch/load/search (and generally handle) data)
-│   ├── detail.js       
-│   ├── t1.js           
-│   ├── t2.js           
-│   ├── t3.js           
-│   ├── t4.js           
-│   ├── t5.js           
-│   └── t6.js           
+│   └── [...]           
 ├── libs                (sources for 3rd party libs)
 │   └── [...]           
 └── style.css           (main css file)
