@@ -106,13 +106,14 @@
      Faz fetch de cada ficheiro em modo async. 
      Quando todos os ficheiros retornam, chama o main.
      */
+    console.log("Lets fetch ALLLLLL THE DATAS!!!");
     data_keys.forEach(function(itr, idx){
       var ext = file_extensions[idx];
       var fetch_path = "data/" + itr + "." +ext;
 
       // determina qual a função do d3 a usar
       var d3_fetch = ext == "json" ? d3.json : d3.csv;
-      
+
       // Faz fetch de cada ficheiro em modo async. 
       d3_fetch(fetch_path, function(error, data){
         // se houver erro... guess i'll die...
@@ -125,8 +126,8 @@
 
         // Quando todos os ficheiros retornam, chama o main.
         if(load_status() == 1.0){
-          console.log("All data fetched!!!");
-          main()
+          
+          data_ready();
         }
       });
     });
@@ -154,6 +155,46 @@
 
         d3.csv("data/data_v2.csv", tratar_data_v2)
   */
+
+  function get_records(col_name, col_value){
+    /*
+      get_records(["Genre"], ["Action"])  /// devolve todas as linhas que têm Action
+      get_records(["Genre", "Platform"], ["Action", "PS3"]) /// devolve todas as linhas que têm Action e têm PS3
+      > [
+      {Name: "bla1", ..... },
+      {Name: "bla2", ..... }
+      ]
+     */
+  };
+
+  function get_index(col_name, col_value){
+    /*
+      get_indexes(["Genre"], ["Action"])  /// devolve os row_nums das linhas que têm Action
+      get_indexes(["Genre", "Platform"], ["Action", "PS3"])  /// devolve os row_nums das linhas que têm Action e têm PS3
+      > [0, 1, 200, 400]
+     */
+  };
+
+  function column_hasvalue(col_name, col_value){
+    /*
+      column_hasvalue("Genre", "Action")   /// verifica se existe "Action"
+      > true
+
+      column_hasvalue("Genre", "LALALAL SPARTA!")  /// verifica se existe "LALALAL SPARTA"
+      > false
+     */
+  };
+
+  function read_column(rows, col_name){
+    /*
+      read_column([100, 102], "JP_Sales")     /// só devolve a coluna de JP_Sales
+      read_column([100, 102], ["JP_Sales", "Genre"])     /// só devolve as colunas de JP_Sales e Genre
+      > [
+      {JP_Sales: "bla1", "Genre": "blah3" },
+      {JP_Sales: "bla2", "Genre": "blah4" }
+      ]
+     */
+  };
 
   // isto faz com que a datasources exista nos outros ficheiros.
   window.datasources = datasources;
