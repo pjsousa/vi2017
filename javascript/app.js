@@ -2,7 +2,8 @@
   var appstate = {
       datasetRows: [],
       selectedRow: [],
-      pinnedRow: []
+      pinnedRow: [],
+      data_slices: []
     };
 
   function main(){
