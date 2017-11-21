@@ -6,6 +6,14 @@
       data_slices: []
     };
 
+  var appdispatch = {
+    gamehover: d3.dispatch("gamehover")
+  };
+
+  appdispatch.gamehover.on("gamehover", function(d, from){
+    console.log("gamehover fired on the app", d, from);
+  });
+
   function main(){
     console.log("HEY! Main here. Lets start!")
     
@@ -24,4 +32,5 @@
   window.main = main;
   window.data_ready = data_ready;
   window.appstate = appstate;
+  window.appdispatch = appdispatch;
 })();

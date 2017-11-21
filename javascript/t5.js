@@ -65,7 +65,6 @@
 
 		selectedCircle = d3.select("#d-t5-"+d);
 		selectedCircle.attr("fill", "red");
-		console.log(typeof selectedCircle, "#d-t5-"+d);
 	});
 
 	function drawt5(){
@@ -169,7 +168,12 @@
 			})
 			.attr("title", function(d) {return _fnRv(d, "Name"); })
 			.on("mouseover", function(d){
-				dispatch.call("gamehover", d, d);
+
+				// lets notify ourselves
+				dispatch.call("gamehover", null, d);
+				// and also the app. so that the linked views can change
+				// for the app we also pass from were we hovered.
+				appdispatch.gamehover.call("gamehover", null, d, "t5");
 			});
 
 
