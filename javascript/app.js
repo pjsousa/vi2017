@@ -9,6 +9,7 @@
 
   function data_ready(){
     console.log("All data fetched!!!");
+    drawt1();
   };
 
   window.main = main;

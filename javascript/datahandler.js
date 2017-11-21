@@ -187,19 +187,44 @@
 
   function read_column(rows, col_name){
     /*
-      read_column([100, 102], "JP_Sales")     /// só devolve a coluna de JP_Sales
+      read_column(null, ["JP_Sales","EU_Sales","NA_Sales"])  /// devolve só a coluna de JP_Sales de todas as linhas do dataset
+      read_column([100, 102], ["JP_Sales"])     /// só devolve a coluna de JP_Sales
       read_column([100, 102], ["JP_Sales", "Genre"])     /// só devolve as colunas de JP_Sales e Genre
       > [
       {JP_Sales: "bla1", "Genre": "blah3" },
       {JP_Sales: "bla2", "Genre": "blah4" }
       ]
      */
+      
+      var result = 0;
+      if(rows == null){
+          result = datasources.data_v2.map(function(row) {
+              var res = {};
+              for(var i = 0; i < col_name.length; i++){
+                  res[col_name[i]] = row[col_name[i]];
+              }
+              return res;//{col_name[0]:a.JP_Sales , "EU_Sales":a.EU_Sales, "NA_Sales":a.NA_Sales};
+          });
+      }
+      else{
+          result = rows.map(function(row_number) {
+              var res = {};
+              var row = datasources.data_v2[row_number];
+              for(var i = 0; i < col_name.length; i++){
+                  res[col_name[i]] = row[col_name[i]];
+              }
+              return res;//{col_name[0]:a.JP_Sales , "EU_Sales":a.EU_Sales, "NA_Sales":a.NA_Sales};
+          });
+          //result = datasources.data_v2.map(function(a) {return {"JP_Sales":a[rows].JP_Sales , "EU_Sales":a.EU_Sales, "NA_Sales":a.NA_Sales};});
+      }
+      return result;
   };
 
   // isto faz com que a datasources exista nos outros ficheiros.
   window.datasources = datasources;
   window.data_utils = {
     load_status: load_status,
-    fetch_alldata: fetch_alldata
+    fetch_alldata: fetch_alldata,
+    read_column: read_column
   }
 })();
