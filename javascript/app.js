@@ -1,18 +1,26 @@
 ;(function(){
+  var appstate = {
+      datasetRows: [],
+      selectedRow: [],
+      pinnedRow: []
+    };
+
   function main(){
     console.log("HEY! Main here. Lets start!")
+    
     data_utils.fetch_alldata();
-    /*
-      aqui chamamos os INIT de cada VIZ e da APP e de TUDOOOOO!
-     */
   }
 
   function data_ready(){
     console.log("All data fetched!!!");
-    drawt1();
+
+    appstate.datasetRows = d3.range(datasources["data_v2"].length);
+
+    //drawt1();
     drawt5();
   };
 
   window.main = main;
   window.data_ready = data_ready;
+  window.appstate = appstate;
 })();
