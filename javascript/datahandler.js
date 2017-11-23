@@ -121,6 +121,28 @@
           console.log(error)
         }
 
+        if (Array.isArray(data)){
+          data.forEach(function(itr, idx){
+            // if (Math.random() > 0.8){
+            //   itr["Global_Sales"] = itr["Global_Sales"] * -1
+            // }
+            // if (Math.random() > 0.8){
+            //   itr["Mean_UserCritic_Score"] = itr["Mean_UserCritic_Score"] * -1
+            // }
+            // 
+            // if (itr["Global_Sales"]<0){
+            //   itr["Global_Sales"] = 20;
+            // }
+            // if (itr["Mean_UserCritic_Score"]<0){
+            //   itr["Mean_UserCritic_Score"] = 20;
+            // }
+            
+            itr["row_num"] = idx;
+          });
+        }
+
+
+
         // store data in datasources
         datasources[itr] = data;
 
@@ -165,6 +187,18 @@
       {Name: "bla2", ..... }
       ]
      */
+    var result = [];
+    var rownumbers = [];
+    
+    try{
+      rownumbers = get_index(col_name, col_value);
+      result = rownumbers.map(function(itr){ return datasources["data_v2"][itr]; });
+    }
+    catch(e){
+      throw e;
+    }
+
+    return result;
   };
 
   function get_index(col_name, col_value){
@@ -173,6 +207,18 @@
       get_indexes(["Genre", "Platform"], ["Action", "PS3"])  /// devolve os row_nums das linhas que têm Action e têm PS3
       > [0, 1, 200, 400]
      */
+    
+    var result = [];
+    var index_name = "index_" + col_name;
+
+    if (typeof datasources[index_name] === "undefined"){
+      throw new Error(col_name + " as col_name is not valid.");
+    }
+
+    result = datasources[index_name]["index"][col_value];
+    result = result || [];
+
+    return result;
   };
 
   function column_hasvalue(col_name, col_value){
@@ -183,6 +229,17 @@
       column_hasvalue("Genre", "LALALAL SPARTA!")  /// verifica se existe "LALALAL SPARTA"
       > false
      */
+    
+    var result = null;
+    var index_name = "index_" + col_name;
+
+    if (typeof datasources[index_name] === "undefined"){
+      throw new Error(col_name + " as col_name is not valid.");
+    }
+
+    result = datasources[index_name]["index"].hasOwnProperty(col_value);
+
+    return result;
   };
 
   function read_column(rows, col_name){
@@ -220,11 +277,23 @@
       return result;
   };
 
+  function read_value(row_number, col_name){
+    var result;
+
+    result = datasources["data_v2"][row_number][col_name];
+
+    return result;
+  }
+
   // isto faz com que a datasources exista nos outros ficheiros.
   window.datasources = datasources;
   window.data_utils = {
     load_status: load_status,
     fetch_alldata: fetch_alldata,
-    read_column: read_column
+    read_column: read_column,
+    get_records: get_records,
+    get_index: get_index,
+    column_hasvalue: column_hasvalue,
+    read_value: read_value
   }
 })();

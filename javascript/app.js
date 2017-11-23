@@ -6,6 +6,11 @@
       data_slices: []
     };
 
+  var columna_captions = {
+    "Global_Sales": "Sales",
+    "Mean_UserCritic_Score": "Score"
+  }
+
   var appdispatch = {
     gamehover: d3.dispatch("gamehover")
   };
