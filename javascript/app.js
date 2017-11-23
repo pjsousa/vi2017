@@ -1,8 +1,8 @@
 ;(function(){
   var appstate = {
       datasetRows: [],
-      selectedRow: [],
-      pinnedRow: [],
+      selectedRows: [],
+      highlightedRows: [],
       data_slices: []
     };
 
@@ -16,7 +16,15 @@
   };
 
   appdispatch.gamehover.on("gamehover", function(d, from){
-    console.log("gamehover fired on the app", d, from);
+
+    if(from != "t5"){
+      drawt5();
+    }
+
+    if(from != "dtl"){
+      drawdtl();
+    }
+
   });
 
   function main(){

@@ -82,18 +82,13 @@
 	};
 
 	dispatch.on("gamehover.scatterplot", function(d){
-		if(selectedCircle != null){
-			selectedCircle.attr("fill", "rgb(0,127,255)");
-		}
-
 		moveCrossair(d);
 		showDataTooltip(d);
-
-		selectedCircle = d3.select("#d-t5-"+d);
-		selectedCircle.attr("fill", "rgb(255,127,0)");
+		appstate.highlightedRows.push(d);
 	});
 
 	dispatch2.on("gameout.scatterplot", function(d){
+		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
 		hideDataTooltip(d);
 	});
 
@@ -482,7 +477,6 @@
 			svg.selectAll("div.x-tooltip")
 				.data([0])
 				.enter().append("div")
-			// Draw the Data toolip
 			
 			
 			d3.select("#t5Viz").selectAll("div.data-tooltip")
