@@ -1,53 +1,86 @@
 ;(function(){
-    
     function drawt1(){
-	
-    var data = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales"]);
-    
-    // set the dimensions and margins of the graph
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
 
-    // set the ranges
-    var x = d3.scaleTime().range([0, width]);
-    var y = d3.scaleLinear().range([height, 0]);
+        //var dataset = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales", "Year_of_Release"]);
+        var dataset = data_utils.get_sales_sum(null,"Developer","Nintendo");
+        console.log(dataset);
+        var r = dataset.map(a => a.Year_of_Release);
+        var maxYear = r.reduce(function(a,b){ return Math.max(a,b);});
+        var minYear = 1987;
+        
+        dataset.sort(function(x,y) { return d3.ascending(x.Year_of_Release, y.Year_of_Release)} );
+        
+        d3.select("#t1Viz > img")
+                .remove();
 
-    // define the line
-    var valueline = d3.line()
-        .x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.close); });
+        var w = 400;
+        var h = 300;
+        var padding = 30;
 
-    // append the svg obgect to the body of the page
-    // appends a 'group' element to 'svg'
-    // moves the 'group' element to the top left margin
-    var svg = d3.select("body").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+        x_variable = "Year_of_Release";
+		y_variable = "JP_Sales";
 
-        //get data
+        var svg = d3.select("#t1Viz").append("svg")
+            .attr("width", w)
+            .attr("height",h);
+        
+		var y = d3.scaleLinear()
+			.range([padding,h-padding]);
 
-      // Scale the range of the data
-      x.domain(d3.extent(data, function(d) { return d.date; }));
-      y.domain([0, d3.max(data, function(d) { return d.close; })]);
+		var x = d3.scaleLinear()
+            .range([padding,w-padding]);
 
-      // Add the valueline path.
-      svg.append("path")
-          .data([data])
-          .attr("class", "line")
-          .attr("d", valueline);
 
-      // Add the X Axis
-      svg.append("g")
-          .attr("transform", "translate(0," + height + ")")
-          .call(d3.axisBottom(x));
+        var valueline = d3.line()
+            .x(function(d) {return x(d.Year_of_Release);})
+            .y(function(d) {return y(d.JP_Sales);});
+        
+        var valueline2 = d3.line()
+            .x(function(d) {return x(d.Year_of_Release);})
+            .y(function(d) {return y(d.EU_Sales);});
+        
+        var valueline3 = d3.line()
+            .x(function(d) {return x(d.Year_of_Release);})
+            .y(function(d) {return y(d.NA_Sales);});
 
-      // Add the Y Axis
-      svg.append("g")
-          .call(d3.axisLeft(y));
+        x.domain([minYear,maxYear]);
+        y.domain([d3.max(dataset, function(d){ return d["NA_Sales"]; }),0]);
+        var yaxis = d3.axisLeft()
+            .scale(y);
+
+		var xaxis = d3.axisBottom()
+            .scale(x);
+        
+        svg.append("g")
+            .attr("transform","translate(30,0)")
+            .attr("class","y axis")
+            .call(yaxis);
+        
+        svg.append("g")
+            .attr("transform","translate(0,"+(h-padding)+")")
+            .call(xaxis);    
+
+        svg.append("path")
+            .datum(dataset)
+            .attr("fill","none")
+            .attr("stroke","steelblue")
+            .attr("stroke-width",1.5)
+            .attr("d",valueline);
+
+        svg.append("path")
+            .datum(dataset)
+            .attr("fill","none")
+            .attr("stroke","red")
+            .attr("stroke-width",1.5)
+            .attr("d",valueline2);
+        
+        svg.append("path")
+            .datum(dataset)
+            .attr("fill","none")
+            .attr("stroke","green")
+            .attr("stroke-width",1.5)
+            .attr("d",valueline3);
+        
     };
 window.drawt1 = drawt1;    
 })();
