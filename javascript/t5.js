@@ -7,12 +7,13 @@
 	var yoffset = 30;
 	var xcutoff = 40;
 	var ycutoff = 30;
-	var r = 5;
+	var r = 2;
 
 	var y_var = "Global_Sales";
 	var x_var = "Mean_UserCritic_Score";
 
 	var dispatch = d3.dispatch("gamehover");
+	var dispatch2 = d3.dispatch("gameout");
 	var selectedBar, selectedCircle;
 
 	var isLogScale = false;
@@ -28,7 +29,7 @@
 	var y_mu = null;
 	var y_std = null;
 
-	function compute_personsr_linregress(rown_nums){
+	function compute_personsr_linregress(row_nums){
 		/*
 			@TODO: Talvez mudar isto daqui para ser genérico entre qualquer par de colunas?
 
@@ -53,17 +54,17 @@
 			intercept: 0
 		};
 
-		if ( rown_nums.length == 0 ){
+		if ( row_nums.length == 0 ){
 			return result;
 		};
 
-		var X_mu = d3.mean(rown_nums, function(d){ return value(d, "Mean_UserCritic_Score") })
-		var X_0mu = rown_nums.map(function(d){ return value(d, "Mean_UserCritic_Score") - X_mu; })
+		var X_mu = d3.mean(row_nums, function(d){ return value(d, "Mean_UserCritic_Score") })
+		var X_0mu = row_nums.map(function(d){ return value(d, "Mean_UserCritic_Score") - X_mu; })
 
-		var Y_mu = d3.mean(rown_nums, function(d){ return value(d, "Global_Sales") })
-		var Y_0mu = rown_nums.map(function(d){ return value(d, "Global_Sales") - Y_mu; })
+		var Y_mu = d3.mean(row_nums, function(d){ return value(d, "Global_Sales") })
+		var Y_0mu = row_nums.map(function(d){ return value(d, "Global_Sales") - Y_mu; })
 
-		var _a = d3.sum(rown_nums, function(d, i){ return X_0mu[i]*Y_0mu[i]; })
+		var _a = d3.sum(row_nums, function(d, i){ return X_0mu[i]*Y_0mu[i]; })
 
 		var _b = Math.sqrt(d3.sum(X_0mu, function(d){ return Math.pow(d, 2); }))
 		var _c = Math.sqrt(d3.sum(Y_0mu, function(d){ return Math.pow(d, 2); }))
@@ -81,15 +82,19 @@
 	};
 
 	dispatch.on("gamehover.scatterplot", function(d){
-
 		if(selectedCircle != null){
 			selectedCircle.attr("fill", "rgb(0,127,255)");
 		}
 
+		moveCrossair(d);
+		showDataTooltip(d);
+
 		selectedCircle = d3.select("#d-t5-"+d);
 		selectedCircle.attr("fill", "rgb(255,127,0)");
+	});
 
-		console.log("gamehover fired on the viz", d);
+	dispatch2.on("gameout.scatterplot", function(d){
+		hideDataTooltip(d);
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -115,18 +120,19 @@
 	};
 	
 	// our (fnRV) local FuNction to Read Values for this vizualization
-	function raw_value(rown_num, variable){
-		return data_utils.read_value(rown_num, variable);
+	function raw_value(row_num, variable){
+		
+		return data_utils.read_value(row_num, variable);
 	};
 
-	function centered_value(rown_num, variable){
+	function centered_value(row_num, variable){
 
-		return raw_value(rown_num, variable);
+		return raw_value(row_num, variable);
 	};
 
-	function value(rown_num, variable){
+	function value(row_num, variable){
 		var result;
-		var raw_v = raw_value(rown_num, variable);
+		var raw_v = raw_value(row_num, variable);
 
 		// setle on the correct mean and st.deviation
 		var _mu = x_var == variable ? x_mu : y_mu;
@@ -151,11 +157,62 @@
 		return result;
 	};
 
+	function moveCrossair(row_num){
+
+		d3.select("#t5Viz")
+			.selectAll("line.y-crossair")
+				.attr("y1", yscale_c(value(row_num, y_var)))
+				.attr("y2", yscale_c(value(row_num, y_var)))
+
+		d3.select("#t5Viz")
+			.selectAll("line.x-crossair")
+				.attr("x1", xscale_c(value(row_num, x_var)))
+				.attr("x2", xscale_c(value(row_num, x_var)))
+
+		d3.select("#t5Viz")
+			.selectAll("circle.x-crossair.y-crossair")
+				.attr("cx", xscale_c(value(row_num, x_var)))
+				.attr("cy", yscale_c(value(row_num, y_var)))
+	};
+
+	function showDataTooltip(row_num){
+		d3.select("#t5Viz").
+			selectAll("div.data-tooltip")
+			.style("opacity", 1.0)
+			.style("top", (d3.event.pageY-15)+"px")
+			.style("left", (d3.event.pageX+15)+"px")
+			.html(data_utils.read_value(row_num, "Name"));
+	};
+
+	function showAxisTooltips(row_num){
+		// d3.select("#t5Viz").
+		// 	selectAll("div.data-tooltip")
+		// 	.style("opacity", 1.0)
+		// 	.style("top", (d3.event.pageY-15)+"px")
+		// 	.style("left", (d3.event.pageX+15)+"px")
+		// 	.html(value(row_num, "Name"));
+	};
+
+	function hideDataTooltip(row_num){
+		d3.select("#t5Viz").
+			selectAll("div.data-tooltip")
+			.style("opacity", 0);
+	};
+
+	function hideAxisTooltips(row_num){
+		// d3.select("#t5Viz").
+		// 	selectAll("div.data-tooltip")
+		// 	.style("opacity", 1.0)
+		// 	.style("top", (d3.event.pageY-15)+"px")
+		// 	.style("left", (d3.event.pageX+15)+"px")
+		// 	.html(value(row_num, "Name"));
+	};
+
 	function drawt5(){
 
 		// FIXED SIZE FOR NOW
 
-		var dataset = appstate.datasetRows.slice(0, 100);
+		var dataset = appstate.datasetRows;
 
 		var ydomain = [];
 		ydomain[0] = d3.max(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });
@@ -163,7 +220,7 @@
 		var xdomain = [];
 		xdomain[0] = d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });;
 		xdomain[1] = d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
-		
+
 		var yrange = [];
 		yrange[0] = padding;
 		yrange[1] = h - padding - yoffset;
@@ -194,6 +251,8 @@
 			.append("svg")
 			.attr("width",w)
 			.attr("height",h);
+
+
 
 		if(isLogScale){
 			yscale = d3.scaleLog();
@@ -263,57 +322,6 @@
 			  .style("text-anchor", "end")
 			  .text("Global Sales (Million Units)")
 
-		if( !isLogScale ){
-			
-			// Draw the Y grid
-			svg.selectAll("line.corr-line")
-				.data(yscale_c.ticks())
-				.enter().append("line")
-					.attr("class", "y-grid")
-					.attr("x1", xrange[0])
-					.attr("y1", function(d){ return yscale_c(d); })
-					.attr("x2", xrange[1])
-					.attr("y2", function(d){ return yscale_c(d); })
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.2)");
-
-			// Draw the X grid
-			svg.selectAll("line.corr-line")
-				.data(xscale_c.ticks())
-				.enter().append("line")
-					.attr("class", "x-grid")
-					.attr("x1", function(d){ return xscale_c(d); })
-					.attr("y1", yrange[0])
-					.attr("x2", function(d){ return xscale_c(d); })
-					.attr("y2", yrange[1])
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.2)");
-
-			// Draw the Y zero
-			svg.selectAll("line.corr-line")
-				.data([0])
-				.enter().append("line")
-					.attr("class", "y-grid")
-					.attr("x1", xrange[0])
-					.attr("y1", function(d){ return yscale_c(d); })
-					.attr("x2", xrange[1])
-					.attr("y2", function(d){ return yscale_c(d); })
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.5)");
-
-			// Draw the X zero
-			svg.selectAll("line.corr-line")
-				.data([0])
-				.enter().append("line")
-					.attr("class", "x-grid")
-					.attr("x1", function(d){ return yscale_c(d); })
-					.attr("y1", yrange[0])
-					.attr("x2", function(d){ return yscale_c(d); })
-					.attr("y2", yrange[1])
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.5)");
-			}
-
 		// draws the X axis with text label
 		gX = svg.append("g")
 		.attr("transform","translate(0," + axis_0["y"] + ")")
@@ -326,6 +334,54 @@
 			.style("text-anchor", "end")
 			.text("Score");
 		
+		// Draw the Y grid
+		svg.selectAll("line.y-grid")
+			.data(yscale_c.ticks())
+			.enter().append("line")
+				.attr("class", "y-grid")
+				.attr("x1", xrange[0])
+				.attr("y1", function(d){ return yscale_c(d); })
+				.attr("x2", xrange[1])
+				.attr("y2", function(d){ return yscale_c(d); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
+
+		// Draw the X grid
+		svg.selectAll("line.x-grid")
+			.data(xscale_c.ticks())
+			.enter().append("line")
+				.attr("class", "x-grid")
+				.attr("x1", function(d){ return xscale_c(d); })
+				.attr("y1", yrange[0])
+				.attr("x2", function(d){ return xscale_c(d); })
+				.attr("y2", yrange[1])
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
+
+			// Draw the Y zero
+			svg.selectAll("line.y-grid-0")
+				.data([1e-10])
+				.enter().append("line")
+					.attr("class", "y-grid-0")
+					.attr("x1", xrange[0])
+					.attr("y1", function(d){ return yscale_c(d); })
+					.attr("x2", xrange[1])
+					.attr("y2", function(d){ return yscale_c(d); })
+					.attr("stroke-width", 1)
+					.attr("stroke", "rgba(120,120,120,0.5)");
+
+			// Draw the X zero
+			svg.selectAll("line.x-grid-0")
+				.data([1e-10])
+				.enter().append("line")
+					.attr("class", "x-grid-0")
+					.attr("x1", function(d){ return xscale_c(d); })
+					.attr("y1", yrange[0])
+					.attr("x2", function(d){ return xscale_c(d); })
+					.attr("y2", yrange[1])
+					.attr("stroke-width", 1)
+					.attr("stroke", "rgba(120,120,120,0.5)");
+		
 		// draws the plot itself
 		svg.selectAll("circle")
 			.data(dataset)
@@ -333,6 +389,7 @@
 			.attr("id", function(d){ return "d-t5-"+ d; })
 			.attr("r",r)
 			.attr("fill","rgb(0,127,255)")
+			.style("cursor", "crosshair")
 			.attr("cx",function(d, i) {
 				var v = value(d, x_var);
 				return  xscale_c(v);
@@ -348,6 +405,10 @@
 				// and also the app. so that the linked views can change
 				// for the app we also pass from were we hovered.
 				appdispatch.gamehover.call("gamehover", null, d, "t5");
+			})
+			.on("mouseout", function(d){
+				// lets notify ourselves
+				dispatch2.call("gameout", null, d);
 			});
 
 
@@ -375,6 +436,66 @@
 				  .style("font-size", "10px")
 				  .text(function(d){ return "r: " + d["pearsonr"]; });
 
+			// Draw the Y crossair
+			svg.selectAll("line.y-crossair")
+				.data([0])
+				.enter().append("line")
+					.attr("class", "y-crossair")
+					.attr("x1", xrange[0]) 
+					.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("x2", xrange[1]) 
+					.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("stroke-width", 3)
+					.style("pointer-events", "none")
+					.attr("stroke", "rgba(255,0,255,0.5)");
+
+			// Draw the X crossair
+			svg.selectAll("line.x-crossair")
+				.data([0])
+				.enter().append("line")
+					.attr("class", "x-crossair")
+					.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("y1", yrange[0]) 
+					.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("y2", yrange[1]) 
+					.attr("stroke-width", 3)
+					.style("pointer-events", "none")
+					.attr("stroke", "rgba(255,0,255,0.5)");
+
+			// Draw the circle crossair
+			svg.selectAll("circle.x-crossair.y-crossair")
+				.data([0])
+				.enter().append("circle")
+					.attr("class", "x-crossair y-crossair")
+					.attr("cx", 1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("cy", 1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("r", 2)
+					.style("pointer-events", "none")
+					.attr("stroke", "rgba(255,0,255,0.5)");
+
+			// Draw the X toolip
+			svg.selectAll("div.x-tooltip")
+				.data([0])
+				.enter().append("div")
+			
+			// Draw the Y toolip
+			svg.selectAll("div.x-tooltip")
+				.data([0])
+				.enter().append("div")
+			// Draw the Data toolip
+			
+			
+			d3.select("#t5Viz").selectAll("div.data-tooltip")
+				.data([0])
+				.enter().append("div")
+					.attr("class", "data-tooltip")
+					.style("position", "fixed")
+					.style("z-index", "10")
+					.style("opacity", 0)
+					.style("border", "solid 3px rgba(0,127,255,0.7)")
+					.style("background-color", "rgba(255,255,255,0.7)")
+					.style("pointer-events", "none")
+					.style("padding", "5px 10px")
 	};
 
 	window.drawt5 = drawt5;
