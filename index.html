@@ -4,6 +4,7 @@
   
   <script src="libs/jquery-3.2.1.min.js" charset="utf-8"></script>
   <script src="libs/bootstrap/js/bootstrap.min.js" charset="utf-8"></script>
+  <script src="libs/lodash.min.js" charset="utf-8"></script>
   <script src="libs/handsontable.full.min.js" charset="utf-8"></script>
   <script src="libs/d3.v4.min.js" charset="utf-8"></script>
 
@@ -45,7 +46,7 @@
               <h5>Sales evolution over time</h5>
             </div>
             <div id="t1Viz" class="panel-body">
-              <img class="img-responsive" src="images/t1.png" />
+              <img height="300px" width="400px" class="img-responsive" src="images/t1.png" />
             </div>
           </div>
           <!-- ./t1Panel -->
@@ -96,6 +97,60 @@
         </div>
         <!-- ./middle-viz > left-panel col-xs-7 -->
         <div class="right-panel col-xs-5">
+          <div id="dtlPanel" class="panel panel-default">
+            <div class="panel-heading">
+                <h2 id="name" style="text-align: center;">Name</h2>
+                <h5 style="text-align: center;">
+                  <span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
+                </h5>
+                <h3 id="mean_usercritic_score" style="text-align: center;">
+                  mean_usercritic_score
+                </h3>
+                <small id="rating">Rating</small>
+            </div>
+            <div id="dtlViz" class="panel-body">
+              <div class="row">
+                <div id="sales" class="col-xs-12">
+                  <svg id="salesViz"></svg>
+                  <div id="salesLegend" class="row">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="lead text-center">
+                  <span id="genre">Action</span> game from <span id="publisher">Publisher</span> developed by <span id="developer">Developer</span>.
+                </div>
+              </div>
+              <!-- <div class="form-group">
+                <label>critic_score</label>
+              </div>
+              <div class="form-group">
+                <label>critic_count</label>
+              </div>
+              <div class="form-group">
+                <label>user_score</label>
+              </div>
+              <div class="form-group">
+                <label>user_count</label>
+              </div>
+              <div class="form-group">
+                <label>tbd_flag</label>
+              </div>
+              <div class="form-group">
+                <label>outlier_flag</label>
+              </div>
+              <div class="form-group">
+                <label>user_score_norm</label>
+              </div>
+              <div class="form-group">
+                <label>critic_user_diff</label>
+              </div>
+              <div class="form-group">
+                <label>percentage_of_releases</label>
+              </div> -->
+            </div>
+          </div>
+          <!-- ./dtlPanel -->
           <div id="clvPanel" class="panel panel-default">
             <div class="panel-heading">
               <h5>Games</h5>
@@ -105,15 +160,6 @@
             </div>
           </div>
           <!-- ./clvPanel -->
-          <div id="dtlPanel" class="panel panel-default">
-            <div class="panel-heading">
-              <h5>Game Card</h5>
-            </div>
-            <div id="dtlViz" class="panel-body">
-              <img class="img-responsive" src="images/dtl.png" />
-            </div>
-          </div>
-          <!-- ./dtlPanel -->
         </div>
         <!-- ./middle-viz > right-panel col-xs-5 -->
       </row>
