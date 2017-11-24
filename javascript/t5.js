@@ -14,11 +14,10 @@
 
 	var dispatch = d3.dispatch("gamehover");
 	var dispatch2 = d3.dispatch("gameout");
-	var selectedBar, selectedCircle;
 
 	var isLogScale = false;
 	var isCenteredData = false;
-	
+
 	var xscale = null;
 	var yscale = null;
 	// centered scales (<v> - mu / std)
@@ -230,7 +229,7 @@
 				   .. a  Y line
 				   .. a "phantom" dot (when we "highligh" we are actually placing this dot on top of the viz)
 				   				  ^-- this helps a bit when we have lots of occlusion. but doesn't exactly solve it...
-				// 10) Place tooltips
+				10) Place tooltips
 				   .. For the data
 				   .. For the X Axis
 				   .. For the Y Axis
