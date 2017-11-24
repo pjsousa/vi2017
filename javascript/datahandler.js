@@ -178,7 +178,7 @@
         d3.csv("data/data_v2.csv", tratar_data_v2)
   */
 
-  function get_records(col_name, col_value){
+  function get_records(col_names, col_values){
     /*
       get_records(["Genre"], ["Action"])  /// devolve todas as linhas que têm Action
       get_records(["Genre", "Platform"], ["Action", "PS3"]) /// devolve todas as linhas que têm Action e têm PS3
@@ -191,7 +191,7 @@
     var rownumbers = [];
     
     try{
-      rownumbers = get_index(col_name, col_value);
+      rownumbers = get_index(col_names, col_values);
       result = rownumbers.map(function(itr){ return datasources["data_v2"][itr]; });
     }
     catch(e){
@@ -201,7 +201,7 @@
     return result;
   };
 
-  function get_index(col_name, col_value){
+  function get_index(col_names, col_values){
     /*
       get_indexes(["Genre"], ["Action"])  /// devolve os row_nums das linhas que têm Action
       get_indexes(["Genre", "Platform"], ["Action", "PS3"])  /// devolve os row_nums das linhas que têm Action e têm PS3
@@ -209,14 +209,22 @@
      */
     
     var result = [];
-    var index_name = "index_" + col_name;
 
-    if (typeof datasources[index_name] === "undefined"){
-      throw new Error(col_name + " as col_name is not valid.");
+    if(!Array.isArray(col_names)){
+      col_names = [col_names];
     }
 
-    result = datasources[index_name]["index"][col_value];
-    result = result || [];
+    // lets make sure the columns names are all valid
+    col_names.forEach(function(col){
+      if (typeof datasources["index_" + col] === "undefined"){
+        throw new Error(col + " as col_names is not valid.");
+      }})
+
+    var row_nums = col_names
+      .map(function(col, idx){ 
+        return datasources["index_"+col].index[col_values[idx]] || []; })
+
+    result = _.intersection.apply(null, row_nums)
 
     return result;
   };
@@ -283,7 +291,7 @@
     result = datasources["data_v2"][row_number][col_name];
 
     return result;
-  }
+  };
 
   // isto faz com que a datasources exista nos outros ficheiros.
   window.datasources = datasources;
