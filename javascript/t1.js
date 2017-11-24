@@ -2,9 +2,26 @@
     // [Q] Eu na T5 fiz um montão louco de batota e guardei algumas coisas 
     // fora do drawT5(). Um bocado mais para facilitar os contextos de algumas 
     // coisas nas funções auxiliares.
-    
+    var w = 400;
+    var h = 300;
+    var padding = 30;
+    var xoffset = 40;
+    var yoffset = 30;
+    var xcutoff = 40;
+    var ycutoff = 30;
+    var r = 2;
+
+    // [Q] Reparei que não butastes o Other_Sales, e então não butei também... mas... O_o
+    var x_variable = "Year_of_Release";
+    var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
+
+    var colors = [ "steelblue", "red", "green" ];
+
     var dispatch = d3.dispatch("gamehover");
     var dispatch2 = d3.dispatch("gameout");
+
+    var x = null;
+    var y = null;
 
     dispatch.on("gamehover.lineplot", function(d, all_rownums, dataset){
         // lets place ALL the rows in highligh!
@@ -27,32 +44,32 @@
                 
                 The frequency of the viz are ...
          */
-        
+
         //var dataset = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales", "Year_of_Release"]);
         var dataset = data_utils.get_sales_sum(null,"Developer","Nintendo");
         var r = dataset.map(a => a.Year_of_Release);
         var maxYear = r.reduce(function(a,b){ return Math.max(a,b);});
-        var minYear = 1987;
+        var minYear = 1987;  // [Q] Why though?
         
         dataset.sort(function(x,y) { return d3.ascending(x.Year_of_Release, y.Year_of_Release)} );
+
+        var yrange = [];
+        yrange[0] = padding;
+        yrange[1] = h - padding - yoffset;
+        var xrange = [];
+        xrange[0] = padding + xoffset;
+        xrange[1] = w-padding;
         
         d3.select("#t1Viz > img")
                 .remove();
-
-        var w = 400;
-        var h = 300;
-        var padding = 30;
-
-        x_variable = "Year_of_Release";
-		y_variable = "JP_Sales";
 
         var svg = d3.select("#t1Viz svg")
             .attr("width", w)
             .attr("height",h);
         
         //definir o eixo y
-		var y = d3.scaleLinear()
-			.range([padding,h-padding]);
+		y = d3.scaleLinear()
+			.range([yrange[0],yrange[1]]);
 
         //definir o eixo x e passar os anos de floats para anos
         var parseTime = d3.timeParse("%Y")
@@ -64,8 +81,8 @@
             }
             d.Year_of_Release= parseTime(date[0]);
         });
-		var x = d3.scaleTime()
-            .range([padding,w-padding]);
+		x = d3.scaleTime()
+            .range([xrange[0],xrange[1]]);
         
 //        var color = d3.scaleOrdinal(d3.schemeCategory10);
 //        color.domain(d3.keys(dataset[0]).filter(function(key){ return key !== "Year_of_Release" && key !== "Developer";}));
@@ -253,12 +270,12 @@
         
         //criar o grafico
         svg.append("g")
-            .attr("transform","translate(30,0)") // [Q] Aaarhhgg what? "30" ? O_O
+            .attr("transform","translate("+xrange[0]+",0)")
             .attr("class","y axis")
             .call(yaxis);
         
         svg.append("g")
-            .attr("transform","translate(0,"+(h-padding)+")")
+            .attr("transform","translate(0,"+yrange[1]+")")
             .call(xaxis);    
 
         svg.append("path")
@@ -335,9 +352,13 @@
         });
 
         /* 
-            [Q] (Acho que) não mudei nada dentro da drawT1(). Mas daqui para baixo foi adicionado por mim
+            [Q] Daqui para baixo foi adicionado por mim.
             Isto "rouba" algumas variáveis das tuas e desenha circulos transparantes que coincidem com os dados 
             para apanharem os eventos do rato.
+
+            [Q] O que mudei mais lá para cima (dentro da drawt1) foi a parte das 
+            dimensões, offsets, cutoffs... Que nos vai dar jeito para pôr 
+            o layout com tamanhos mais consistentes na página toda.
 
             We'll steal these from above:
                 - dataset
@@ -420,7 +441,6 @@
                 dispatch2.call("gameout", null, d, all_rownums, dataset);
 
                 focus.style("display", "none");
-                console.log("Out")
             });
 
 
