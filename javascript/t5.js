@@ -237,6 +237,9 @@
 
 				The drawing is done (kinda) "once". The events, effects, highlights are just updating text, colors x's and y's.
 				Unless we change the change the dataset behind the viz, we don't get back to this anymore.
+
+				The frequency of the viz are the games themselves. This makes it easier, 
+				since we have the same frequency as the raw data...
 		 */
 
 		var dataset = appstate.datasetRows;
@@ -279,8 +282,7 @@
 		d3.select("#t5Viz > img")
 			.remove();
 
-		var svg = d3.select("#t5Viz")
-			.append("svg")
+		var svg = d3.selectAll("#t5Viz svg")
 			.attr("width",w)
 			.attr("height",h);
 

@@ -1,7 +1,31 @@
 ;(function(){
-    function drawt1(){
 
+    var dispatch = d3.dispatch("gamehover");
+    var dispatch2 = d3.dispatch("gameout");
+
+    dispatch.on("gamehover.lineplot", function(d, all_rownums, dataset){
+        //moveCrossair(d);
+        //showDataTooltip(d);
+
+        // lets place ALL the rows in highligh!
+        all_rownums.forEach(function(row_num){
+            appstate.highlightedRows.push(row_num);
+        });
+    });
+
+    dispatch2.on("gameout.lineplot", function(d, all_rownums, dataset){
+        all_rownums.forEach(function(row_num){
+            appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(row_num), 1);
+        });
+        
+        //hideDataTooltip(d);
+    });
+
+    function drawt1(){
         //var dataset = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales", "Year_of_Release"]);
+        
+        //var dataset = appstate.datasetRows;
+
         var dataset = data_utils.get_sales_sum(null,"Developer","Nintendo");
         var r = dataset.map(a => a.Year_of_Release);
         var maxYear = r.reduce(function(a,b){ return Math.max(a,b);});
@@ -189,6 +213,7 @@
         
         var focus = svg.append("g")
                         .attr("class","focus")
+                        .attr("pointer-events", "none")
                         .style("display","none");
         
         focus.append("line")
@@ -208,7 +233,10 @@
             .attr("x", 15)
             .attr("dy", ".31em");
         
+
+
         function mousemove(){
+            /* Deprecate this? */
             var x0 = x.invert(d3.mouse(this)[0]), 
                 i = bisectDate(dataset,x0,1),
                 d0 = dataset[i-1],
@@ -251,8 +279,7 @@
             focus.attr("transform", "translate(" + x(d.Year_of_Release) + "," + y(d.JP_Sales) + ")");
             focus.select("text").text(function() { return d.JP_Sales; });
             focus.select(".x-hover-line").attr("y2", h - y(d.JP_Sales));
-            focus.select(".y-hover-line").attr("x2", w + w);}
-               );
+            focus.select(".y-hover-line").attr("x2", w + w); });
 
         svg.append("path")
             .datum(dataset)
@@ -302,9 +329,96 @@
             focus.select("text").text(function() { return d.NA_Sales; });
             focus.select(".x-hover-line").attr("y2", h - y(d.NA_Sales));
             focus.select(".y-hover-line").attr("x2", w + w);
-            
         });
+
         
+        /* 
+            We'll steal these from above:
+                - dataset
+                - x
+                - y
+                - parseTime
+         */
+        
+        var x_variable = "Year_of_Release";
+        // so..... I noticed Other_Sales is GONE! GONE I TELL U!
+        var y_variable = ["NA_Sales", "EU_Sales", "JP_Sales"];
+
+        var all_points = d3.range(dataset.length)
+            .map(function(itr_x){ return y_variable.map(function(itr_y){ return [itr_x, itr_y]; })});
+
+        all_points = _.flatten(all_points);
+        /*   ^--- think of all_points as if it was a todo list of circles to draw...
+            we need to do:
+            [[0, "NA_Sales"]
+             [0, "EU_Sales"]
+             ....]
+         */
+
+        svg.selectAll("circle.data-points")
+            .data(all_points)
+            .enter().append("circle")
+                .attr("class", "data-points");
+        svg.selectAll("circle.data-points")
+            .attr("r", 10)
+            .attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
+            .attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
+            .attr("fill", "rgba(255,255,255,0)")
+            .on("mouseover", function(d){
+                // 
+                // DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER 
+                // This function actually has a huge bad ugly bug. Ask Pedro.
+                // DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER 
+                // 
+                // now our events can have context!
+                // d as things like :
+                // [27, "NA_Sales"]
+                // [30, "NA_Sales"]
+                // ...
+                // we can use d to look for stuff in the dataset var or in data_utils
+                // 
+                // Also, for code inspiration purposes, this is pretty much the same kind of circles from T5... :)
+                // 
+                // 
+                // 
+                
+                var row_num = d[0];
+                var column_name = d[1];
+
+                var year = dataset[row_num][x_variable].getFullYear() + ".0";
+                var all_rownums = datasources["index_"+x_variable].index[year];
+
+                dispatch.call("gamehover", null, d, all_rownums, dataset);
+                appdispatch.gamehover.call("gamehover", null, all_rownums, "t1");
+
+                // this is kind of the same as Iris did.
+                focus.attr("transform", "translate(" + x(dataset[row_num][x_variable]) + "," + y(dataset[row_num][column_name]) + ")");
+                focus.select("text").text(function() { return dataset[row_num][column_name]; });
+                focus.select(".x-hover-line").attr("y2", h - y(dataset[row_num][column_name]));
+                focus.select(".y-hover-line").attr("x2", w + w);
+                
+                focus.style("display", null); 
+                d3.selectAll(".hover-line").style("stroke","red");
+                d3.selectAll(".focus").style("stroke","black");
+                d3.selectAll(".focus circle").style("stroke","red");
+            })
+            .on("mouseout", function(d){
+                // lets notify ourselves!
+                var row_num = d[0];
+                var column_name = d[1];
+
+                var year = dataset[row_num][x_variable].getFullYear() + ".0";
+                var all_rownums = datasources["index_"+x_variable].index[year];
+
+                dispatch2.call("gameout", null, d, all_rownums, dataset);
+
+                focus.style("display", "none");
+                console.log("Out")
+            });
+
+
+
+
     };
 window.drawt1 = drawt1;    
 })();

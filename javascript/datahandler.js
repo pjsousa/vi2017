@@ -75,8 +75,8 @@
   datasources["util_irq_analisys_v2"] = undefined;
 
   // isto é só porque pode dar jeito ter as keys hardcoded...
-  var data_keys = ["data_v2","index_Developer","index_Genre","index_Name","index_Outlier_Flag","index_Percentage_of_Releases","index_Platform","index_Publisher","index_Rating","index_TBD_Flag","util_irq_analisys_v2"];
-  var file_extensions = ["csv", "json", "json", "json", "json", "json", "json", "json", "json", "json", "json"];
+  var data_keys = ["data_v2","index_Developer","index_Genre","index_Name","index_Outlier_Flag","index_Percentage_of_Releases","index_Platform","index_Publisher","index_Rating", "index_Year_of_Release","index_TBD_Flag","util_irq_analisys_v2"];
+  var file_extensions = ["csv", "json", "json", "json", "json", "json", "json", "json", "json", "json", "json", "json"];
 
   function load_status(){
     /*

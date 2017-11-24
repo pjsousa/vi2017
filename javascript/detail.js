@@ -100,7 +100,6 @@
 		d3.select("#dtlPanel").selectAll("#salesLegend")
 			.selectAll("small")
 			.html(function(d, i){ return d; })
-
 	}
 
 	window.drawdtl = drawdtl;
