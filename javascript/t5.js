@@ -204,11 +204,44 @@
 	};
 
 	function drawt5(){
+		/*
+			"Drawing t5" means:
+	
+				1) Settle the values for the x and y domains (this are the values in the data)
+				2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
+				3) Putting the SVG in place
+				4) Creating the scales
+				    - ( can either be linear or logarithmic and centered or not centered )
 
-		// FIXED SIZE FOR NOW
+				[... start composing the viz ...]
+
+				5) Create X and Y axis
+				6) Create the background grid
+					^-- which is composed by..
+					.. an X Grid -> the vertical lines across the X axis
+					.. a  Y Grid -> the horizontal lines across the Y axis
+					.. a  Y Zero -> an horizontal line a bit thciker to indentify the Y origin when it doesn't match the plot axis
+					.. an X Zero -> a vertical    line a bit thciker to indentify the X origin when it doesn't match the plot axis
+				7) Plot the data itself
+				8) Draw the regression line and the pearson's r value
+				9) Draw the hovering crossair
+				   ^-- which is composed by..
+				   .. an X line
+				   .. a  Y line
+				   .. a "phantom" dot (when we "highligh" we are actually placing this dot on top of the viz)
+				   				  ^-- this helps a bit when we have lots of occlusion. but doesn't exactly solve it...
+				// 10) Place tooltips
+				   .. For the data
+				   .. For the X Axis
+				   .. For the Y Axis
+
+				The drawing is done (kinda) "once". The events, effects, highlights are just updating text, colors x's and y's.
+				Unless we change the change the dataset behind the viz, we don't get back to this anymore.
+		 */
 
 		var dataset = appstate.datasetRows;
 
+		// 1) Settle the values for the x and y domains (this are the values in the data)
 		var ydomain = [];
 		ydomain[0] = d3.max(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });
 		ydomain[1] = d3.min(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });;
@@ -216,6 +249,9 @@
 		xdomain[0] = d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });;
 		xdomain[1] = d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
 
+
+
+		// 2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
 		var yrange = [];
 		yrange[0] = padding;
 		yrange[1] = h - padding - yoffset;
@@ -223,6 +259,8 @@
 		xrange[0] = padding + xoffset;
 		xrange[1] = w-padding;
 
+		// Lets compute the mean and st. deviation of the data
+		// ( is done on the fly because these might change depending on the rows selected )
 		if(isLogScale){
 			x_mu = d3.mean(dataset, function(d){ return Math.log(raw_value(d, x_var)); });
 			x_std = d3.deviation(dataset, function(d){ return Math.log(raw_value(d, x_var)); });
@@ -236,8 +274,7 @@
 			y_std = d3.deviation(dataset, function(d){ return raw_value(d, y_var); });
 		}
 
-		var corr = compute_personsr_linregress(dataset);
-
+		// 3) Putting the SVG in place
 		// lets remove your image placeholder
 		d3.select("#t5Viz > img")
 			.remove();
@@ -249,6 +286,7 @@
 
 
 
+		// 4) Creating the scales
 		if(isLogScale){
 			yscale = d3.scaleLog();
 			xscale = d3.scaleLog();
@@ -289,11 +327,14 @@
 			xscale_c = xscale;
 		}
 
-		//                                                                       //
+		// ^--- Creating the scales                                              //
 		// Either way, centered or not, from now on we use yscale_c and xscale_c //
 		//                                                                       //
 
-		//calculate axis origins
+
+
+		// 5) Create X and Y axis
+		//calculate the placement of the origins for both axis
 		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale_c, yscale);
 
 		var yaxis = d3.axisLeft()
@@ -329,6 +370,9 @@
 			.style("text-anchor", "end")
 			.text("Score");
 		
+		
+
+		// 6) Create the background grid
 		// Draw the Y grid
 		svg.selectAll("line.y-grid")
 			.data(yscale_c.ticks())
@@ -376,7 +420,10 @@
 					.attr("y2", yrange[1])
 					.attr("stroke-width", 1)
 					.attr("stroke", "rgba(120,120,120,0.5)");
-		
+
+
+
+		// 7) Plot the data itself
 		// draws the plot itself
 		svg.selectAll("circle")
 			.data(dataset)
@@ -407,7 +454,10 @@
 			});
 
 
-			// draws the regression line
+
+			// 8) Draw the regression line and the pearson's r value
+			var corr = compute_personsr_linregress(dataset);
+
 			svg.selectAll("line.corr-line")
 				.data([corr])
 				.enter().append("line")
@@ -431,6 +481,9 @@
 				  .style("font-size", "10px")
 				  .text(function(d){ return "r: " + d["pearsonr"]; });
 
+
+
+			// 9) Draw the hovering crossair
 			// Draw the Y crossair
 			svg.selectAll("line.y-crossair")
 				.data([0])
@@ -457,7 +510,7 @@
 					.style("pointer-events", "none")
 					.attr("stroke", "rgba(255,0,255,0.5)");
 
-			// Draw the circle crossair
+			// Draw the phantom dot
 			svg.selectAll("circle.x-crossair.y-crossair")
 				.data([0])
 				.enter().append("circle")
@@ -468,17 +521,9 @@
 					.style("pointer-events", "none")
 					.attr("stroke", "rgba(255,0,255,0.5)");
 
-			// Draw the X toolip
-			svg.selectAll("div.x-tooltip")
-				.data([0])
-				.enter().append("div")
-			
-			// Draw the Y toolip
-			svg.selectAll("div.x-tooltip")
-				.data([0])
-				.enter().append("div")
-			
-			
+
+			// 10) Place tooltips
+			// Data tooltip
 			d3.select("#t5Viz").selectAll("div.data-tooltip")
 				.data([0])
 				.enter().append("div")
@@ -490,6 +535,16 @@
 					.style("background-color", "rgba(255,255,255,0.7)")
 					.style("pointer-events", "none")
 					.style("padding", "5px 10px")
+
+			// X axis toolip
+			svg.selectAll("div.x-tooltip")
+				.data([0])
+				.enter().append("div")
+			
+			// Y axis toolip
+			svg.selectAll("div.x-tooltip")
+				.data([0])
+				.enter().append("div")
 	};
 
 	window.drawt5 = drawt5;

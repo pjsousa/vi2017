@@ -38,9 +38,6 @@
 
 		var xscale = null;
 
-
-
-
 		var row_number = appstate.highlightedRows[0];
 
 		var svg = d3.select("#dtlPanel").selectAll("#salesViz");
@@ -81,16 +78,28 @@
 		svg.selectAll("rect")
 			.data(detail_vars)
 			.enter().append("rect");
-			svg.selectAll("rect")
-				.transition()
-				.duration(500)
-				.attr("x", function(d, i){ return pixeloffsets[i]; })
-				.attr("y", yrange[0])
-				.attr("width", function(d, i){ return pixelvalues[i] })
-				.attr("height", yrange[1]-yrange[0])
-				.attr("fill", function(d,i){ return ["red", "blue", "yellow", "tomato"][i] });
+		svg.selectAll("rect")
+			.transition()
+			.duration(500)
+			.attr("x", function(d, i){ return pixeloffsets[i]; })
+			.attr("y", yrange[0])
+			.attr("width", function(d, i){ return pixelvalues[i] })
+			.attr("height", yrange[1]-yrange[0])
+			.attr("stroke", "#222")
+			.attr("stroke-width", 2)
+			.attr("fill", function(d,i){ return ["red", "blue", "yellow", "tomato"][i] });
 
 
+		d3.select("#dtlPanel").selectAll("#salesLegend")
+			.selectAll("div.col-xs-3")
+			.data(detail_vars)
+			.enter().append("div")
+				.attr("class", "col-xs-3")
+				.append("small");
+
+		d3.select("#dtlPanel").selectAll("#salesLegend")
+			.selectAll("small")
+			.html(function(d, i){ return d; })
 
 	}
 
