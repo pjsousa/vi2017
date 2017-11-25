@@ -439,6 +439,7 @@
                 var all_rownums = datasources["index_"+x_variable].index[year];
 
                 dispatch2.call("gameout", null, d, all_rownums, dataset);
+                appdispatch.gameout.call("gameout", null, all_rownums, "t1");
 
                 focus.style("display", "none");
             });

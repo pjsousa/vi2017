@@ -83,13 +83,15 @@
 	dispatch.on("gamehover.scatterplot", function(d){
 		mouse_coord = d3.mouse(this);
 
+		appstate.highlightedRows.push(d);
+
 		moveCrossair(d);
 		showDataTooltip(d, mouse_coord);
-		appstate.highlightedRows.push(d);
 	});
 
 	dispatch2.on("gameout.scatterplot", function(d){
 		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
+		hideCrossair();
 		hideDataTooltip(d);
 	});
 
@@ -165,14 +167,45 @@
 				.attr("x1", xscale_c(value(row_num, x_var)))
 				.attr("x2", xscale_c(value(row_num, x_var)))
 
-		d3.select("#t5Viz")
-			.selectAll("circle.x-crossair.y-crossair")
-				.attr("cx", xscale_c(value(row_num, x_var)))
-				.attr("cy", yscale_c(value(row_num, y_var)))
+		drawHighlightt5(row_num);
 	};
 
+	function drawHighlightt5(){
+		var row_nums = appstate.highlightedRows;
+		
+		var g = d3.selectAll("#t5Viz svg g.x-crossair.y-crossair");
+
+		var circles = g.selectAll("circle.x-crossair.y-crossair")
+			.data(row_nums);
+
+		circles.enter()
+			.append("circle")
+				.attr("class", "x-crossair y-crossair")
+		circles.exit().remove();
+
+		g.selectAll("circle.x-crossair.y-crossair")
+			.attr("r", r+1)
+			.style("pointer-events", "none")
+			.attr("fill", "rgba(255,0,255,0.5)")
+			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
+			.attr("cy", function(row_num){ return yscale_c(value(row_num, y_var))})
+	};
+
+	function hideCrossair(){
+		d3.select("#t5Viz")
+			.selectAll("line.y-crossair")
+				.attr("y1", -10000)
+				.attr("y2", -10000)
+
+		d3.select("#t5Viz")
+			.selectAll("line.x-crossair")
+				.attr("x1", -10000)
+				.attr("x2", -10000)
+
+		drawHighlightt5();
+	}
+
 	function showDataTooltip(row_num, mouse_coord){
-		console.log("event", d3.event.pageX, d3.event.pageY);
 
 		d3.select("#t5Viz").
 			selectAll("div.data-tooltip")
@@ -442,7 +475,7 @@
 			.attr("id", function(d){ return "d-t5-"+ d; })
 			.attr("r",r)
 			.attr("fill","rgb(0,127,255)")
-			.style("cursor", "crosshair")
+			.style("cursor", "none")
 			.attr("cx",function(d, i) {
 				var v = value(d, x_var);
 				return  xscale_c(v);
@@ -462,9 +495,9 @@
 			.on("mouseout", function(d){
 				// lets notify ourselves
 				dispatch2.call("gameout", null, d);
+				
+				appdispatch.gameout.call("gameout", this, d, "t5");
 			});
-
-
 
 			// 8) Draw the regression line and the pearson's r value
 			var corr = compute_personsr_linregress(dataset);
@@ -521,16 +554,11 @@
 					.style("pointer-events", "none")
 					.attr("stroke", "rgba(255,0,255,0.5)");
 
-			// Draw the phantom dot
-			svg.selectAll("circle.x-crossair.y-crossair")
+			// Draw the group for highlight dots
+			svg.selectAll("g.x-crossair.y-crossair")
 				.data([0])
-				.enter().append("circle")
-					.attr("class", "x-crossair y-crossair")
-					.attr("cx", 1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("cy", 1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("r", 2)
-					.style("pointer-events", "none")
-					.attr("stroke", "rgba(255,0,255,0.5)");
+				.enter().append("g")
+					.attr("class", "x-crossair y-crossair");
 
 
 			// 10) Place tooltips
@@ -560,4 +588,5 @@
 
 	window.drawt5 = drawt5;
 	window.setSizest5 = setSizest5;
+	window.drawHighlightt5 = drawHighlightt5
 })();
