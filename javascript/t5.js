@@ -57,11 +57,11 @@
 			return result;
 		};
 
-		var X_mu = d3.mean(row_nums, function(d){ return value(d, "Mean_UserCritic_Score") })
-		var X_0mu = row_nums.map(function(d){ return value(d, "Mean_UserCritic_Score") - X_mu; })
+		var X_mu = d3.mean(row_nums, function(d){ return value(d, x_var) })
+		var X_0mu = row_nums.map(function(d){ return value(d, x_var) - X_mu; })
 
-		var Y_mu = d3.mean(row_nums, function(d){ return value(d, "Global_Sales") })
-		var Y_0mu = row_nums.map(function(d){ return value(d, "Global_Sales") - Y_mu; })
+		var Y_mu = d3.mean(row_nums, function(d){ return value(d, y_var) })
+		var Y_0mu = row_nums.map(function(d){ return value(d, y_var) - Y_mu; })
 
 		var _a = d3.sum(row_nums, function(d, i){ return X_0mu[i]*Y_0mu[i]; })
 
@@ -413,7 +413,6 @@
 			.attr("fill", "black")
 			.style("text-anchor", "end")
 			.text("Score");
-		
 		
 
 		// 6) Create the background grid

@@ -77,7 +77,7 @@
         //setSizest2(this.getClientRects()[0])
       }
       else if(_id == "clvViz"){
-        //setSizest4(this.getClientRects()[0])
+        setSizesclv(this.getClientRects()[0]);
       }
       else if(_id == "dtlViz"){
         //setSizesdtl(this.getClientRects()[0])
@@ -89,7 +89,6 @@
         //setSizest4(this.getClientRects()[0])
       }
       
-
     })
   }
 
@@ -100,6 +99,7 @@
 
     drawt1();
     drawt5();
+    drawclv();
   };
 
   window.main = main;

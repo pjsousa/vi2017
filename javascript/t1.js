@@ -3,7 +3,7 @@
     // fora do drawT5(). Um bocado mais para facilitar os contextos de algumas 
     // coisas nas funções auxiliares.
     var w = 400;
-    var h = 300;
+    var h = 250;
     var padding = 30;
     var xoffset = 40;
     var yoffset = 30;
