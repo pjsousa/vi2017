@@ -490,7 +490,7 @@
 				  .attr("fill", "red")
 				  .style("text-anchor", "start")
 				  .style("font-size", "10px")
-				  .text(function(d){ return "r: " + d["pearsonr"]; });
+				  .text(function(d){ return "r: " + d3.format(".3f")(d["pearsonr"]); });
 
 
 
