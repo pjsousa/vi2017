@@ -251,7 +251,7 @@
 	
 				1) Settle the values for the x and y domains (this are the values in the data)
 				2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
-				3) Putting the SVG in place
+				3) Resizing the SVG
 				4) Creating the scales
 				    - ( can either be linear or logarithmic and centered or not centered )
 
@@ -319,7 +319,7 @@
 			y_std = d3.deviation(dataset, function(d){ return raw_value(d, y_var); });
 		}
 
-		// 3) Putting the SVG in place
+		// 3) Resizing the SVG
 		// lets remove your image placeholder
 		d3.select("#t5Viz > img")
 			.remove();
