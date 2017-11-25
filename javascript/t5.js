@@ -1,12 +1,12 @@
 ;(function(){
 
-	var w = 500;
-	var h = 300;
-	var padding = 50;
-	var xoffset = 40;
+	var w = -1;
+	var h = -1;
+	var padding = 20;
+	var xoffset = 30;
 	var yoffset = 30;
-	var xcutoff = 40;
-	var ycutoff = 30;
+	var xcutoff = 100;
+	var ycutoff = 0;
 	var r = 2;
 
 	var y_var = "Global_Sales";
@@ -81,8 +81,10 @@
 	};
 
 	dispatch.on("gamehover.scatterplot", function(d){
+		mouse_coord = d3.mouse(this);
+
 		moveCrossair(d);
-		showDataTooltip(d);
+		showDataTooltip(d, mouse_coord);
 		appstate.highlightedRows.push(d);
 	});
 
@@ -169,12 +171,14 @@
 				.attr("cy", yscale_c(value(row_num, y_var)))
 	};
 
-	function showDataTooltip(row_num){
+	function showDataTooltip(row_num, mouse_coord){
+		console.log("event", d3.event.pageX, d3.event.pageY);
+
 		d3.select("#t5Viz").
 			selectAll("div.data-tooltip")
 			.style("opacity", 1.0)
-			.style("top", (d3.event.pageY-15)+"px")
-			.style("left", (d3.event.pageX+15)+"px")
+			.style("top", (mouse_coord[1]-5)+"px")    // no idea why the bad offsets...
+			.style("left", (mouse_coord[0]+40)+"px")  // no idea why the bad offsets...
 			.html(data_utils.read_value(row_num, "Name"));
 	};
 
@@ -201,6 +205,12 @@
 		// 	.style("left", (d3.event.pageX+15)+"px")
 		// 	.html(value(row_num, "Name"));
 	};
+
+	function setSizest5(boundingRect){
+		w = boundingRect.width;
+		h = boundingRect.height;
+		console.log(w,h);
+	}
 
 	function drawt5(){
 		/*
@@ -256,10 +266,10 @@
 		// 2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
 		var yrange = [];
 		yrange[0] = padding;
-		yrange[1] = h - padding - yoffset;
+		yrange[1] = h - padding - yoffset - ycutoff;
 		var xrange = [];
 		xrange[0] = padding + xoffset;
-		xrange[1] = w-padding;
+		xrange[1] = w-padding - xcutoff;
 
 		// Lets compute the mean and st. deviation of the data
 		// ( is done on the fly because these might change depending on the rows selected )
@@ -444,10 +454,10 @@
 			.attr("title", function(d) {return value(d, "Name"); })
 			.on("mouseover", function(d){
 				// lets notify ourselves
-				dispatch.call("gamehover", null, d);
+				dispatch.call("gamehover", this, d);
 				// and also the app. so that the linked views can change
 				// for the app we also pass from were we hovered.
-				appdispatch.gamehover.call("gamehover", null, d, "t5");
+				appdispatch.gamehover.call("gamehover", this, d, "t5");
 			})
 			.on("mouseout", function(d){
 				// lets notify ourselves
@@ -529,7 +539,7 @@
 				.data([0])
 				.enter().append("div")
 					.attr("class", "data-tooltip")
-					.style("position", "fixed")
+					.style("position", "absolute")
 					.style("z-index", "10")
 					.style("opacity", 0)
 					.style("border", "solid 3px rgba(0,127,255,0.7)")
@@ -549,4 +559,5 @@
 	};
 
 	window.drawt5 = drawt5;
+	window.setSizest5 = setSizest5;
 })();

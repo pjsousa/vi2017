@@ -13,15 +13,39 @@ body{
 	text-align: center;
 }
 
-.row.top-viz{
-	max-height: 10vh; 
-}
-
-.top-viz .left-panel > .panel,
-.top-viz .right-panel > .panel{
+#t1Viz{
+  padding: 0;
   height: 30vh;
 }
 
+#t5Viz{
+  padding: 0;
+  height: 30vh;
+}
+
+#t2Viz{
+  padding: 0;
+  height: 50vh;
+}
+
+#clvViz{
+  padding: 0;
+  height: 50vh;
+}
+
+#dtlPanel{
+  height: 54vh;
+}
+
+#t6Viz{
+  padding: 0;
+  height: calc(40vw);
+}
+
+#t4Viz{
+  padding: 0;
+  height: calc(40vw);
+}
 
 
 /*t1*/
