@@ -48,12 +48,21 @@
     if(from != "dtl"){
       drawdtl();
     }
+
+    if(from != "clv"){
+      drawHighlightclv();
+    }
   });
 
   appdispatch.gameout.on("gameout", function(d, from){
     if(from != "t5"){
       drawHighlightt5();
     }
+
+    if(from != "clv"){
+      drawHighlightclv();
+    }
+
   });
 
   function main(){

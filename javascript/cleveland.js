@@ -7,6 +7,7 @@
 	var xcutoff = 0;
 	var ycutoff = 0;
 	var max_names_len = 18;
+	var top_rows = 30;
 	var r = 5;
 
 	var y_var = "Name";
@@ -28,12 +29,19 @@
 	var y_mu = null;
 	var y_std = null;
 
+	var dataset;
 	var rows_order;
 
-	dispatch.on("gamehover.scatterplot", function(d){
+	dispatch.on("gamehover.cleveland", function(d){
+		mouse_coord = d3.mouse(this);
+
+		appstate.highlightedRows.push(d);
+		drawHighlightclv();
 	});
 
-	dispatch2.on("gameout.scatterplot", function(d){
+	dispatch2.on("gameout.cleveland", function(d){
+		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
+		drawHighlightclv();
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -95,16 +103,54 @@
 		return result;
 	};
 
+	function drawHighlightclv(){
+		var row_nums = appstate.highlightedRows;
+		
+		var g = d3.selectAll("#clvViz svg g.highlight");
+
+		var circles = g.selectAll("circle.highlight")
+			.data(row_nums);
+
+		circles.enter()
+			.append("circle")
+				.attr("class", "highlight")
+		circles.exit().remove();
+
+		g.selectAll("circle.highlight")
+			.attr("r", r+1)
+			.style("pointer-events", "none")
+			.attr("fill", "rgba(255,0,255,0.5)")
+			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
+			.attr("cy", function(row_num){ 
+				var i = dataset.indexOf(row_num);
+
+				if(i == -1){
+					return -10;
+				}
+
+				return yscale_c(rows_order[i]); })
+	};
+
 	function setSizesclv(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
 		console.log(w,h);
-	}
+	};
 
 	function drawclv(){
-		var dataset = appstate.datasetRows.slice(0,30);
+		var aux_order;
 
-		rows_order = _.shuffle(_.range(dataset.length));
+		dataset = appstate.datasetRows
+
+		aux_order = appstate.datasetRows.map(function(d){ return d; });
+		aux_order = aux_order.sort(function(a,b){
+			return value(b, x_var) - value(a, x_var);
+		})
+		aux_order = aux_order.slice(0, top_rows);
+
+		dataset = aux_order;
+
+		rows_order = _.range(aux_order.length);
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		var ydomain = [];
@@ -263,55 +309,43 @@
 			.attr("cy",function(d, i) {
 				return yscale_c(rows_order[i]);
 			})
-			.attr("title", function(d) {return value(d, "Name"); })
-			.on("mouseover", function(d){
+
+
+
+		// 8) Overlay boxes over the plot to grab highlight events
+		svg.selectAll("rect.event-grabbers")
+			.data(dataset)
+			.enter().append("rect")
+			.attr("class", "event-grabbers")
+			.attr("fill","rgba(200, 200, 200, 0.2)")
+			.attr("x",function(d){ return xrange[0]; } )
+			.attr("width",function(d){ return xrange[1] - xrange[0]; } )
+			.attr("y",function(d, i) { return yscale_c(rows_order[i]) - r; })
+			.attr("height", 2*r)
+			.on("mouseover", function(d, i){
 				// lets notify ourselves
 				dispatch.call("gamehover", this, d);
 				// and also the app. so that the linked views can change
 				// for the app we also pass from were we hovered.
-				appdispatch.gamehover.call("gamehover", this, d, "t5");
+				appdispatch.gamehover.call("gamehover", this, d, "clv");
 			})
 			.on("mouseout", function(d){
 				// lets notify ourselves
 				dispatch2.call("gameout", null, d);
 				
-				appdispatch.gameout.call("gameout", this, d, "t5");
+				appdispatch.gameout.call("gameout", this, d, "clv");
 			});
 
-
-
-			// 9) Overlay transparent boxes over the plot to grab events
-			svg.selectAll("rect.event-grabbers")
-				.data(xscale_c.ticks())
-				.enter().append("rect")
-				.attr("class", "event-grabbers")
-				.attr("fill","rgb(255,127,0,0.5)")
-				.style("cursor", "none")
-				.attr("x",function(d){ return xscale_c(d); } )
-				.attr("width",function(d){ return xscale_c(d); } )
-				.attr("y",function(d, i) {  })
-				.attr("height",function(d, i) {  })
-				.on("mouseover", function(d){
-					// lets notify ourselves
-					dispatch.call("gamehover", this, d);
-					// and also the app. so that the linked views can change
-					// for the app we also pass from were we hovered.
-					appdispatch.gamehover.call("gamehover", this, d, "t5");
-				})
-				.on("mouseout", function(d){
-					// lets notify ourselves
-					dispatch2.call("gameout", null, d);
-					
-					appdispatch.gameout.call("gameout", this, d, "t5");
-				});
-
-
-
-
-
+		// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
+		// The dots themselves are added/removed latter in drawHighlightclv when the events fire.
+		svg.selectAll("g.highlight")
+			.data([0])
+			.enter().append("g")
+				.attr("class", "highlight");
 	};
 
 	window.drawclv = drawclv;
 	window.setSizesclv = setSizesclv;
+	window.drawHighlightclv = drawHighlightclv;
 
 })();
