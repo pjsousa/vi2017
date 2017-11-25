@@ -16,20 +16,20 @@
 <body>
   <div class="container-fluid">
     <div class="page-toolbar row">
-      <div class="cols-xs-6 col-xs-offset-3">
-        <div class="panel">
-          <div class="panel-body">
+      <div class="col-xs-6 col-xs-offset-3">
+        <div class="panel" style="margin:0">
+          <div class="panel-body text-center">
             <form class="form-inline">
               <div class="form-group">
                 <div class="input-group">
                       <div class="input-group-addon"> <span class="glyphicon glyphicon-filter"></span> </div>
-                      <input type="text" class="form-control" id="exampleInputAmount" placeholder="<not this template>">
+                      <input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="<not this template>">
                     </div>
               </div>
               <div class="form-group">
                 <div class="input-group">
                       <div class="input-group-addon"> <span class="glyphicon glyphicon-search"></span> </div>
-                      <input type="text" class="form-control" id="exampleInputAmount" placeholder="Look for a game name">
+                      <input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="Look for a game name">
                     </div>
               </div>
             </form>
@@ -38,15 +38,15 @@
       </div>
     </div>
     <!-- ./page-toolbar row -->
-    <row class="page-content">
-      <div class="row top-viz">
+    <div class="row page-content">
+      <div class="top-viz">
         <div class="left-panel col-xs-7">
           <div id="t1Panel" class="panel panel-default">
             <div class="panel-heading">
               <h5>Sales evolution over time</h5>
             </div>
             <div id="t1Viz" class="panel-body">
-              <img height="300px" width="400px" class="img-responsive" src="images/t1.png" />
+              <img height="300px" width="300px" class="img-responsive" src="images/t1.png" />
               <svg></svg>
             </div>
           </div>
@@ -59,7 +59,7 @@
               <h5>Sales vs Scores</h5>
             </div>
             <div id="t5Viz" class="panel-body">
-              <img class="img-responsive" src="images/t5.png" />
+              <img height="300px" width="300px" class="img-responsive" src="images/t5.png" />
               <svg></svg>
             </div>
           </div>
@@ -67,38 +67,32 @@
         </div>
         <!-- ./top-viz > right-panel col-xs-5 -->
       </div>
-      <row class="middle-viz">
-        <div class="left-panel col-xs-7">
+      <!-- ./top-viz -->
+      <div class="middle-viz">
+        <div class="left-panel col-xs-4">
           <div id="t2Panel" class="panel panel-default">
             <div class="panel-heading">
               <h5>Best Sellers</h5>
             </div>
             <div id="t2Viz" class="panel-body">
-              <img class="img-responsive" src="images/t2.png" />
+              <img height="300px" width="300px" class="img-responsive" src="images/t2.png" />
             </div>
           </div>
           <!-- ./t2Panel -->
-          <div id="t6Panel" class="panel panel-default">
-            <div class="panel-heading">
-              <h5>Most Praised</h5>
-            </div>
-            <div id="t6Viz" class="panel-body">
-              <img class="img-responsive" src="images/t6.png" />
-            </div>
-          </div>
-          <!-- ./t6Panel -->
-          <div id="t4Panel" class="panel panel-default">
-            <div class="panel-heading">
-              <h5>% Releases by rating</h5>
-            </div>
-            <div id="t4Viz" class="panel-body">
-              <img class="img-responsive" src="images/t4.png" />
-            </div>
-          </div>
-          <!-- ./t4Panel -->
         </div>
         <!-- ./middle-viz > left-panel col-xs-7 -->
-        <div class="right-panel col-xs-5">
+        <div class="right-panel col-xs-4">
+          <div id="clvPanel" class="panel panel-default">
+            <div class="panel-heading">
+              <h5>Games</h5>
+            </div>
+            <div id="clvViz" class="panel-body">
+              <img height="300px" width="300px" class="img-responsive" src="images/clv.png" />
+            </div>
+          </div>
+          <!-- ./clvPanel -->
+        </div>
+        <div class="right-panel col-xs-4">
           <div id="dtlPanel" class="panel panel-default">
             <div class="panel-heading">
                 <h2 id="name" style="text-align: center;">Name</h2>
@@ -153,19 +147,36 @@
             </div>
           </div>
           <!-- ./dtlPanel -->
-          <div id="clvPanel" class="panel panel-default">
-            <div class="panel-heading">
-              <h5>Games</h5>
-            </div>
-            <div id="clvViz" class="panel-body">
-              <img class="img-responsive" src="images/clv.png" />
-            </div>
-          </div>
-          <!-- ./clvPanel -->
         </div>
         <!-- ./middle-viz > right-panel col-xs-5 -->
-      </row>
-    </row>
+      </div>
+      <!-- ./middle-viz -->
+      <div class="bottom-viz">
+        <div class="left-panel col-xs-6">
+          <div id="t6Panel" class="panel panel-default">
+            <div class="panel-heading">
+              <h5>Most Praised</h5>
+            </div>
+            <div id="t6Viz" class="panel-body">
+              <img height="300px" width="300px" class="img-responsive" src="images/t6.png" />
+            </div>
+          </div>
+          <!-- ./t6Panel -->
+        </div>
+        <div class="right-panel col-xs-6">
+          <div id="t4Panel" class="panel panel-default">
+            <div class="panel-heading">
+              <h5>% Releases by rating</h5>
+            </div>
+            <div id="t4Viz" class="panel-body">
+              <img height="300px" width="300px" class="img-responsive" src="images/t4.png" />
+            </div>
+          </div>
+          <!-- ./t4Panel -->
+        </div>
+      </div>
+      <!-- ./bottom-viz -->
+    </div>
     <!-- ./page-content -->
   </div>
 

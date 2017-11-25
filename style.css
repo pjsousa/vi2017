@@ -1,3 +1,12 @@
+
+body{
+  background-color: #eee;
+}
+
+.row.page-toolbar{
+  height: 10vh;
+}
+
 .panel-heading > h5{
 	margin-top: 0;
 	margin-bottom: 0;
@@ -7,6 +16,13 @@
 .row.top-viz{
 	max-height: 10vh; 
 }
+
+.top-viz .left-panel > .panel,
+.top-viz .right-panel > .panel{
+  height: 30vh;
+}
+
+
 
 /*t1*/
 .focus circle {
