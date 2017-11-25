@@ -3,8 +3,6 @@
 	function drawdtl(){
 		var dataset = appstate.highlightedRows[0];
 
-		console.log(dataset)
-
 		var dtl = d3.select("#dtlPanel");
 
 		dtl.selectAll("#name").html(data_utils.read_value(dataset, "Name"));

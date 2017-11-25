@@ -167,7 +167,7 @@
 				.attr("x1", xscale_c(value(row_num, x_var)))
 				.attr("x2", xscale_c(value(row_num, x_var)))
 
-		drawHighlightt5(row_num);
+		drawHighlightt5();
 	};
 
 	function drawHighlightt5(){
@@ -270,8 +270,8 @@
 				   ^-- which is composed by..
 				   .. an X line
 				   .. a  Y line
-				   .. a "phantom" dot (when we "highligh" we are actually placing this dot on top of the viz)
-				   				  ^-- this helps a bit when we have lots of occlusion. but doesn't exactly solve it...
+				   .. a group to place as many "phantom" dots as there are rownums in appstate.highlightedRows.
+				   				  ^-- we use phantom dots instead of the real dots to help a bit when we have lots of occlusion.
 				10) Place tooltips
 				   .. For the data
 				   .. For the X Axis
@@ -554,7 +554,8 @@
 					.style("pointer-events", "none")
 					.attr("stroke", "rgba(255,0,255,0.5)");
 
-			// Draw the group for highlight dots
+			// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
+			// The dots themselves are added/removed latter in drawHighlightt5 when the events fire.
 			svg.selectAll("g.x-crossair.y-crossair")
 				.data([0])
 				.enter().append("g")
