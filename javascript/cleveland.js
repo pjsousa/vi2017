@@ -13,6 +13,8 @@
 	var y_var = "Name";
 	var x_var = "Global_Sales";
 
+	var sort_var = "Global_Sales";
+
 	var dispatch = d3.dispatch("gamehover");
 	var dispatch2 = d3.dispatch("gameout");
 
@@ -103,6 +105,17 @@
 		return result;
 	};
 
+	function sortCleveland(sortby){
+		if(sortby == 'sales'){
+			sort_var = x_var;
+		}
+		else{
+			sort_var = y_var;
+		}
+
+		drawclv();
+	};
+
 	function drawHighlightclv(){
 		var row_nums = appstate.highlightedRows;
 		
@@ -134,7 +147,6 @@
 	function setSizesclv(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-		console.log(w,h);
 	};
 
 	function drawclv(){
@@ -148,9 +160,21 @@
 		})
 		aux_order = aux_order.slice(0, top_rows);
 
-		dataset = aux_order;
-
 		rows_order = _.range(aux_order.length);
+
+		if (sort_var == y_var){
+			rows_order = rows_order.sort(function(a, b){ 
+				var result;
+				var v1 = value(aux_order[a], sort_var);
+				var v2 = value(aux_order[b], sort_var);
+				
+				result = v1.localeCompare(v2);
+				
+				console.log(a,v1, b, v2, result)
+				return result; })
+		}
+
+		dataset = aux_order;
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		var ydomain = [];
@@ -180,7 +204,6 @@
 		var svg = d3.selectAll("#clvViz svg")
 			.attr("width",w)
 			.attr("height",h);
-
 
 
 		// 4) Creating the scales
@@ -230,6 +253,14 @@
 				.attr("class", "y-axis-tick")
 				.attr("x", xrange[0])
 				.attr("y", function(d,i){ return yscale_c(rows_order[i]); })
+				.append("title")
+					.html(function(d){ return raw_value(d, y_var) });
+		svg.selectAll("text.y-axis-tick")
+			.data(dataset)
+				.transition()
+				.duration(500)
+				.attr("x", xrange[0])
+				.attr("y", function(d,i){ return yscale_c(rows_order[i]); })
 				.attr("dx", "-5px")
 				.attr("dy", "1px")
 				.attr("y", function(d,i){ return yscale_c(rows_order[i]); })
@@ -237,15 +268,14 @@
 				.style("cursor", "default")
 				.style("text-anchor", "end")
 				.style("font-size", 10)
-				.text(function(d){ 
+				.text(function(d, i){ 
 					var result = null;
 					var game_name = raw_value(d, y_var);
 
 					result = _.truncate(game_name, {'length': max_names_len, 'omission': '...'});
 
 					return result;
-				}).append("title")
-					.html(function(d){ return raw_value(d, y_var) });
+				})
 
 		// Draw the X grid
 		svg.selectAll("line.x-grid")
@@ -277,7 +307,7 @@
 			.attr("y", yrange[1] + yoffset)
 			.attr("fill", "black")
 			.style("text-anchor", "end")
-			.text("Global Sales (Million Units)");
+			.text("Global Sales ( Million Units )");
 
 		// (for completeness...) Draw the X zero
 		svg.selectAll("line.x-grid-0")
@@ -295,10 +325,20 @@
 
 		// 7) Plot the data itself
 		// draws the plot itself
-		svg.selectAll("circle")
+		svg.selectAll("circle.data-points")
 			.data(dataset)
 			.enter().append("circle")
 			.attr("id", function(d){ return "d-clv-"+ rows_order[d]; })
+			.attr("class", "data-points")
+			.attr("cx", xrange[0])
+			.attr("cy",function(d, i) {
+				return yscale_c(rows_order[i]);
+			})
+		svg.selectAll("circle.data-points")
+			.data(dataset)
+			.transition()
+			.delay(500)
+			.duration(500)
 			.attr("r",r)
 			.attr("fill","rgb(0,127,255)")
 			.style("cursor", "none")
@@ -313,6 +353,8 @@
 
 
 		// 8) Overlay boxes over the plot to grab highlight events
+		svg.selectAll("rect.event-grabbers")
+			.remove();
 		svg.selectAll("rect.event-grabbers")
 			.data(dataset)
 			.enter().append("rect")
@@ -347,5 +389,6 @@
 	window.drawclv = drawclv;
 	window.setSizesclv = setSizesclv;
 	window.drawHighlightclv = drawHighlightclv;
+	window.sortCleveland = sortCleveland;
 
 })();
