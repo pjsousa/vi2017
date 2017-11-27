@@ -116,7 +116,7 @@
 		drawclv();
 	};
 
-	function drawHighlightclv(){
+	function drawHighlightclv(from_target){
 		var row_nums = appstate.highlightedRows;
 		
 		var g = d3.selectAll("#clvViz svg g.highlight");
@@ -132,7 +132,7 @@
 		g.selectAll("circle.highlight")
 			.attr("r", r+1)
 			.style("pointer-events", "none")
-			.attr("fill", "rgba(255,0,255,0.5)")
+			.attr("fill", "fuchsia")
 			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
 			.attr("cy", function(row_num){ 
 				var i = dataset.indexOf(row_num);
@@ -142,6 +142,33 @@
 				}
 
 				return yscale_c(rows_order[i]); })
+
+		if(from_target == "t5"){
+			g.selectAll("circle.highlight")
+				.transition()
+				.duration(100)
+				.attr("r", r+10)
+
+				g.selectAll("circle.highlight")
+					.transition()
+					.delay(100)
+					.duration(100)
+					.attr("r", r+1)
+
+			g.selectAll("circle.highlight")
+				.transition()
+				.delay(200)
+				.duration(100)
+				.attr("r", r+10)
+
+			g.selectAll("circle.highlight")
+				.transition()
+				.delay(300)
+				.duration(100)
+				.attr("r", r+1)
+		}
+
+
 	};
 
 	function setSizesclv(boundingRect){

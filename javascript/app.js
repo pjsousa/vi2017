@@ -42,15 +42,15 @@
   appdispatch.gamehover.on("gamehover", function(d, from){
 
     if(from != "t5"){
-      drawHighlightt5();
+      drawHighlightt5(from);
     }
 
     if(from != "dtl"){
-      drawdtl();
+      drawdtl(from);
     }
 
     if(from != "clv"){
-      drawHighlightclv();
+      drawHighlightclv(from);
     }
   });
 

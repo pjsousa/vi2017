@@ -170,7 +170,7 @@
 		drawHighlightt5();
 	};
 
-	function drawHighlightt5(){
+	function drawHighlightt5(from_target){
 		var row_nums = appstate.highlightedRows;
 		
 		var g = d3.selectAll("#t5Viz svg g.x-crossair.y-crossair");
@@ -181,15 +181,47 @@
 		circles.enter()
 			.append("circle")
 				.attr("class", "x-crossair y-crossair")
+				.attr("r", r+1)
 		circles.exit().remove();
 
 		g.selectAll("circle.x-crossair.y-crossair")
-			.attr("r", r+1)
 			.style("pointer-events", "none")
-			.attr("fill", "rgba(255,0,255,0.5)")
+			.attr("fill", "fuchsia")
 			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
 			.attr("cy", function(row_num){ return yscale_c(value(row_num, y_var))})
+
+		
+
+		if(from_target == "clv"){
+			g.selectAll("circle.x-crossair.y-crossair")
+				.transition()
+				.duration(100)
+				.attr("r", r+10)
+
+				g.selectAll("circle.x-crossair.y-crossair")
+					.transition()
+					.delay(100)
+					.duration(100)
+					.attr("r", r+1)
+
+			g.selectAll("circle.x-crossair.y-crossair")
+				.transition()
+				.delay(200)
+				.duration(100)
+				.attr("r", r+10)
+
+			g.selectAll("circle.x-crossair.y-crossair")
+				.transition()
+				.delay(300)
+				.duration(100)
+				.attr("r", r+1)
+		}
 	};
+
+	function hideHighlight(){
+		
+
+	}
 
 	function hideCrossair(){
 		d3.select("#t5Viz")
@@ -468,11 +500,13 @@
 
 		// 7) Plot the data itself
 		// draws the plot itself
-		svg.selectAll("circle")
+		svg.selectAll("circle.data-point")
 			.data(dataset)
 			.enter().append("circle")
 			.attr("id", function(d){ return "d-t5-"+ d; })
+			.attr("class", "data-point")
 			.attr("r",r)
+			.attr("opacity", 1)
 			.attr("fill","rgb(0,127,255)")
 			.style("cursor", "none")
 			.attr("cx",function(d, i) {
@@ -532,26 +566,28 @@
 				.data([0])
 				.enter().append("line")
 					.attr("class", "y-crossair")
+					.attr("stroke-dasharray", 3, 3)
 					.attr("x1", xrange[0]) 
 					.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
 					.attr("x2", xrange[1]) 
 					.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("stroke-width", 3)
+					.attr("stroke-width", 1)
 					.style("pointer-events", "none")
-					.attr("stroke", "rgba(255,0,255,0.5)");
+					.attr("stroke", "fuchsia");
 
 			// Draw the X crossair
 			svg.selectAll("line.x-crossair")
 				.data([0])
 				.enter().append("line")
 					.attr("class", "x-crossair")
+					.attr("stroke-dasharray", 3, 3)
 					.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
 					.attr("y1", yrange[0]) 
 					.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
 					.attr("y2", yrange[1]) 
-					.attr("stroke-width", 3)
+					.attr("stroke-width", 1)
 					.style("pointer-events", "none")
-					.attr("stroke", "rgba(255,0,255,0.5)");
+					.attr("stroke", "fuchsia");
 
 			// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
 			// The dots themselves are added/removed latter in drawHighlightt5 when the events fire.

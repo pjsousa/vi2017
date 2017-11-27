@@ -60,6 +60,8 @@
         svg.selectAll(".line3").attr("d",valueline3);
         svg.selectAll("g.g-focus").selectAll("circle.data-points")
             .attr("cx", function(d){ return x(dataset[d[0]]["Year_of_Release"]) });
+        svg.selectAll("g.g-focus").selectAll("circle.data-points-hidden")
+            .attr("cx", function(d){ return x(dataset[d[0]]["Year_of_Release"]) });
         svg.select(".axis--x").call(xaxis);
         svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
                                  .scale(xrange[1] / (s[1] - s[0]))
@@ -75,6 +77,8 @@
         svg.selectAll(".line2").attr("d",valueline2);
         svg.selectAll(".line3").attr("d",valueline3);
         svg.selectAll("g.g-focus").selectAll("circle.data-points")
+            .attr("cx", function(d){ return x(dataset[d[0]]["Year_of_Release"]) });
+        svg.selectAll("g.g-focus").selectAll("circle.data-points-hidden")
             .attr("cx", function(d){ return x(dataset[d[0]]["Year_of_Release"]) });
         svg.select(".axis--x").call(xaxis);
         context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
@@ -366,9 +370,9 @@
                 focus.select(".y-hover-line").attr("x2", w + w);
                 
                 focus.style("display", null); 
-                d3.selectAll(".hover-line").style("stroke","rgba(255,0,255,1)");//colors[y_variable.indexOf(column_name)]);
+                d3.selectAll(".hover-line").style("stroke","fuchsia");//colors[y_variable.indexOf(column_name)]);
                 d3.selectAll(".focus").style("stroke","black");
-                d3.selectAll(".focus circle").style("stroke","rgba(255,0,255,1)");//colors[y_variable.indexOf(column_name)]);
+                d3.selectAll(".focus circle").style("stroke","fuchsia");//colors[y_variable.indexOf(column_name)]);
             })
             .on("mouseout", function(d){
                 // lets notify ourselves!

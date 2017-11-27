@@ -29,7 +29,7 @@
 		var ycutoff_sales = 0;
 
 		var total_var = "Global_Sales";
-		var detail_vars = ["NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales"];
+		var detail_vars = ["NA_Sales", "EU_Sales", "JP_Sales"];
 
 		var isLogScale = false;
 		var isCenteredData = false;
@@ -85,8 +85,9 @@
 			.attr("height", yrange[1]-yrange[0])
 			.attr("stroke", "#222")
 			.attr("stroke-width", 2)
-			.attr("fill", function(d,i){ return ["red", "blue", "yellow", "tomato"][i] });
+			.attr("fill", function(d,i){ return ["green", "steelblue", "red"][i] });
 
+		//var detail_vars = ["NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales"];
 
 		d3.select("#dtlPanel").selectAll("#salesLegend")
 			.selectAll("div.col-xs-3")
