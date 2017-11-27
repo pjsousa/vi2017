@@ -14,7 +14,7 @@
     // [Q] Reparei que não butastes o Other_Sales, e então não butei também... mas... O_o
     var x_variable = "Year_of_Release";
     var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
-    var colors = [ "steelblue", "red", "green" ];
+    var colors = [ "red", "steelblue", "green" ];
 
     var dispatch = d3.dispatch("gamehover");
     var dispatch2 = d3.dispatch("gameout");
@@ -253,7 +253,7 @@
             .attr("class", "line1")
             .attr("clip-path","url(#t1clip)")
             .attr("fill","none")
-            .attr("stroke","steelblue")
+            .attr("stroke",colors[0])
             .attr("stroke-width",1.5)
             .attr("d",valueline);
 
@@ -262,7 +262,7 @@
             .attr("class", "line2")
             .attr("clip-path","url(#t1clip)")
             .attr("fill","none")
-            .attr("stroke","red")
+            .attr("stroke",colors[1])
             .attr("stroke-width",1.5)
             .attr("d",valueline2);
         
@@ -271,7 +271,7 @@
             .attr("class", "line3")
             .attr("clip-path","url(#t1clip)")
             .attr("fill","none")
-            .attr("stroke","green")
+            .attr("stroke",colors[2])
             .attr("stroke-width",1.5)
             .attr("d",valueline3);
 
@@ -312,12 +312,24 @@
             .enter().append("circle")
                 .attr("class", "data-points");        
     
+        gfocus.selectAll("circle.data-points-hidden")
+            .data(all_points)
+            .enter().append("circle")
+                .attr("class", "data-points-hidden");  
+        
         gfocus.selectAll("circle.data-points")
             .attr("r", 2)
             .attr("clip-path","url(#t1clip)")
             .attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
             .attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
-            .attr("fill", function(d){ return colors[y_variable.indexOf(d[1])];}) //rgba(255,0,0,1) would make the circles red
+            .attr("fill", function(d){ return colors[y_variable.indexOf(d[1])];}); //rgba(255,0,0,1) would make the circles red
+        
+        gfocus.selectAll("circle.data-points-hidden")
+            .attr("r", 7)
+            .attr("clip-path","url(#t1clip)")
+            .attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
+            .attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
+            .attr("fill", "rgba(1,0,0,0)")//function(d){ return colors[y_variable.indexOf(d[1])];}) //rgba(255,0,0,1) would make the circles red
             .on("mouseover", function(d){
                 // 
                 // DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER 
@@ -350,13 +362,13 @@
                 // this is kind of the same as Iris did.
                 focus.attr("transform", "translate(" + x(dataset[row_num][x_variable]) + "," + y(dataset[row_num][column_name]) + ")");
                 focus.select("text").text(function() { return textForm(dataset[row_num][column_name]); });
-                focus.select(".x-hover-line").attr("y2", h -50- y(dataset[row_num][column_name]));
+                focus.select(".x-hover-line").attr("y2", yrange[1]- y(dataset[row_num][column_name]));
                 focus.select(".y-hover-line").attr("x2", w + w);
                 
                 focus.style("display", null); 
-                d3.selectAll(".hover-line").style("stroke",colors[y_variable.indexOf(column_name)]);
+                d3.selectAll(".hover-line").style("stroke","rgba(255,0,255,1)");//colors[y_variable.indexOf(column_name)]);
                 d3.selectAll(".focus").style("stroke","black");
-                d3.selectAll(".focus circle").style("stroke",colors[y_variable.indexOf(column_name)]);
+                d3.selectAll(".focus circle").style("stroke","rgba(255,0,255,1)");//colors[y_variable.indexOf(column_name)]);
             })
             .on("mouseout", function(d){
                 // lets notify ourselves!
