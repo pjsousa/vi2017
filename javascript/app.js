@@ -115,4 +115,5 @@
   window.data_ready = data_ready;
   window.appstate = appstate;
   window.appdispatch = appdispatch;
+  window.setVizSizes = setVizSizes;
 })();
