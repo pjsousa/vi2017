@@ -48,12 +48,21 @@
     if(from != "dtl"){
       drawdtl();
     }
+
+    if(from != "clv"){
+      drawHighlightclv();
+    }
   });
 
   appdispatch.gameout.on("gameout", function(d, from){
     if(from != "t5"){
       drawHighlightt5();
     }
+
+    if(from != "clv"){
+      drawHighlightclv();
+    }
+
   });
 
   function main(){
@@ -106,4 +115,5 @@
   window.data_ready = data_ready;
   window.appstate = appstate;
   window.appdispatch = appdispatch;
+  window.setVizSizes = setVizSizes;
 })();

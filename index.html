@@ -57,7 +57,7 @@
         <div class="right-panel col-xs-5">
           <div id="t5Panel" class="panel panel-default panel-viz">
             <div class="panel-heading">
-              <h5>Sales vs Scores</h5>
+              <span>Games Sales/Scores correlation</span>
             </div>
             <div id="t5Viz" class="panel-body">
               <img class="img-responsive" src="images/t5.png" />
@@ -85,7 +85,21 @@
         <div class="right-panel col-xs-4">
           <div id="clvPanel" class="panel panel-default panel-viz">
             <div class="panel-heading">
-              <h5>Games</h5>
+              Games
+              <div class="pull-right">
+                  <div class="btn-group">
+                      <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                          <span class="glyphicon glyphicon-sort"></span>
+                      </button>
+                      <ul class="dropdown-menu pull-right" role="menu">
+                          <li><a href="#" onclick="sortCleveland('sales'); event.preventDefault();">Global Sales</a>
+                          </li>
+                          <li><a href="#" onclick="sortCleveland('name'); event.preventDefault();">Name</a>
+                          </li>
+                      </ul>
+                  </div>
+              </div>
+              &nbsp;
             </div>
             <div id="clvViz" class="panel-body">
               <img class="img-responsive" src="images/clv.png" />
@@ -203,6 +217,11 @@
       main();
       // step 2. the world!
       // 
+    })
+
+    $(window).resize(function(){
+      setVizSizes();
+      data_ready();
     })
   </script>
 </body>

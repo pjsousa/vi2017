@@ -400,7 +400,7 @@
 			  .attr("y", xrange[0] - xoffset)
 			  .attr("fill", "black")
 			  .style("text-anchor", "end")
-			  .text("Global Sales (Million Units)")
+			  .text("Global Sales ( Million Units )")
 
 		// draws the X axis with text label
 		gX = svg.append("g")
@@ -412,7 +412,7 @@
 			.attr("y", yrange[1] + yoffset)
 			.attr("fill", "black")
 			.style("text-anchor", "end")
-			.text("Score");
+			.text("Score ( / 100 )");
 		
 
 		// 6) Create the background grid
