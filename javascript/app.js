@@ -68,7 +68,7 @@
       var _id = d3.select(this).attr("id");
 
       if(_id == "t1Viz"){
-        //setSizest1(this.getClientRects()[0])
+        setSizest1(this.getClientRects()[0])
       }
       else if(_id == "t5Viz"){
         setSizest5(this.getClientRects()[0]);

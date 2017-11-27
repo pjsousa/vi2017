@@ -2,19 +2,18 @@
     // [Q] Eu na T5 fiz um montão louco de batota e guardei algumas coisas 
     // fora do drawT5(). Um bocado mais para facilitar os contextos de algumas 
     // coisas nas funções auxiliares.
-    var w = 400;
-    var h = 250;
-    var padding = 30;
+    var w = -1;
+    var h = -1;
+    var padding = 30; //30
     var xoffset = 40;
-    var yoffset = 30;
-    var xcutoff = 40;
+    var yoffset = 30;//30
+    var xcutoff = 100; //40
     var ycutoff = 30;
     var r = 2;
 
     // [Q] Reparei que não butastes o Other_Sales, e então não butei também... mas... O_o
     var x_variable = "Year_of_Release";
     var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
-
     var colors = [ "steelblue", "red", "green" ];
 
     var dispatch = d3.dispatch("gamehover");
@@ -22,7 +21,22 @@
 
     var x = null;
     var y = null;
-
+    
+    //brush and zoom
+    var x_brush = null;
+    var y_brush = null;
+    var svg = null;
+    var context = null;
+    var xaxis = null;
+    var yaxis = null;
+    var zoom = null;
+    var brush = null;
+    var valueline = null;
+    var valueline2 = null;
+    var valueline3 = null;
+    var dataset = null;
+    var xrange = [];
+    
     dispatch.on("gamehover.lineplot", function(d, all_rownums, dataset){
         // lets place ALL the rows in highligh!
         all_rownums.forEach(function(row_num){
@@ -36,6 +50,42 @@
         });
     });
 
+    
+    function brushed() {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+        var s = d3.event.selection || x_brush.range();
+        x.domain(s.map(x_brush.invert, x_brush));
+        svg.selectAll(".line1").attr("d",valueline);
+        svg.selectAll(".line2").attr("d",valueline2);
+        svg.selectAll(".line3").attr("d",valueline3);
+        svg.selectAll("g.g-focus").selectAll("circle.data-points")
+            .attr("cx", function(d){ return x(dataset[d[0]]["Year_of_Release"]) });
+        svg.select(".axis--x").call(xaxis);
+        svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+                                 .scale(xrange[1] / (s[1] - s[0]))
+                                 .translate(-s[0], 0));
+    }
+
+    function zoomed() {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+        console.log("zooom");
+        var t = d3.event.transform;
+        x.domain(t.rescaleX(x_brush).domain());
+        svg.selectAll(".line1").attr("d",valueline);
+        svg.selectAll(".line2").attr("d",valueline2);
+        svg.selectAll(".line3").attr("d",valueline3);
+        svg.selectAll("g.g-focus").selectAll("circle.data-points")
+            .attr("cx", function(d){ return x(dataset[d[0]]["Year_of_Release"]) });
+        svg.select(".axis--x").call(xaxis);
+        context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
+    }
+    
+    function setSizest1(boundingRect){
+		w = boundingRect.width;
+		h = boundingRect.height;
+		console.log(w,h);
+	}
+    
     function drawt1(){
         /*
             "Drawing t1" means:
@@ -46,7 +96,7 @@
          */
 
         //var dataset = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales", "Year_of_Release"]);
-        var dataset = data_utils.get_sales_sum(null,"Developer","Nintendo");
+        dataset = data_utils.get_sales_sum(null,"Developer","Nintendo");
         var r = dataset.map(a => a.Year_of_Release);
         var maxYear = r.reduce(function(a,b){ return Math.max(a,b);});
         var minYear = 1987;  // [Q] Why though?
@@ -55,17 +105,31 @@
 
         var yrange = [];
         yrange[0] = padding;
-        yrange[1] = h - padding - yoffset;
-        var xrange = [];
+        yrange[1] = h - padding - yoffset - ycutoff;
+        //var xrange = [];
         xrange[0] = padding + xoffset;
-        xrange[1] = w-padding;
+        xrange[1] = w-padding - xcutoff;
+        
+        
+        /////////////////////////////////////////////////////////////BEGIN ZOOM
+        
+        zoom = d3.zoom()
+            .scaleExtent([1, Infinity])
+            .translateExtent([[xrange[0],0],[xrange[1],yrange[0]]])
+            .extent([[xrange[0],0],[xrange[1],yrange[0]]])
+            .on("zoom",zoomed);      
+
+        
+        ////////////////////////////////////////////////////////////////////////END ZOOM
         
         d3.select("#t1Viz > img")
                 .remove();
 
-        var svg = d3.select("#t1Viz svg")
+        svg = d3.select("#t1Viz svg")
+            .attr("class","zoom")
             .attr("width", w)
-            .attr("height",h);
+            .attr("height",h)
+            .call(zoom);
         
         //definir o eixo y
 		y = d3.scaleLinear()
@@ -84,131 +148,17 @@
 		x = d3.scaleTime()
             .range([xrange[0],xrange[1]]);
         
-//        var color = d3.scaleOrdinal(d3.schemeCategory10);
-//        color.domain(d3.keys(dataset[0]).filter(function(key){ return key !== "Year_of_Release" && key !== "Developer";}));
-//        
-//        var regions = color.domain().map(function(name){
-//            return{
-//                name: name,
-//                values: dataset.map(function(d){
-//                    return {
-//                        date: d.Year_of_Release,
-//                        sales: d[name]
-//                    };
-//                })
-//            };
-//            
-//        });
-//        
-//        
-//        x.domain(d3.extent(dataset, function(d) { return d.Year_of_Release; }))
-//            .tickFormat(d3.timeFormat("%Y"));
-//        y.domain([
-//            d3.max(regions, function(c){
-//                return d3.max(c.values, function(v){
-//                    return v.sales;
-//                });
-//            }),
-//            d3.min(regions, function(c){
-//                return d3.min(c.values, function(v){
-//                    return v.sales;
-//                });
-//            })
-//            
-//        ]);
-//        
-//        var yaxis = d3.axisLeft()
-//            .scale(y);
-//
-//		var xaxis = d3.axisBottom()
-//            .scale(x);
-//        
-//        //legend
-//        var legend = svg.selectAll("g")
-//                        .data(regions)
-//                        .enter()
-//                        .append("g")
-//                        .attr("class","legend");
-//        legend.append("rect")
-//            .attr("x",w - 20)
-//            .attr("y", function(d,i){
-//            return i*20;
-//        })
-//        .attr("width",10)
-//        .attr("height",10)
-//        .style("fill", function(d){
-//            return color(d.name);
-//        });
-//        
-//        legend.append('text')
-//          .attr('x', w - 8)
-//          .attr('y', function(d, i) {
-//            return (i * 20) + 9;
-//          })
-//          .text(function(d) {
-//            return d.name;
-//          });
-//        
-//        //draw lines
-//        var line = d3.line()
-//          .x(function(d) {
-//            return x(d.date);
-//          })
-//          .y(function(d) {
-//            return y(d.sales);
-//          });
-//            //.curve(d3.curveBasis);
-//        
-//        var region = svg.selectAll(".region")
-//                        .data(regions)
-//                        .enter().append("g")
-//                        .attr("class","region");
-//        
-//        region.append("path")
-//                .attr("class", "region")
-//                .attr("d", function(d){
-//                    return line(d.values);
-//                })
-//                .style("stroke",function(d){
-//                    return color(d.name);
-//                });
-////        region.append("text")
-////            .datum(function(d){
-////                return{
-////                    name: d.name,
-////                    value: d.values[d.values.length-1]
-////                };
-////            })
-////            .attr("transform", function(d) {
-////                return "translate(" + x(d.value.date) + "," + y(d.value.sales) + ")";
-////              })
-////              .attr("x", 3)
-////              .attr("dy", ".35em")
-////              .text(function(d) {
-////                return d.name;
-////              });
-//        
-//        //draw axis
-//        svg.append("g")
-//            .attr("transform","translate(30,0)")
-//            .attr("class","y axis")
-//            .call(yaxis);
-//        
-//        svg.append("g")
-//            .attr("transform","translate(0,"+(h-padding)+")")
-//            .call(xaxis); 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         //criar os valores de cada linha de sales
-        var valueline = d3.line()
+        valueline = d3.line()
             .x(function(d) {return x(d.Year_of_Release);})
             .y(function(d) {return y(d.JP_Sales);});
         
-        var valueline2 = d3.line()
+        valueline2 = d3.line()
             .x(function(d) {return x(d.Year_of_Release);})
             .y(function(d) {return y(d.EU_Sales);});
         
-        var valueline3 = d3.line()
+        valueline3 = d3.line()
             .x(function(d) {return x(d.Year_of_Release);})
             .y(function(d) {return y(d.NA_Sales);});
 
@@ -218,27 +168,53 @@
         y.domain([d3.max(dataset, function(d){ return d["NA_Sales"]; }),0]);
         
         
-        var yaxis = d3.axisLeft()
+        yaxis = d3.axisLeft()
             .scale(y);
 
-		var xaxis = d3.axisBottom()
+		xaxis = d3.axisBottom()
             .scale(x);
         
-        //legendas       
+        //legendas   
+        var legW = 200;
+        var legH = 100;
+        var legend = d3.select("#t1Viz").selectAll("div.t1Legend").append("svg")
+            .attr("width",legW)
+            .attr("height",legH)
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("top","50px")
+            .style("left", (xrange[1]+20)+"px");
         
+        var legendSpace = 40;
+        var legendNames = ["Japan", "Europe", "North America"];
+        legendNames.forEach(function(d,i){
+            
+            legend.append("circle")
+                .attr("r",3)
+                .attr("cx",10)
+                .attr("cy",legendSpace * i/2 + legendSpace)
+                .attr("class","legend")
+                .style("fill",function(d){return colors[i];});
+                                          
+            legend.append("text")
+                .attr("x", 15)  // space legend
+                .attr("y",legendSpace * i/2 + legendSpace)
+                .attr("class", "legend_text")    // style the legend
+                .style("fill", "black")
+                .text(d.toString());            
+            
+        })
         
-        //tooltip
-        
-        
+        //tooltip       
         var focus = svg.append("g")
                         .attr("class","focus")
                         .attr("pointer-events", "none")
                         .style("display","none");
         
         focus.append("line")
-        .attr("class", "x-hover-line hover-line")
-        .attr("y1", 0)
-        .attr("y2", h);
+            .attr("class", "x-hover-line hover-line")
+            .attr("y1", 0)
+            .attr("y2", h);
 
         focus.append("line")
             .attr("class", "y-hover-line hover-line")
@@ -251,105 +227,53 @@
         focus.append("text")
             .attr("x", 15)
             .attr("dy", ".31em");
-        
-
-        // [Q] Isto não é realmente chamado. pode sair?
-        function mousemove(){
-            /* Deprecate this? */
-            var x0 = x.invert(d3.mouse(this)[0]), 
-                i = bisectDate(dataset,x0,1),
-                d0 = dataset[i-1],
-                d1 = dataset[i],
-                d = x0 - d0.Year_of_Release > d1.Year_of_Release - x0 ? d1:d0;
-            var sale = 0;
-            focus.attr("transform", "translate(" + x(d.Year_of_Release) + "," + y(d.NA_Sales) + ")");
-            focus.select("text").text(function() { return d.NA_Sales; });
-            focus.select(".x-hover-line").attr("y2", h - y(d.NA_Sales));
-            focus.select(".y-hover-line").attr("x2", w + w);
-        }
+    
         
         //criar o grafico
+        svg.append("defs").append("clipPath")
+            .attr("id","t1clip")
+            .append("rect")
+            .attr("x",xrange[0])
+            .attr("y",yrange[0])
+            .attr("width",xrange[1]-xrange[0])
+            .attr("height",yrange[1]-yrange[0]);
+        
         svg.append("g")
-            .attr("transform","translate("+xrange[0]+",0)")
+            .attr("transform","translate("+(xrange[0])+",0)")
             .attr("class","y axis")
             .call(yaxis);
         
         svg.append("g")
-            .attr("transform","translate(0,"+yrange[1]+")")
+            .attr("transform","translate(0,"+(yrange[1])+")")
+            .attr("class","axis axis--x")
             .call(xaxis);    
 
         svg.append("path")
             .datum(dataset) // [Q] Nestes datums, acho que querias chamar o data() e depois o enter()? Pareceu-me que não tão a ser usados, so...
+            .attr("class", "line1")
+            .attr("clip-path","url(#t1clip)")
             .attr("fill","none")
             .attr("stroke","steelblue")
             .attr("stroke-width",1.5)
-            .attr("d",valueline)
-            // [Q] Se pendurarmos os eventos nos circles que eu pus no final, deixamos de precisar destes .on()'s todos. Yes?'
-            .on("mouseover", function() { 
-                    focus.style("display", null); 
-                    d3.selectAll(".hover-line").style("stroke","steelblue"); d3.selectAll(".focus").style("stroke","black");d3.selectAll(".focus circle").style("stroke","steelblue");
-            })
-            .on("mouseout", function() { focus.style("display", "none"); })
-            .on("mousemove", function(){
-                var x0 = x.invert(d3.mouse(this)[0]), 
-                i = bisectDate(dataset,x0,1),
-                d0 = dataset[i-1],
-                d1 = dataset[i],
-                d = x0 - d0.Year_of_Release > d1.Year_of_Release - x0 ? d1:d0;
-                focus.attr("transform", "translate(" + x(d.Year_of_Release) + "," + y(d.JP_Sales) + ")");
-                focus.select("text").text(function() { return d.JP_Sales; });
-                focus.select(".x-hover-line").attr("y2", h - y(d.JP_Sales));
-                focus.select(".y-hover-line").attr("x2", w + w); });
+            .attr("d",valueline);
 
         svg.append("path")
             .datum(dataset)
+            .attr("class", "line2")
+            .attr("clip-path","url(#t1clip)")
             .attr("fill","none")
             .attr("stroke","red")
             .attr("stroke-width",1.5)
-            .attr("d",valueline2)
-            .on("mouseover", function() { 
-                    focus.style("display", null); 
-                    d3.selectAll(".hover-line").style("stroke","red"); 
-                    d3.selectAll(".focus").style("stroke","black");
-                    d3.selectAll(".focus circle").style("stroke","red");
-            })
-            .on("mouseout", function() { focus.style("display", "none"); })
-            .on("mousemove", function(){
-                var x0 = x.invert(d3.mouse(this)[0]), 
-                i = bisectDate(dataset,x0,1),
-                d0 = dataset[i-1],
-                d1 = dataset[i],
-                d = x0 - d0.Year_of_Release > d1.Year_of_Release - x0 ? d1:d0;
-                focus.attr("transform", "translate(" + x(d.Year_of_Release) + "," + y(d.EU_Sales) + ")");
-                focus.select("text").text(function() { return d.EU_Sales; });
-                focus.select(".x-hover-line").attr("y2", h - y(d.EU_Sales));
-                focus.select(".y-hover-line").attr("x2", w + w);
-        });
+            .attr("d",valueline2);
         
         svg.append("path")
             .datum(dataset)
+            .attr("class", "line3")
+            .attr("clip-path","url(#t1clip)")
             .attr("fill","none")
             .attr("stroke","green")
             .attr("stroke-width",1.5)
-            .attr("d",valueline3)
-            .on("mouseover", function() { 
-                    focus.style("display", null); 
-                    d3.selectAll(".hover-line").style("stroke","green"); 
-                    d3.selectAll(".focus").style("stroke","black");
-                    d3.selectAll(".focus circle").style("stroke","green");
-            })
-            .on("mouseout", function() { focus.style("display", "none"); })
-            .on("mousemove", function(){
-                var x0 = x.invert(d3.mouse(this)[0]), 
-                i = bisectDate(dataset,x0,1),
-                d0 = dataset[i-1],
-                d1 = dataset[i],
-                d = x0 - d0.Year_of_Release > d1.Year_of_Release - x0 ? d1:d0;
-                focus.attr("transform", "translate(" + x(d.Year_of_Release) + "," + y(d.NA_Sales) + ")");
-                focus.select("text").text(function() { return d.NA_Sales; });
-                focus.select(".x-hover-line").attr("y2", h - y(d.NA_Sales));
-                focus.select(".y-hover-line").attr("x2", w + w);
-        });
+            .attr("d",valueline3);
 
         /* 
             [Q] Daqui para baixo foi adicionado por mim.
@@ -366,11 +290,6 @@
                 - y
                 - parseTime
          */
-        
-        var x_variable = "Year_of_Release";
-        // so..... I noticed Other_Sales is GONE! GONE I TELL U!
-        var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
-        var colors = [ "steelblue", "red", "green" ];
 
         var all_points = d3.range(dataset.length)
             .map(function(itr_x){ return y_variable.map(function(itr_y){ return [itr_x, itr_y]; })});
@@ -383,15 +302,22 @@
              ....]
          */
 
-        svg.selectAll("circle.data-points")
+        var gfocus = svg.selectAll("g.g-focus")
+            .data([0])
+            .enter().append("g")
+                .attr("class", "g-focus");
+
+        gfocus.selectAll("circle.data-points")
             .data(all_points)
             .enter().append("circle")
-                .attr("class", "data-points");
-        svg.selectAll("circle.data-points")
-            .attr("r", 10)
+                .attr("class", "data-points");        
+    
+        gfocus.selectAll("circle.data-points")
+            .attr("r", 2)
+            .attr("clip-path","url(#t1clip)")
             .attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
             .attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
-            .attr("fill", "rgba(255,0,0,0)") //rgba(255,0,0,1) would make the circles red
+            .attr("fill", function(d){ return colors[y_variable.indexOf(d[1])];}) //rgba(255,0,0,1) would make the circles red
             .on("mouseover", function(d){
                 // 
                 // DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER 
@@ -419,10 +345,12 @@
                 dispatch.call("gamehover", null, d, all_rownums, dataset);
                 appdispatch.gamehover.call("gamehover", null, all_rownums, "t1");
 
+                var textForm = d3.format(".3f");
+            
                 // this is kind of the same as Iris did.
                 focus.attr("transform", "translate(" + x(dataset[row_num][x_variable]) + "," + y(dataset[row_num][column_name]) + ")");
-                focus.select("text").text(function() { return dataset[row_num][column_name]; });
-                focus.select(".x-hover-line").attr("y2", h - y(dataset[row_num][column_name]));
+                focus.select("text").text(function() { return textForm(dataset[row_num][column_name]); });
+                focus.select(".x-hover-line").attr("y2", h -50- y(dataset[row_num][column_name]));
                 focus.select(".y-hover-line").attr("x2", w + w);
                 
                 focus.style("display", null); 
@@ -444,9 +372,41 @@
                 focus.style("display", "none");
             });
 
+        //////////////////////////////////////////////////////////////////////////BEGIN BRUSH
+        
+        var brush_height = 15;//h - padding - yoffset;
+        
+        y_brush = d3.scaleLinear()
+			.range([brush_height,yrange[1]]);
+        x_brush = d3.scaleTime()
+            .range([xrange[0],xrange[1]]);
+        
+        //definir o domain de cada eixo
+        x_brush.domain(x.domain());
+        
 
-
+		var xaxis_brush = d3.axisBottom()
+            .scale(x_brush);
+        
+        brush = d3.brushX()
+            .extent([[xrange[0],0],[xrange[1],brush_height]])
+            .on("brush end", brushed);
+        
+        context = svg.append("g")
+            .attr("class","context")
+            .attr("transform","translate(0,"+ (yrange[1]+30)+")");
+        context.append("g")
+            .attr("class","axis axis--x")
+            .attr("transform","translate(0," + brush_height + ")" )
+            .call(xaxis_brush);
+        context.append("g")
+            .attr("class","brush")
+            .call(brush)
+            .call(brush.move, x_brush.range());
+        
+        //////////////////////////////////////////////////////////////////////////END BRUSH
 
     };
 window.drawt1 = drawt1;    
+window.setSizest1 = setSizest1;
 })();
