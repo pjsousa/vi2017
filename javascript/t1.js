@@ -246,11 +246,27 @@
             .attr("transform","translate("+(xrange[0])+",0)")
             .attr("class","y axis")
             .call(yaxis);
+
+        svg.append("text")
+              .attr("class", "y-axis-label")
+              .attr("transform", "rotate(-90)")
+              .attr("x", -yrange[0])
+              .attr("y", xrange[0] - xoffset)
+              .attr("fill", "black")
+              .style("text-anchor", "end")
+              .text("Sales ( Million Units )")
         
         svg.append("g")
             .attr("transform","translate(0,"+(yrange[1])+")")
             .attr("class","axis axis--x")
-            .call(xaxis);    
+            .call(xaxis);
+        svg.append("text")
+            .attr("class", "x-axis-label")
+            .attr("x", xrange[1])
+            .attr("y", yrange[1] + yoffset)
+            .attr("fill", "black")
+            .style("text-anchor", "end")
+            .text("Year");
 
         svg.append("path")
             .datum(dataset) // [Q] Nestes datums, acho que querias chamar o data() e depois o enter()? Pareceu-me que não tão a ser usados, so...
@@ -410,7 +426,7 @@
         
         context = svg.append("g")
             .attr("class","context")
-            .attr("transform","translate(0,"+ (yrange[1]+30)+")");
+            .attr("transform","translate(0,"+ (yrange[1]+35)+")");
         context.append("g")
             .attr("class","axis axis--x")
             .attr("transform","translate(0," + brush_height + ")" )

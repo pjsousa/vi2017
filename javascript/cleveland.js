@@ -143,28 +143,31 @@
 
 				return yscale_c(rows_order[i]); })
 
-		g.selectAll("circle.highlight")
-			.transition()
-			.duration(100)
-			.attr("r", r+10)
+		if(from_target == "t5"){
+			g.selectAll("circle.highlight")
+				.transition()
+				.duration(100)
+				.attr("r", r+10)
+
+				g.selectAll("circle.highlight")
+					.transition()
+					.delay(100)
+					.duration(100)
+					.attr("r", r+1)
 
 			g.selectAll("circle.highlight")
 				.transition()
-				.delay(100)
+				.delay(200)
+				.duration(100)
+				.attr("r", r+10)
+
+			g.selectAll("circle.highlight")
+				.transition()
+				.delay(300)
 				.duration(100)
 				.attr("r", r+1)
-
-		g.selectAll("circle.highlight")
-			.transition()
-			.delay(200)
-			.duration(100)
-			.attr("r", r+10)
-
-		g.selectAll("circle.highlight")
-			.transition()
-			.delay(300)
-			.duration(100)
-			.attr("r", r+1)
+		}
+		
 
 
 
