@@ -1,10 +1,10 @@
 
 body{
-  background-color: #eee;
+	background-color: #eee;
 }
 
 .row.page-toolbar{
-  height: 10vh;
+	height: 10vh;
 }
 
 .panel-heading > h5{
@@ -14,66 +14,66 @@ body{
 }
 
 #t1Viz{
-  padding: 0;
-  height: 35vh;
+	padding: 0;
+	height: 35vh;
 }
 
 #t5Viz{
-  padding: 0;
-  height: 35vh;
+	padding: 0;
+	height: 35vh;
 }
 
 #t2Viz{
-  padding: 0;
-  height: 50vh;
+	padding: 0;
+	height: 50vh;
 }
 
 #clvViz{
-  padding: 0;
-  height: 50vh;
+	padding: 0;
+	height: 50vh;
 }
 
 #dtlPanel{
-  height: 54vh;
+	height: 54vh;
 }
 
 #t6Viz{
-  padding: 0;
-  height: calc(40vw);
+	padding: 0;
+	height: calc(40vw);
 }
 
 #t4Viz{
-  padding: 0;
-  height: calc(40vw);
+	padding: 0;
+	height: calc(40vw);
 }
 
 
 /*t1*/
 .focus circle {
-  fill: #F1F3F3;
-  stroke: #6F257F;
-  stroke-width: 5px;
+	fill: #F1F3F3;
+	stroke: #6F257F;
+	stroke-width: 5px;
 }
-  
+	
 .hover-line {
-  stroke: #6F257F;
-  stroke-width: 2px;
-  stroke-dasharray: 3,3;
+	stroke: #6F257F;
+	stroke-width: 2px;
+	stroke-dasharray: 3,3;
 }
 
 /*
-    .line {
-      fill: none;
-      stroke: steelblue;
-      stroke-width: 1.5px;
-    }
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-    
-    .x.axis path {
-      display: none;
-    }*/
+		.line {
+			fill: none;
+			stroke: steelblue;
+			stroke-width: 1.5px;
+		}
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: #000;
+			shape-rendering: crispEdges;
+		}
+		
+		.x.axis path {
+			display: none;
+		}*/

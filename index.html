@@ -1,227 +1,227 @@
 <!DOCTYPE html>
 <head>
-  <!-- Include bootstrap, handsontable e d3 -->
-  
-  <script src="libs/jquery-3.2.1.min.js" charset="utf-8"></script>
-  <script src="libs/bootstrap/js/bootstrap.min.js" charset="utf-8"></script>
-  <script src="libs/lodash.min.js" charset="utf-8"></script>
-  <script src="libs/handsontable.full.min.js" charset="utf-8"></script>
-  <script src="libs/d3.v4.min.js" charset="utf-8"></script>
+	<!-- Include bootstrap, handsontable e d3 -->
+	
+	<script src="libs/jquery-3.2.1.min.js" charset="utf-8"></script>
+	<script src="libs/bootstrap/js/bootstrap.min.js" charset="utf-8"></script>
+	<script src="libs/lodash.min.js" charset="utf-8"></script>
+	<script src="libs/handsontable.full.min.js" charset="utf-8"></script>
+	<script src="libs/d3.v4.min.js" charset="utf-8"></script>
 
-  <link rel="stylesheet" type="text/css" href="libs/bootstrap/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="libs/handsontable.full.min.css" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" type="text/css" href="libs/bootstrap/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="libs/handsontable.full.min.css" />
+	<link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <meta charset="utf-8">
 <body>
-  <div class="container-fluid">
-    <div class="page-toolbar row">
-      <div class="col-xs-6 col-xs-offset-3">
-        <div class="panel" style="margin:0">
-          <div class="panel-body text-center">
-            <form class="form-inline">
-              <div class="form-group">
-                <div class="input-group">
-                      <div class="input-group-addon"> <span class="glyphicon glyphicon-filter"></span> </div>
-                      <input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="<not this template>">
-                    </div>
-              </div>
-              <div class="form-group">
-                <div class="input-group">
-                      <div class="input-group-addon"> <span class="glyphicon glyphicon-search"></span> </div>
-                      <input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="Look for a game name">
-                    </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- ./page-toolbar row -->
-    <div class="row page-content">
-      <div class="top-viz">
-        <div class="left-panel col-xs-7">
-          <div id="t1Panel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-              <span>Sales evolution over time</span>
-            </div>
-            <div id="t1Viz" class="panel-body">
-              <img class="img-responsive" src="images/t1.png" />
-              <svg></svg>
-              <div class="t1Legend"></div>
-            </div>
-          </div>
-          <!-- ./t1Panel -->
-        </div>
-        <!-- ./top-viz > left-panel col-xs-7 -->
-        <div class="right-panel col-xs-5">
-          <div id="t5Panel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-              <span>Games Sales/Scores correlation</span>
-            </div>
-            <div id="t5Viz" class="panel-body">
-              <img class="img-responsive" src="images/t5.png" />
-              <svg></svg>
-            </div>
-          </div>
-          <!-- ./t5Panel -->
-        </div>
-        <!-- ./top-viz > right-panel col-xs-5 -->
-      </div>
-      <!-- ./top-viz -->
-      <div class="middle-viz">
-        <div class="left-panel col-xs-4">
-          <div id="t2Panel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-              <span>Best Sellers</span>
-            </div>
-            <div id="t2Viz" class="panel-body">
-              <img class="img-responsive" src="images/t2.png" />
-            </div>
-          </div>
-          <!-- ./t2Panel -->
-        </div>
-        <!-- ./middle-viz > left-panel col-xs-7 -->
-        <div class="right-panel col-xs-5">
-          <div id="clvPanel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-              Games
-              <div class="pull-right">
-                  <div class="btn-group">
-                      <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                          <span class="glyphicon glyphicon-sort"></span>
-                      </button>
-                      <ul class="dropdown-menu pull-right" role="menu">
-                          <li><a href="#" onclick="sortCleveland('sales'); event.preventDefault();">Global Sales</a>
-                          </li>
-                          <li><a href="#" onclick="sortCleveland('name'); event.preventDefault();">Name</a>
-                          </li>
-                      </ul>
-                  </div>
-              </div>
-              &nbsp;
-            </div>
-            <div id="clvViz" class="panel-body">
-              <img class="img-responsive" src="images/clv.png" />
-              <svg></svg>
-            </div>
-          </div>
-          <!-- ./clvPanel -->
-        </div>
-        <div class="right-panel col-xs-3">
-          <div id="dtlPanel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-                <h2 id="name" style="text-align: center;">Name</h2>
-                <h5 style="text-align: center;">
-                  <span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
-                </h5>
-                <h3 id="mean_usercritic_score" style="text-align: center;">
-                  mean_usercritic_score
-                </h3>
-                <small id="rating">Rating</small>
-            </div>
-            <div id="dtlViz" class="panel-body">
-              <div class="row">
-                <div id="sales" class="col-xs-12">
-                  <svg id="salesViz"></svg>
-                  <div id="salesLegend" class="row">
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="lead text-center">
-                  <span id="genre">Action</span> game from <span id="publisher">Publisher</span> developed by <span id="developer">Developer</span>.
-                </div>
-              </div>
-              <!-- <div class="form-group">
-                <label>critic_score</label>
-              </div>
-              <div class="form-group">
-                <label>critic_count</label>
-              </div>
-              <div class="form-group">
-                <label>user_score</label>
-              </div>
-              <div class="form-group">
-                <label>user_count</label>
-              </div>
-              <div class="form-group">
-                <label>tbd_flag</label>
-              </div>
-              <div class="form-group">
-                <label>outlier_flag</label>
-              </div>
-              <div class="form-group">
-                <label>user_score_norm</label>
-              </div>
-              <div class="form-group">
-                <label>critic_user_diff</label>
-              </div>
-              <div class="form-group">
-                <label>percentage_of_releases</label>
-              </div> -->
-            </div>
-          </div>
-          <!-- ./dtlPanel -->
-        </div>
-        <!-- ./middle-viz > right-panel col-xs-5 -->
-      </div>
-      <!-- ./middle-viz -->
-      <div class="bottom-viz">
-        <div class="left-panel col-xs-6">
-          <div id="t6Panel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-              <span>Most Praised</span>
-            </div>
-            <div id="t6Viz" class="panel-body">
-              <img class="img-responsive" src="images/t6.png" />
-            </div>
-          </div>
-          <!-- ./t6Panel -->
-        </div>
-        <div class="right-panel col-xs-6">
-          <div id="t4Panel" class="panel panel-default panel-viz">
-            <div class="panel-heading">
-              <span>% Releases by rating</span>
-            </div>
-            <div id="t4Viz" class="panel-body">
-              <img class="img-responsive" src="images/t4.png" />
-            </div>
-          </div>
-          <!-- ./t4Panel -->
-        </div>
-      </div>
-      <!-- ./bottom-viz -->
-    </div>
-    <!-- ./page-content -->
-  </div>
+	<div class="container-fluid">
+		<div class="page-toolbar row">
+			<div class="col-xs-6 col-xs-offset-3">
+				<div class="panel" style="margin:0">
+					<div class="panel-body text-center">
+						<form class="form-inline">
+							<div class="form-group">
+								<div class="input-group">
+											<div class="input-group-addon"> <span class="glyphicon glyphicon-filter"></span> </div>
+											<input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="<not this template>">
+										</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+											<div class="input-group-addon"> <span class="glyphicon glyphicon-search"></span> </div>
+											<input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="Look for a game name">
+										</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- ./page-toolbar row -->
+		<div class="row page-content">
+			<div class="top-viz">
+				<div class="left-panel col-xs-7">
+					<div id="t1Panel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+							<span>Sales evolution over time</span>
+						</div>
+						<div id="t1Viz" class="panel-body">
+							<img class="img-responsive" src="images/t1.png" />
+							<svg></svg>
+							<div class="t1Legend"></div>
+						</div>
+					</div>
+					<!-- ./t1Panel -->
+				</div>
+				<!-- ./top-viz > left-panel col-xs-7 -->
+				<div class="right-panel col-xs-5">
+					<div id="t5Panel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+							<span>Games Sales/Scores correlation</span>
+						</div>
+						<div id="t5Viz" class="panel-body">
+							<img class="img-responsive" src="images/t5.png" />
+							<svg></svg>
+						</div>
+					</div>
+					<!-- ./t5Panel -->
+				</div>
+				<!-- ./top-viz > right-panel col-xs-5 -->
+			</div>
+			<!-- ./top-viz -->
+			<div class="middle-viz">
+				<div class="left-panel col-xs-4">
+					<div id="t2Panel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+							<span>Best Sellers</span>
+						</div>
+						<div id="t2Viz" class="panel-body">
+							<img class="img-responsive" src="images/t2.png" />
+						</div>
+					</div>
+					<!-- ./t2Panel -->
+				</div>
+				<!-- ./middle-viz > left-panel col-xs-7 -->
+				<div class="right-panel col-xs-5">
+					<div id="clvPanel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+							Games
+							<div class="pull-right">
+									<div class="btn-group">
+											<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+													<span class="glyphicon glyphicon-sort"></span>
+											</button>
+											<ul class="dropdown-menu pull-right" role="menu">
+													<li><a href="#" onclick="sortCleveland('sales'); event.preventDefault();">Global Sales</a>
+													</li>
+													<li><a href="#" onclick="sortCleveland('name'); event.preventDefault();">Name</a>
+													</li>
+											</ul>
+									</div>
+							</div>
+							&nbsp;
+						</div>
+						<div id="clvViz" class="panel-body">
+							<img class="img-responsive" src="images/clv.png" />
+							<svg></svg>
+						</div>
+					</div>
+					<!-- ./clvPanel -->
+				</div>
+				<div class="right-panel col-xs-3">
+					<div id="dtlPanel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+								<h2 id="name" style="text-align: center;">Name</h2>
+								<h5 style="text-align: center;">
+									<span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
+								</h5>
+								<h3 id="mean_usercritic_score" style="text-align: center;">
+									mean_usercritic_score
+								</h3>
+								<small id="rating">Rating</small>
+						</div>
+						<div id="dtlViz" class="panel-body">
+							<div class="row">
+								<div id="sales" class="col-xs-12">
+									<svg id="salesViz"></svg>
+									<div id="salesLegend" class="row">
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="lead text-center">
+									<span id="genre">Action</span> game from <span id="publisher">Publisher</span> developed by <span id="developer">Developer</span>.
+								</div>
+							</div>
+							<!-- <div class="form-group">
+								<label>critic_score</label>
+							</div>
+							<div class="form-group">
+								<label>critic_count</label>
+							</div>
+							<div class="form-group">
+								<label>user_score</label>
+							</div>
+							<div class="form-group">
+								<label>user_count</label>
+							</div>
+							<div class="form-group">
+								<label>tbd_flag</label>
+							</div>
+							<div class="form-group">
+								<label>outlier_flag</label>
+							</div>
+							<div class="form-group">
+								<label>user_score_norm</label>
+							</div>
+							<div class="form-group">
+								<label>critic_user_diff</label>
+							</div>
+							<div class="form-group">
+								<label>percentage_of_releases</label>
+							</div> -->
+						</div>
+					</div>
+					<!-- ./dtlPanel -->
+				</div>
+				<!-- ./middle-viz > right-panel col-xs-5 -->
+			</div>
+			<!-- ./middle-viz -->
+			<div class="bottom-viz">
+				<div class="left-panel col-xs-6">
+					<div id="t6Panel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+							<span>Most Praised</span>
+						</div>
+						<div id="t6Viz" class="panel-body">
+							<img class="img-responsive" src="images/t6.png" />
+						</div>
+					</div>
+					<!-- ./t6Panel -->
+				</div>
+				<div class="right-panel col-xs-6">
+					<div id="t4Panel" class="panel panel-default panel-viz">
+						<div class="panel-heading">
+							<span>% Releases by rating</span>
+						</div>
+						<div id="t4Viz" class="panel-body">
+							<img class="img-responsive" src="images/t4.png" />
+						</div>
+					</div>
+					<!-- ./t4Panel -->
+				</div>
+			</div>
+			<!-- ./bottom-viz -->
+		</div>
+		<!-- ./page-content -->
+	</div>
 
-  <!-- Os "includes" das nossas sources -->
-  <script src="javascript/app.js" ></script>
-  <script src="javascript/datahandler.js" ></script>
+	<!-- Os "includes" das nossas sources -->
+	<script src="javascript/app.js" ></script>
+	<script src="javascript/datahandler.js" ></script>
  
-  <script src="javascript/t1.js" ></script>
-  <script src="javascript/t2.js" ></script>
-  <script src="javascript/t3.js" ></script>
-  <script src="javascript/t4.js" ></script>
-  <script src="javascript/t5.js" ></script>
-  <script src="javascript/t6.js" ></script>
-  <script src="javascript/cleveland.js" ></script>
-  <script src="javascript/detail.js" ></script>
-  <script>
-    $(document).ready(function(){
-      // esta função vai disparar quando todo o HTML tiver carregado e quando todas as 
-      // sources files estiverem do nosso lado.
-      
-      // step 1. fetch data
-      main();
-      // step 2. the world!
-      // 
-    })
+	<script src="javascript/t1.js" ></script>
+	<script src="javascript/t2.js" ></script>
+	<script src="javascript/t3.js" ></script>
+	<script src="javascript/t4.js" ></script>
+	<script src="javascript/t5.js" ></script>
+	<script src="javascript/t6.js" ></script>
+	<script src="javascript/cleveland.js" ></script>
+	<script src="javascript/detail.js" ></script>
+	<script>
+		$(document).ready(function(){
+			// esta função vai disparar quando todo o HTML tiver carregado e quando todas as 
+			// sources files estiverem do nosso lado.
+			
+			// step 1. fetch data
+			main();
+			// step 2. the world!
+			// 
+		})
 
-    $(window).resize(function(){
-      setVizSizes();
-      data_ready();
-    })
-  </script>
+		$(window).resize(function(){
+			setVizSizes();
+			data_ready();
+		})
+	</script>
 </body>

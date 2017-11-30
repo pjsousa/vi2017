@@ -285,7 +285,7 @@
 				2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
 				3) Resizing the SVG
 				4) Creating the scales
-				    - ( can either be linear or logarithmic and centered or not centered )
+						- ( can either be linear or logarithmic and centered or not centered )
 
 				[... start composing the viz ...]
 
@@ -299,15 +299,15 @@
 				7) Plot the data itself
 				8) Draw the regression line and the pearson's r value
 				9) Draw the hovering crossair
-				   ^-- which is composed by..
-				   .. an X line
-				   .. a  Y line
-				   .. a group to place as many "phantom" dots as there are rownums in appstate.highlightedRows.
-				   				  ^-- we use phantom dots instead of the real dots to help a bit when we have lots of occlusion.
+					 ^-- which is composed by..
+					 .. an X line
+					 .. a  Y line
+					 .. a group to place as many "phantom" dots as there are rownums in appstate.highlightedRows.
+										^-- we use phantom dots instead of the real dots to help a bit when we have lots of occlusion.
 				10) Place tooltips
-				   .. For the data
-				   .. For the X Axis
-				   .. For the Y Axis
+					 .. For the data
+					 .. For the X Axis
+					 .. For the Y Axis
 
 				The drawing is done (kinda) "once". The events, effects, highlights are just updating text, colors x's and y's.
 				Unless we change the change the dataset behind the viz, we don't get back to this anymore.
@@ -426,13 +426,13 @@
 		.attr("class","y axis")
 		.call(yaxis);
 		svg.append("text")
-			  .attr("class", "y-axis-label")
-			  .attr("transform", "rotate(-90)")
-			  .attr("x", -yrange[0])
-			  .attr("y", xrange[0] - xoffset)
-			  .attr("fill", "black")
-			  .style("text-anchor", "end")
-			  .text("Global Sales ( Million Units )")
+				.attr("class", "y-axis-label")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -yrange[0])
+				.attr("y", xrange[0] - xoffset)
+				.attr("fill", "black")
+				.style("text-anchor", "end")
+				.text("Global Sales ( Million Units )")
 
 		// draws the X axis with text label
 		gX = svg.append("g")
@@ -550,13 +550,13 @@
 			svg.selectAll("text.pearsonsr")
 				.data([corr])
 				.enter().append("text")
-				  .attr("class", "pearsonsr")
-				  .attr("y", function(d){ return yscale_c(d["slope"]*xdomain[1] + d["intercept"]); })
-				  .attr("x", function(d){ return xscale_c(xdomain[1]) + 5; })
-				  .attr("fill", "red")
-				  .style("text-anchor", "start")
-				  .style("font-size", "10px")
-				  .text(function(d){ return "r: " + d3.format(".3f")(d["pearsonr"]); });
+					.attr("class", "pearsonsr")
+					.attr("y", function(d){ return yscale_c(d["slope"]*xdomain[1] + d["intercept"]); })
+					.attr("x", function(d){ return xscale_c(xdomain[1]) + 5; })
+					.attr("fill", "red")
+					.style("text-anchor", "start")
+					.style("font-size", "10px")
+					.text(function(d){ return "r: " + d3.format(".3f")(d["pearsonr"]); });
 
 
 
