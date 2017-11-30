@@ -1,4 +1,6 @@
 ;(function(){
+	var w_sales = -1;
+	var h_sales = 50;
 	
 	function drawdtl(){
 		var dataset = appstate.highlightedRows[0];
@@ -19,9 +21,12 @@
 		drawBullet();
 	};
 
+	function setSizesdtl(boundingRect){
+		w_sales = boundingRect.width;
+		//h_sales = boundingRect.height;
+	};
+
 	function drawBullet(){
-		var w_sales = 500;
-		var h_sales = 50;
 		var padding_sales = 5;
 		var xoffset_sales = 0;
 		var yoffset_sales = 0;
@@ -102,4 +107,5 @@
 	};
 
 	window.drawdtl = drawdtl;
+	window.setSizesdtl = setSizesdtl;
 })();

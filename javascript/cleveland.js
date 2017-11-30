@@ -2,12 +2,12 @@
 	var w = -1;
 	var h = -1;
 	var padding = 20;
-	var xoffset = 100;
+	var xoffset = 200;
 	var yoffset = 40;
 	var xcutoff = 0;
 	var ycutoff = 0;
-	var max_names_len = 18;
-	var top_rows = 30;
+	var max_names_len = 50;
+	var top_rows = 20;
 	var r = 5;
 
 	var y_var = "Name";
@@ -167,9 +167,6 @@
 				.duration(100)
 				.attr("r", r+1)
 		}
-		
-
-
 
 	};
 

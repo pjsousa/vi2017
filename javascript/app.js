@@ -89,7 +89,7 @@
         setSizesclv(this.getClientRects()[0]);
       }
       else if(_id == "dtlViz"){
-        //setSizesdtl(this.getClientRects()[0])
+        setSizesdtl(this.getClientRects()[0]);
       }
       else if(_id == "t6Viz"){
         //setSizest6(this.getClientRects()[0])
