@@ -1,5 +1,12 @@
 
 body{
+	/*background-color: #000;*/
+	background-image: url("images/background-body.svg");
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.panel-viz > .panel-body{
 	background-color: #eee;
 }
 
