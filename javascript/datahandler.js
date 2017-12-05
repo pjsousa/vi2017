@@ -130,12 +130,12 @@
 						//   itr["Mean_UserCritic_Score"] = itr["Mean_UserCritic_Score"] * -1
 						// }
 						// 
-						// if (itr["Global_Sales"]<0){
-						//   itr["Global_Sales"] = 20;
-						// }
-						// if (itr["Mean_UserCritic_Score"]<0){
-						//   itr["Mean_UserCritic_Score"] = 20;
-						// }
+						if (itr["Global_Sales"]<0){
+						  itr["Global_Sales"] = 20;
+						}
+						if (itr["Mean_UserCritic_Score"]<0){
+						  itr["Mean_UserCritic_Score"] = 20;
+						}
 						
 						itr["row_num"] = idx;
 					});

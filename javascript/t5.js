@@ -15,7 +15,7 @@
 	var dispatch = d3.dispatch("gamehover");
 	var dispatch2 = d3.dispatch("gameout");
 
-	var isLogScale = false;
+	var isLogScale = true;
 	var isCenteredData = false;
 
 	var xscale = null;
