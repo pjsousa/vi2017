@@ -108,6 +108,7 @@
 
 		drawt1();
 		drawt5();
+        drawt6();
 		drawclv();
 	};
 
