@@ -83,7 +83,7 @@
 				setSizest5(this.getClientRects()[0]);
 			}
 			else if(_id == "t2Viz"){
-				//setSizest2(this.getClientRects()[0])
+				setSizest2(this.getClientRects()[0])
 			}
 			else if(_id == "clvViz"){
 				setSizesclv(this.getClientRects()[0]);
@@ -108,6 +108,7 @@
 
 		drawt1();
 		drawt5();
+		drawt2();
 		drawclv();
 	};
 
