@@ -11,6 +11,7 @@
 		dtl.selectAll("#platform").html(data_utils.read_value(dataset, "Platform"));
 		dtl.selectAll("#year_of_release").html(parseInt(data_utils.read_value(dataset, "Year_of_Release")));
 		dtl.selectAll("#mean_usercritic_score").html(data_utils.read_value(dataset, "Mean_UserCritic_Score"));
+		dtl.selectAll("#global_sales").html(data_utils.read_value(dataset, "Global_Sales"));
 
 		dtl.selectAll("#rating").html(data_utils.read_value(dataset, "Rating"));
 
@@ -28,13 +29,15 @@
 
 	function drawBullet(){
 		var padding_sales = 5;
-		var xoffset_sales = 0;
+		var xoffset_sales = 5;
 		var yoffset_sales = 0;
 		var xcutoff_sales = 0;
 		var ycutoff_sales = 0;
 
 		var total_var = "Global_Sales";
-		var detail_vars = ["NA_Sales", "EU_Sales", "JP_Sales"];
+		var detail_vars = ["JP_Sales", "EU_Sales", "NA_Sales"];
+		var sales_colors = [ "#e41a1c", "#377eb8", "#4daf4a" ]; // these were taken from color brewer
+		var detail_vars_captions = ["Japan", "Europe", "N. America"];
 
 		var isLogScale = false;
 		var isCenteredData = false;
@@ -50,11 +53,11 @@
 		
 		var xdomain = [];
 		xdomain[0] = 0
-		xdomain[1] = data_utils.read_value(row_number, total_var);
+		xdomain[1] = 1;
 
 		var xrange = [];
 		xrange[0] = padding_sales + xoffset_sales;
-		xrange[1] = w_sales-padding_sales;
+		xrange[1] = w_sales - padding_sales - xcutoff_sales;
 
 		var yrange = [];
 		yrange[0] = padding_sales;
@@ -73,7 +76,10 @@
 		var pixelvalues;
 		var pixeloffsets;
 
-		pixelvalues = detail_vars.map(function(d){ return xscale( data_utils.read_value(row_number, d)); });
+		pixelvalues = detail_vars.map(function(d){ return xscale( data_utils.read_value(row_number, d) / data_utils.read_value(row_number, "Global_Sales") ) ; });
+		var _rescale =  d3.min([d3.sum(pixelvalues), xrange[1] - xrange[0]]) / d3.sum(pixelvalues);
+		pixelvalues = pixelvalues.map(function(d){ return d * _rescale });
+
 		pixeloffsets = pixelvalues.slice(1, pixelvalues.length)
 				.map(function(d,i){ return d3.sum(pixelvalues.slice(0, i+1)); });
 		pixeloffsets.unshift(0);
@@ -90,20 +96,20 @@
 			.attr("height", yrange[1]-yrange[0])
 			.attr("stroke", "#222")
 			.attr("stroke-width", 2)
-			.attr("fill", function(d,i){ return ["green", "steelblue", "red"][i] });
-
-		//var detail_vars = ["NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales"];
+			.attr("fill", function(d,i){ return sales_colors[i]; });
 
 		d3.select("#dtlPanel").selectAll("#salesLegend")
-			.selectAll("div.col-xs-3")
+			.selectAll("div.col-xs-4")
 			.data(detail_vars)
 			.enter().append("div")
-				.attr("class", "col-xs-3")
-				.append("small");
+				.attr("class", "col-xs-4")
+				.append("small")
+					.style("border-left", function(d, i){ return "solid 3px " + sales_colors[i]; })
+					.style("padding-left", "3px");
 
 		d3.select("#dtlPanel").selectAll("#salesLegend")
 			.selectAll("small")
-			.html(function(d, i){ return d; })
+			.html(function(d, i){ return detail_vars_captions[i]; })
 	};
 
 	window.drawdtl = drawdtl;

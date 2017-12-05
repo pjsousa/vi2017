@@ -115,14 +115,21 @@
 								<h5 style="text-align: center;">
 									<span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
 								</h5>
-								<h3 id="mean_usercritic_score" style="text-align: center;">
-									mean_usercritic_score
-								</h3>
-								<small id="rating">Rating</small>
+								<div class="row" style="margin: 20px 0">
+									<div class="col-xs-6" style="text-align: center;">
+											<p><small>Mean User Score</small></p><h5 id="mean_usercritic_score">mean_usercritic_score</h5>
+									</div>
+									<div class="col-xs-6" style="text-align: center;">
+											<p><small>Global Sales</small></p><h5 id="global_sales">global_sales</h5>
+									</div>
+								</div>
+								
+								<small><strong>Rating </strong></small><small id="rating">Rating</small>
 						</div>
 						<div id="dtlViz" class="panel-body">
 							<div class="row">
 								<div id="sales" class="col-xs-12">
+									<h5 style="text-align: center;">Sales by region</h5>
 									<svg id="salesViz"></svg>
 									<div id="salesLegend" class="row">
 									</div>
@@ -133,33 +140,6 @@
 									<span id="genre">Action</span> game from <span id="publisher">Publisher</span> developed by <span id="developer">Developer</span>.
 								</div>
 							</div>
-							<!-- <div class="form-group">
-								<label>critic_score</label>
-							</div>
-							<div class="form-group">
-								<label>critic_count</label>
-							</div>
-							<div class="form-group">
-								<label>user_score</label>
-							</div>
-							<div class="form-group">
-								<label>user_count</label>
-							</div>
-							<div class="form-group">
-								<label>tbd_flag</label>
-							</div>
-							<div class="form-group">
-								<label>outlier_flag</label>
-							</div>
-							<div class="form-group">
-								<label>user_score_norm</label>
-							</div>
-							<div class="form-group">
-								<label>critic_user_diff</label>
-							</div>
-							<div class="form-group">
-								<label>percentage_of_releases</label>
-							</div> -->
 						</div>
 					</div>
 					<!-- ./dtlPanel -->

@@ -119,8 +119,17 @@
 	
 	// our (fnRV) local FuNction to Read Values for this vizualization
 	function raw_value(row_num, variable){
-		
-		return data_utils.read_value(row_num, variable);
+		var result = null;
+
+		result = data_utils.read_value(row_num, variable);
+
+		// if ([x_var, y_var].indexOf(variable) > -1){
+		// 	if (isLogScale && !isCenteredData){
+		// 		result = result <= 0 ? 1e-2 : result;
+		// 	}
+		// }
+
+		return result;
 	};
 
 	function centered_value(row_num, variable){
@@ -189,8 +198,6 @@
 			.attr("fill", "fuchsia")
 			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
 			.attr("cy", function(row_num){ return yscale_c(value(row_num, y_var))})
-
-		
 
 		if(from_target == "clv"){
 			g.selectAll("circle.x-crossair.y-crossair")
@@ -334,7 +341,7 @@
 		yrange[1] = h - padding - yoffset - ycutoff;
 		var xrange = [];
 		xrange[0] = padding + xoffset;
-		xrange[1] = w-padding - xcutoff;
+		xrange[1] = w - padding - xcutoff;
 
 		// Lets compute the mean and st. deviation of the data
 		// ( is done on the fly because these might change depending on the rows selected )
