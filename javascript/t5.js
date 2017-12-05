@@ -5,7 +5,7 @@
 	var padding = 20;
 	var xoffset = 30;
 	var yoffset = 30;
-	var xcutoff = 100;
+	var xcutoff = 30;
 	var ycutoff = 0;
 	var r = 2;
 

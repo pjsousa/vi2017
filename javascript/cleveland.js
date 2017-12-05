@@ -7,7 +7,7 @@
 	var xcutoff = 0;
 	var ycutoff = 0;
 	var max_names_len = 50;
-	var top_rows = 20;
+	var top_rows = 15;
 	var r = 5;
 
 	var y_var = "Name";

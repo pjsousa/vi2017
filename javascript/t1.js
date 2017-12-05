@@ -14,7 +14,8 @@
 	// [Q] Reparei que não butastes o Other_Sales, e então não butei também... mas... O_o
 	var x_variable = "Year_of_Release";
 	var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
-	var colors = [ "red", "steelblue", "green" ];
+	var colors = [ "#e41a1c", "#377eb8", "#4daf4a" ]; // these were taken from color brewer
+	//var colors = [ "red", "steelblue", "limegreen" ];
 
 	var dispatch = d3.dispatch("gamehover");
 	var dispatch2 = d3.dispatch("gameout");
@@ -274,7 +275,7 @@
 			.attr("clip-path","url(#t1clip)")
 			.attr("fill","none")
 			.attr("stroke",colors[0])
-			.attr("stroke-width",1.5)
+			.attr("stroke-width",3)
 			.attr("d",valueline);
 
 		svg.append("path")
@@ -283,7 +284,7 @@
 			.attr("clip-path","url(#t1clip)")
 			.attr("fill","none")
 			.attr("stroke",colors[1])
-			.attr("stroke-width",1.5)
+			.attr("stroke-width",3)
 			.attr("d",valueline2);
 		
 		svg.append("path")
@@ -292,7 +293,7 @@
 			.attr("clip-path","url(#t1clip)")
 			.attr("fill","none")
 			.attr("stroke",colors[2])
-			.attr("stroke-width",1.5)
+			.attr("stroke-width",3)
 			.attr("d",valueline3);
 
 		/* 
@@ -338,7 +339,7 @@
 				.attr("class", "data-points-hidden");  
 		
 		gfocus.selectAll("circle.data-points")
-			.attr("r", 2)
+			.attr("r", 4)
 			.attr("clip-path","url(#t1clip)")
 			.attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
 			.attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
