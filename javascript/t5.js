@@ -8,6 +8,7 @@
 	var xcutoff = 30;
 	var ycutoff = 0;
 	var r = 2;
+	var voronoiRadius = 30;
 
 	var y_var = "Global_Sales";
 	var x_var = "Mean_UserCritic_Score";
@@ -27,6 +28,9 @@
 	var x_std = null;
 	var y_mu = null;
 	var y_std = null;
+
+	var voronoi = null;
+	var last_hover = null;
 
 	function compute_personsr_linregress(row_nums){
 		/*
@@ -358,6 +362,8 @@
 			y_std = d3.deviation(dataset, function(d){ return raw_value(d, y_var); });
 		}
 
+
+
 		// 3) Resizing the SVG
 		// lets remove your image placeholder
 		d3.select("#t5Viz > img")
@@ -414,7 +420,17 @@
 		// Either way, centered or not, from now on we use yscale_c and xscale_c //
 		//                                                                       //
 
-
+		// ### X) Calculate Voronoi points
+		voronoi = d3.voronoi()
+			.x(function(d, i) {
+				var v = value(d, x_var);
+				return  xscale_c(v);
+			})
+			.y(function(d) {
+				var v = value(d, y_var);
+				return yscale_c(v);
+			})
+			.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])(dataset);
 
 		// 5) Create X and Y axis
 		//calculate the placement of the origins for both axis
@@ -539,6 +555,7 @@
 				appdispatch.gameout.call("gameout", this, d, "t5");
 			});
 
+
 			// 8) Draw the regression line and the pearson's r value
 			var corr = compute_personsr_linregress(dataset);
 
@@ -596,6 +613,60 @@
 					.style("pointer-events", "none")
 					.attr("stroke", "fuchsia");
 
+
+			// ##### X) Draw an overlay to catch events
+			svg.selectAll("rect.events-overlay")
+				.data([0])
+				.enter().append('rect')
+				.attr('class', 'events-overlay')
+				.attr('x', xrange[0])
+				.attr('y', yrange[0])
+				.attr('width', xrange[1] - xrange[0])
+				.attr('height', yrange[1] - yrange[0])
+				.style('fill', '#f00')
+				.style('opacity', 0.0)
+				.on('mousemove', function(){
+					// get the current mouse position
+					var coords = d3.mouse(this);
+
+					// use the new diagram.find() function to find the Voronoi site
+					// closest to the mouse, limited by max distance voronoiRadius
+					var d = voronoi.find(coords[0], coords[1], voronoiRadius);
+
+					if(d !== null){
+						d = d.data;
+
+						last_hover = d;
+						// lets notify ourselves
+						
+						if (appstate.highlightedRows.indexOf(d) == -1){
+							dispatch2.call("gameout", null, last_hover);
+							dispatch.call("gamehover", this, d);
+							// and also the app. so that the linked views can change
+							// for the app we also pass from were we hovered.
+							appdispatch.gamehover.call("gamehover", this, d, "t5");
+						}
+					}
+					else{
+						d = last_hover
+						// lets notify ourselves
+						dispatch2.call("gameout", null, d);
+						
+						appdispatch.gameout.call("gameout", this, d, "t5");
+					}
+
+					// highlight the point if we found one
+					//highlight(site && site.data);
+				})
+				.on('mouseleave', function(){
+					d = last_hover
+					// lets notify ourselves
+					dispatch2.call("gameout", null, d);
+					
+					appdispatch.gameout.call("gameout", this, d, "t5");
+				});
+
+
 			// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
 			// The dots themselves are added/removed latter in drawHighlightt5 when the events fire.
 			svg.selectAll("g.x-crossair.y-crossair")
@@ -627,6 +698,7 @@
 			svg.selectAll("div.x-tooltip")
 				.data([0])
 				.enter().append("div")
+
 	};
 
 	window.drawt5 = drawt5;
