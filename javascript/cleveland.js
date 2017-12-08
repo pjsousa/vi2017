@@ -269,8 +269,8 @@
 				.attr("y1", function(d, i){ return yscale_c(rows_order[i]); })
 				.attr("x2", xrange[1])
 				.attr("y2", function(d, i){ return yscale_c(rows_order[i]); })
-				.attr("stroke-width", 2)
-				.attr("stroke", "rgba(120,120,120,1)");
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
 
 		// Draw the Y ticks and y label
 		svg.selectAll("text.y-axis-tick")
@@ -385,7 +385,7 @@
 			.data(dataset)
 			.enter().append("rect")
 			.attr("class", "event-grabbers")
-			.attr("fill","rgba(200, 200, 200, 0.2)")
+			.attr("fill","rgba(200, 200, 200, 0.0)")
 			.attr("x",function(d){ return xrange[0]; } )
 			.attr("width",function(d){ return xrange[1] - xrange[0]; } )
 			.attr("y",function(d, i) { return yscale_c(rows_order[i]) - r; })
