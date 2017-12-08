@@ -30,20 +30,20 @@
 	var y_mu = null;
 	var y_std = null;
 
+	var dataset;
+	var rows_order;
 
-	dispatch.on("gamehover.scatterplot", function(d){
+
+	dispatch.on("gamehover.t2", function(d){
 		mouse_coord = d3.mouse(this);
 
 		appstate.highlightedRows.push(d);
-
-		moveCrossair(d);
-		showDataTooltip(d, mouse_coord);
+		drawHighlightt2();
 	});
 
-	dispatch2.on("gameout.scatterplot", function(d){
+	dispatch2.on("gameout.t2", function(d){
 		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
-		hideCrossair();
-		hideDataTooltip(d);
+		drawHighlightt2();
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -133,46 +133,64 @@
 	function drawHighlightt2(from_target){
 		var row_nums = appstate.highlightedRows;
 		
-		var g = d3.selectAll("#t2Viz svg g.x-crossair.y-crossair");
+		var g = d3.selectAll("#t2Viz svg g.highlight");
 
-		var circles = g.selectAll("circle.x-crossair.y-crossair")
+		var circles = g.selectAll("rect.highlight")
 			.data(row_nums);
 
 		circles.enter()
-			.append("circle")
-				.attr("class", "x-crossair y-crossair")
-				.attr("r", r+1)
+			.append("rect")
+				.attr("class", "highlight")
 		circles.exit().remove();
 
-		g.selectAll("circle.x-crossair.y-crossair")
+		g.selectAll("rect.highlight")
+			.attr("opacity", 1)
+			.attr("fill","rgb(255,0,255)")
 			.style("pointer-events", "none")
-			.attr("fill", "fuchsia")
-			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
-			.attr("cy", function(row_num){ return yscale_c(value(row_num, y_var))})
+			.attr("x",function(d) {
+				var i = dataset.indexOf(d);
 
-		if(from_target == "clv"){
-			g.selectAll("circle.x-crossair.y-crossair")
-				.transition()
-				.duration(100)
-				.attr("r", r+10)
+				if(i == -1){
+					return -1000;
+				}
 
-				g.selectAll("circle.x-crossair.y-crossair")
-					.transition()
-					.delay(100)
-					.duration(100)
-					.attr("r", r+1)
+				return  xscale_c(rows_order[i]);
+			})
+			.attr("y", function(d, i) {
+				var v = value(d, y_var);
+				return yscale_c(v);
+			})
+			.attr("width", xscale_c.bandwidth())
+			.attr("height", function(d, i) {
+				var v = value(d, y_var);
+				
+				return yscale_c.range()[1] - yscale_c(v);
+			})
+			.attr("title", function(d) {return value(d, "Name"); })
 
-			g.selectAll("circle.x-crossair.y-crossair")
-				.transition()
-				.delay(200)
-				.duration(100)
-				.attr("r", r+10)
+		if(from_target == "t5"){
+			// g.selectAll("circle.highlight")
+			// 	.transition()
+			// 	.duration(100)
+			// 	.attr("r", r+10)
 
-			g.selectAll("circle.x-crossair.y-crossair")
-				.transition()
-				.delay(300)
-				.duration(100)
-				.attr("r", r+1)
+			// 	g.selectAll("circle.highlight")
+			// 		.transition()
+			// 		.delay(100)
+			// 		.duration(100)
+			// 		.attr("r", r+1)
+
+			// g.selectAll("circle.highlight")
+			// 	.transition()
+			// 	.delay(200)
+			// 	.duration(100)
+			// 	.attr("r", r+10)
+
+			// g.selectAll("circle.highlight")
+			// 	.transition()
+			// 	.delay(300)
+			// 	.duration(100)
+			// 	.attr("r", r+1)
 		}
 	};
 
@@ -329,42 +347,6 @@
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
 
-		// Draw the X grid
-		svg.selectAll("line.x-grid")
-			.data(xscale_c.domain())
-			.enter().append("line")
-				.attr("class", "x-grid")
-				.attr("x1", function(d){ return xscale_c(d); })
-				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale_c(d); })
-				.attr("y2", yrange[1])
-				.attr("stroke-width", 1)
-				.attr("stroke", "rgba(120,120,120,0.2)");
-
-			// Draw the Y zero
-			svg.selectAll("line.y-grid-0")
-				.data([1e-10])
-				.enter().append("line")
-					.attr("class", "y-grid-0")
-					.attr("x1", xrange[0])
-					.attr("y1", function(d){ return yscale_c(d); })
-					.attr("x2", xrange[1])
-					.attr("y2", function(d){ return yscale_c(d); })
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.5)");
-
-			// Draw the X zero
-			svg.selectAll("line.x-grid-0")
-				.data([1e-10])
-				.enter().append("line")
-					.attr("class", "x-grid-0")
-					.attr("x1", function(d){ return xscale_c(d); })
-					.attr("y1", yrange[0])
-					.attr("x2", function(d){ return xscale_c(d); })
-					.attr("y2", yrange[1])
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.5)");
-
 
 
 		// 7) Plot the data itself
@@ -393,66 +375,40 @@
 			.attr("title", function(d) {return value(d, "Name"); })
 
 
-			// 9) Draw the hovering crossair
-			// Draw the Y crossair
-			svg.selectAll("line.y-crossair")
-				.data([0])
-				.enter().append("line")
-					.attr("class", "y-crossair")
-					.attr("stroke-dasharray", 3, 3)
-					.attr("x1", xrange[0]) 
-					.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("x2", xrange[1]) 
-					.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("stroke-width", 1)
-					.style("pointer-events", "none")
-					.attr("stroke", "fuchsia");
-
-			// Draw the X crossair
-			svg.selectAll("line.x-crossair")
-				.data([0])
-				.enter().append("line")
-					.attr("class", "x-crossair")
-					.attr("stroke-dasharray", 3, 3)
-					.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("y1", yrange[0]) 
-					.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("y2", yrange[1]) 
-					.attr("stroke-width", 1)
-					.style("pointer-events", "none")
-					.attr("stroke", "fuchsia");
+			// 8) Overlay boxes over the plot to grab highlight events
+			svg.selectAll("rect.event-grabbers")
+				.remove();
+			svg.selectAll("rect.event-grabbers")
+				.data(dataset)
+				.enter().append("rect")
+				.attr("class", "event-grabbers")
+				.attr("fill","rgba(200, 0, 200, 0.0)")
+				.attr("x",function(d, i) {
+					return  xscale_c(rows_order[i]);
+				})
+				.attr("width", xscale_c.bandwidth())
+				.attr("y", yrange[0])
+				.attr("height", yrange[1])
+				.on("mouseover", function(d, i){
+					// lets notify ourselves
+					dispatch.call("gamehover", this, d);
+					// and also the app. so that the linked views can change
+					// for the app we also pass from were we hovered.
+					appdispatch.gamehover.call("gamehover", this, d, "t2");
+				})
+				.on("mouseout", function(d){
+					// lets notify ourselves
+					dispatch2.call("gameout", null, d);
+					
+					appdispatch.gameout.call("gameout", this, d, "t2");
+				});
 
 			// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
-			// The dots themselves are added/removed latter in drawHighlightt5 when the events fire.
-			svg.selectAll("g.x-crossair.y-crossair")
+			// The dots themselves are added/removed latter in drawHighlightclv when the events fire.
+			svg.selectAll("g.highlight")
 				.data([0])
 				.enter().append("g")
-					.attr("class", "x-crossair y-crossair");
-
-
-			// 10) Place tooltips
-			// Data tooltip
-			d3.select("#t2Viz").selectAll("div.data-tooltip")
-				.data([0])
-				.enter().append("div")
-					.attr("class", "data-tooltip")
-					.style("position", "absolute")
-					.style("z-index", "10")
-					.style("opacity", 0)
-					.style("border", "solid 3px rgba(0,127,255,0.7)")
-					.style("background-color", "rgba(255,255,255,0.7)")
-					.style("pointer-events", "none")
-					.style("padding", "5px 10px")
-
-			// X axis toolip
-			svg.selectAll("div.x-tooltip")
-				.data([0])
-				.enter().append("div")
-			
-			// Y axis toolip
-			svg.selectAll("div.x-tooltip")
-				.data([0])
-				.enter().append("div")
+					.attr("class", "highlight");
 	};
 
 	window.drawt2 = drawt2;

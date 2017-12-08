@@ -41,6 +41,10 @@
 
 	appdispatch.gamehover.on("gamehover", function(d, from){
 
+		if(from != "t2"){
+			drawHighlightt2(from);
+		}
+
 		if(from != "t5"){
 			drawHighlightt5(from);
 		}
@@ -55,6 +59,10 @@
 	});
 
 	appdispatch.gameout.on("gameout", function(d, from){
+		if(from != "t2"){
+			drawHighlightt2(from);
+		}
+
 		if(from != "t5"){
 			drawHighlightt5();
 		}
