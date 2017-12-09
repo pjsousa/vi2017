@@ -31,6 +31,11 @@
 
 	var voronoi = null;
 	var last_hover = null;
+	var quadtree;
+
+	var brush;
+	var zoom;
+	var clearbrush_quirk;
 
 	function compute_personsr_linregress(row_nums){
 		/*
@@ -168,6 +173,26 @@
 		return result;
 	};
 
+	function rectIntersects(rect1, rect2) {
+		const X = 0;
+		const Y = 1;
+		const TOP_LEFT = 0;
+		const BOTTOM_RIGHT = 1;
+		return (rect1[TOP_LEFT][X] <= rect2[BOTTOM_RIGHT][X] &&
+						rect2[TOP_LEFT][X] <= rect1[BOTTOM_RIGHT][X] &&
+						rect1[TOP_LEFT][Y] <= rect2[BOTTOM_RIGHT][Y] &&
+						rect2[TOP_LEFT][Y] <= rect1[BOTTOM_RIGHT][Y]);
+	};
+
+	function rectContains(rect, point) {
+		const X = 0;
+		const Y = 1;
+		const TOP_LEFT = 0;
+		const BOTTOM_RIGHT = 1;
+		return rect[TOP_LEFT][X] <= point[X] && point[X] <= rect[BOTTOM_RIGHT][X] &&
+					 rect[TOP_LEFT][Y] <= point[Y] && point[Y] <= rect[BOTTOM_RIGHT][Y];
+	};
+
 	function moveCrossair(row_num){
 
 		d3.select("#t5Viz")
@@ -231,7 +256,6 @@
 
 	function hideHighlight(){
 		
-
 	}
 
 	function hideCrossair(){
@@ -373,6 +397,14 @@
 			.attr("width",w)
 			.attr("height",h);
 
+		svg.append("defs").append("clipPath")
+			.attr("id","t5clip")
+			.append("rect")
+			.attr("x",xrange[0])
+			.attr("y",yrange[0])
+			.attr("width",xrange[1]-xrange[0])
+			.attr("height",yrange[1]-yrange[0]);
+
 
 
 		// 4) Creating the scales
@@ -432,6 +464,26 @@
 			})
 			.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])(dataset);
 
+
+		// ### X) Create Brush for select+zoom
+		brush = d3.brush()
+			.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])
+
+
+
+		// ### X) generate a quadtree for faster lookups for brushing
+		quadtree = d3.quadtree()
+			.x(function(d, i) {
+				var v = value(d, x_var);
+				return  xscale_c(v);
+			})
+			.y(function(d) {
+				var v = value(d, y_var);
+				return yscale_c(v);
+			})
+			.addAll(dataset);
+
+
 		// 5) Create X and Y axis
 		//calculate the placement of the origins for both axis
 		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale_c, yscale);
@@ -460,6 +512,7 @@
 		// draws the X axis with text label
 		gX = svg.append("g")
 		.attr("transform","translate(0," + axis_0["y"] + ")")
+		.attr("class","x axis")
 		.call(xaxis);
 		svg.append("text")
 			.attr("class", "x-axis-label")
@@ -523,7 +576,13 @@
 
 		// 7) Plot the data itself
 		// draws the plot itself
-		svg.selectAll("circle.data-point")
+		gPoints = svg.selectAll("g.datapoints")
+			.data([0])
+			.enter().append("g")
+				.attr("class", "datapoints")
+				.attr("clip-path","url(#t5clip)")
+
+		gPoints.selectAll("circle.data-point")
 			.data(dataset)
 			.enter().append("circle")
 			.attr("id", function(d){ return "d-t5-"+ d; })
@@ -540,20 +599,7 @@
 				var v = value(d, y_var);
 				return yscale_c(v);
 			})
-			.attr("title", function(d) {return value(d, "Name"); })
-			.on("mouseover", function(d){
-				// lets notify ourselves
-				dispatch.call("gamehover", this, d);
-				// and also the app. so that the linked views can change
-				// for the app we also pass from were we hovered.
-				appdispatch.gamehover.call("gamehover", this, d, "t5");
-			})
-			.on("mouseout", function(d){
-				// lets notify ourselves
-				dispatch2.call("gameout", null, d);
-				
-				appdispatch.gameout.call("gameout", this, d, "t5");
-			});
+			.attr("title", function(d) {return value(d, "Name"); });
 
 
 			// 8) Draw the regression line and the pearson's r value
@@ -614,18 +660,13 @@
 					.attr("stroke", "fuchsia");
 
 
-			// ##### X) Draw an overlay to catch events
-			svg.selectAll("rect.events-overlay")
+			// attach the brush to the chart
+			svg.selectAll("g.brush")
 				.data([0])
-				.enter().append('rect')
-				.attr('class', 'events-overlay')
-				.attr('x', xrange[0])
-				.attr('y', yrange[0])
-				.attr('width', xrange[1] - xrange[0])
-				.attr('height', yrange[1] - yrange[0])
-				.style('fill', '#f00')
-				.style('opacity', 0.0)
-				.on('mousemove', function(){
+				.enter().append('g')
+				.attr('class', 'brush')
+				.call(brush)
+				.on('mousemove.voronoi', function(){
 					// get the current mouse position
 					var coords = d3.mouse(this);
 
@@ -658,13 +699,120 @@
 					// highlight the point if we found one
 					//highlight(site && site.data);
 				})
-				.on('mouseleave', function(){
+				.on('mouseleave.voronoi', function(){
 					d = last_hover
 					// lets notify ourselves
 					dispatch2.call("gameout", null, d);
 					
 					appdispatch.gameout.call("gameout", this, d, "t5");
 				});
+
+			brush.on('end', function(){
+				var selection = d3.event.selection;
+				var brushedNodes = [];
+
+				// if we have no selection, just reset the brush highlight to no nodes
+				// if (!selection) {
+				// 	console.log("No selection");
+				// 	return;
+				// }
+				
+				if (clearbrush_quirk){
+					return;
+				}
+
+				if(selection){
+					// begin an array to collect the brushed nodes
+
+					// traverse the quad tree, skipping branches where we do not overlap
+					// with the brushed selection box
+					quadtree.visit(function(node, x1, y1, x2, y2){
+						// check that quadtree node intersects
+						const overlaps = rectIntersects(selection, [[x1, y1], [x2, y2]]);
+
+						// skip if it doesn't overlap the brush
+						if (!overlaps) {
+							return true;
+						}
+
+						// if this is a leaf node (node.length is falsy), verify it is within the brush
+						// we have to do this since an overlapping quadtree box does not guarantee
+						// that all the points within that box are covered by the brush.
+						if (!node.length) {
+							const d = node.data;
+							const dx = xscale_c(value(d, x_var));
+							const dy = yscale_c(value(d, y_var));
+
+							if (rectContains(selection, [dx, dy])) {
+								brushedNodes.push(d);
+							}
+						}
+
+						// return false so that we traverse into branch (only useful for non-leaf nodes)
+						return false;
+					});
+
+					console.log(brushedNodes);
+				}
+
+
+				// lets do zoom
+				if (!selection) {
+				  //if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+				  xscale_c.domain(xdomain);
+				  yscale_c.domain(ydomain);
+				  brushedNodes = dataset;
+				} else {
+				  xscale_c.domain([selection[0][0], selection[1][0]].map(xscale_c.invert, xscale_c));
+				  yscale_c.domain([selection[0][1], selection[1][1]].map(yscale_c.invert, yscale_c));
+				  clearbrush_quirk = true;
+				  svg.select(".brush").call(brush.move, null);
+				  clearbrush_quirk = false;
+				}
+
+				// ### X) Calculate Voronoi points
+				voronoi = d3.voronoi()
+					.x(function(d, i) {
+						var v = value(d, x_var);
+						return  xscale_c(v);
+					})
+					.y(function(d) {
+						var v = value(d, y_var);
+						return yscale_c(v);
+					})
+					.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])(brushedNodes);
+
+				// ### X) generate a quadtree for faster lookups for brushing
+				quadtree = d3.quadtree()
+					.x(function(d, i) {
+						var v = value(d, x_var);
+						return  xscale_c(v);
+					})
+					.y(function(d) {
+						var v = value(d, y_var);
+						return yscale_c(v);
+					})
+					.addAll(brushedNodes);
+				
+				var t = svg.transition().duration(750);
+				svg.select("g.x.axis").transition(t).call(xaxis);
+				svg.select("g.y.axis").transition(t).call(yaxis);
+
+				svg.selectAll("circle.data-point")
+					.transition()
+					.duration(1000)
+					.attr("cx",function(d, i) {
+						var v = value(d, x_var);
+						return  xscale_c(v); })
+					.attr("cy",function(d) {
+						var v = value(d, y_var);
+						return yscale_c(v); })
+
+			});
+
+
+			//svg.selectAll("g.brush")
+				//.call(zoom);
 
 
 			// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
