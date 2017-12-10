@@ -16,14 +16,8 @@
 	var dispatch = d3.dispatch("gamehover");
 	var dispatch2 = d3.dispatch("gameout");
 
-	var isLogScale = false;
-	var isCenteredData = false;
-
 	var xscale = null;
 	var yscale = null;
-	// centered scales (<v> - mu / std)
-	var xscale_c = null;
-	var yscale_c = null;
 	var x_mu = null;
 	var x_std = null;
 	var y_mu = null;
@@ -114,62 +108,24 @@
 			y: null
 		};
 
-		if(isLogScale){
-			result["x"] = xrange[0];
-			result["y"] = yrange[1];
-		}
-		else{
-			result["x"] = xrange[0];
-			result["y"] = yrange[1];
-		}
+		result["x"] = xrange[0];
+		result["y"] = yrange[1];
 
 		return result;
 	};
 	
-	// our (fnRV) local FuNction to Read Values for this vizualization
 	function raw_value(row_num, variable){
 		var result = null;
 
 		result = data_utils.read_value(row_num, variable);
 
-		// if ([x_var, y_var].indexOf(variable) > -1){
-		// 	if (isLogScale && !isCenteredData){
-		// 		result = result <= 0 ? 1e-2 : result;
-		// 	}
-		// }
-
 		return result;
-	};
-
-	function centered_value(row_num, variable){
-
-		return raw_value(row_num, variable);
 	};
 
 	function value(row_num, variable){
 		var result;
 		var raw_v = raw_value(row_num, variable);
-
-		// setle on the correct mean and st.deviation
-		var _mu = x_var == variable ? x_mu : y_mu;
-		var _std = x_var == variable ? x_std : y_std;
-		
-		if (isLogScale && isCenteredData){
-			// we need to calculate the log ourselves and center it
-			result = (Math.log(raw_v) - _mu) / _std;
-		}
-		else if(isLogScale && !isCenteredData){
-			// we can just return the value since the d3.scaleLog will do the log for us.
-			result = raw_v;
-		}
-		else if(!isLogScale && isCenteredData){
-			// we just need to center it
-			result = (raw_v - _mu) / _std;
-		}
-		else{
-			result = raw_v;
-		}
-
+		result = raw_v;
 		return result;
 	};
 
@@ -197,13 +153,13 @@
 
 		d3.select("#t5Viz")
 			.selectAll("line.y-crossair")
-				.attr("y1", yscale_c(value(row_num, y_var)))
-				.attr("y2", yscale_c(value(row_num, y_var)))
+				.attr("y1", yscale(value(row_num, y_var)))
+				.attr("y2", yscale(value(row_num, y_var)))
 
 		d3.select("#t5Viz")
 			.selectAll("line.x-crossair")
-				.attr("x1", xscale_c(value(row_num, x_var)))
-				.attr("x2", xscale_c(value(row_num, x_var)))
+				.attr("x1", xscale(value(row_num, x_var)))
+				.attr("x2", xscale(value(row_num, x_var)))
 
 		drawHighlightt5();
 	};
@@ -225,8 +181,8 @@
 		g.selectAll("circle.x-crossair.y-crossair")
 			.style("pointer-events", "none")
 			.attr("fill", "fuchsia")
-			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
-			.attr("cy", function(row_num){ return yscale_c(value(row_num, y_var))})
+			.attr("cx", function(row_num){ return xscale(value(row_num, x_var))})
+			.attr("cy", function(row_num){ return yscale(value(row_num, y_var))})
 
 		if(from_target == "clv"){
 			g.selectAll("circle.x-crossair.y-crossair")
@@ -373,19 +329,10 @@
 
 		// Lets compute the mean and st. deviation of the data
 		// ( is done on the fly because these might change depending on the rows selected )
-		if(isLogScale){
-			x_mu = d3.mean(dataset, function(d){ return Math.log(raw_value(d, x_var)); });
-			x_std = d3.deviation(dataset, function(d){ return Math.log(raw_value(d, x_var)); });
-			y_mu = d3.mean(dataset, function(d){ return Math.log(raw_value(d, y_var)); });
-			y_std = d3.deviation(dataset, function(d){ return Math.log(raw_value(d, y_var)); });
-		}
-		else{
-			x_mu = d3.mean(dataset, function(d){ return raw_value(d, x_var); });
-			x_std = d3.deviation(dataset, function(d){ return raw_value(d, x_var); });
-			y_mu = d3.mean(dataset, function(d){ return raw_value(d, y_var); });
-			y_std = d3.deviation(dataset, function(d){ return raw_value(d, y_var); });
-		}
-
+		x_mu = d3.mean(dataset, function(d){ return raw_value(d, x_var); });
+		x_std = d3.deviation(dataset, function(d){ return raw_value(d, x_var); });
+		y_mu = d3.mean(dataset, function(d){ return raw_value(d, y_var); });
+		y_std = d3.deviation(dataset, function(d){ return raw_value(d, y_var); });
 
 
 		// 3) Resizing the SVG
@@ -408,14 +355,8 @@
 
 
 		// 4) Creating the scales
-		if(isLogScale){
-			yscale = d3.scaleLog();
-			xscale = d3.scaleLog();
-		}
-		else{
-			yscale = d3.scaleLinear();
-			xscale = d3.scaleLinear();
-		}
+		yscale = d3.scaleLinear();
+		xscale = d3.scaleLinear();
 
 		yscale.domain(ydomain)
 				.range(yrange);
@@ -423,44 +364,17 @@
 		xscale.domain(xdomain)
 			.range(xrange);
 
-		if(isCenteredData){
-			if(isLogScale){
-				yscale_c = d3.scaleLinear()
-						.domain(ydomain.map(function(d){ return (Math.log(d) - y_mu) / y_std; }))
-						.range(yrange);
 
-				xscale_c = d3.scaleLinear()
-						.domain(xdomain.map(function(d){ return (Math.log(d) - x_mu) / x_std; }))
-						.range(xrange);
-			}
-			else{
-				yscale_c = d3.scaleLinear()
-						.domain(ydomain.map(function(d){ return (d - y_mu) / y_std; }))
-						.range(yrange);
-
-				xscale_c = d3.scaleLinear()
-						.domain(xdomain.map(function(d){ return (d - x_mu) / x_std; }))
-						.range(xrange);
-			}
-		}
-		else{
-			yscale_c = yscale;
-			xscale_c = xscale;
-		}
-
-		// ^--- Creating the scales                                              //
-		// Either way, centered or not, from now on we use yscale_c and xscale_c //
-		//                                                                       //
 
 		// ### X) Calculate Voronoi points
 		voronoi = d3.voronoi()
 			.x(function(d, i) {
 				var v = value(d, x_var);
-				return  xscale_c(v);
+				return  xscale(v);
 			})
 			.y(function(d) {
 				var v = value(d, y_var);
-				return yscale_c(v);
+				return yscale(v);
 			})
 			.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])(dataset);
 
@@ -475,24 +389,24 @@
 		quadtree = d3.quadtree()
 			.x(function(d, i) {
 				var v = value(d, x_var);
-				return  xscale_c(v);
+				return  xscale(v);
 			})
 			.y(function(d) {
 				var v = value(d, y_var);
-				return yscale_c(v);
+				return yscale(v);
 			})
 			.addAll(dataset);
 
 
 		// 5) Create X and Y axis
 		//calculate the placement of the origins for both axis
-		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale_c, yscale);
+		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale);
 
 		var yaxis = d3.axisLeft()
-			.scale(yscale_c);
+			.scale(yscale);
 
 		var xaxis = d3.axisBottom()
-			.scale(xscale_c)
+			.scale(xscale)
 			.ticks(10);
 
 		// draws the Y axis with text label
@@ -526,24 +440,24 @@
 		// 6) Create the background grid
 		// Draw the Y grid
 		svg.selectAll("line.y-grid")
-			.data(yscale_c.ticks())
+			.data(yscale.ticks())
 			.enter().append("line")
 				.attr("class", "y-grid")
 				.attr("x1", xrange[0])
-				.attr("y1", function(d){ return yscale_c(d); })
+				.attr("y1", function(d){ return yscale(d); })
 				.attr("x2", xrange[1])
-				.attr("y2", function(d){ return yscale_c(d); })
+				.attr("y2", function(d){ return yscale(d); })
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
 
 		// Draw the X grid
 		svg.selectAll("line.x-grid")
-			.data(xscale_c.ticks())
+			.data(xscale.ticks())
 			.enter().append("line")
 				.attr("class", "x-grid")
-				.attr("x1", function(d){ return xscale_c(d); })
+				.attr("x1", function(d){ return xscale(d); })
 				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale_c(d); })
+				.attr("x2", function(d){ return xscale(d); })
 				.attr("y2", yrange[1])
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
@@ -554,9 +468,9 @@
 				.enter().append("line")
 					.attr("class", "y-grid-0")
 					.attr("x1", xrange[0])
-					.attr("y1", function(d){ return yscale_c(d); })
+					.attr("y1", function(d){ return yscale(d); })
 					.attr("x2", xrange[1])
-					.attr("y2", function(d){ return yscale_c(d); })
+					.attr("y2", function(d){ return yscale(d); })
 					.attr("stroke-width", 1)
 					.attr("stroke", "rgba(120,120,120,0.5)");
 
@@ -565,9 +479,9 @@
 				.data([1e-10])
 				.enter().append("line")
 					.attr("class", "x-grid-0")
-					.attr("x1", function(d){ return xscale_c(d); })
+					.attr("x1", function(d){ return xscale(d); })
 					.attr("y1", yrange[0])
-					.attr("x2", function(d){ return xscale_c(d); })
+					.attr("x2", function(d){ return xscale(d); })
 					.attr("y2", yrange[1])
 					.attr("stroke-width", 1)
 					.attr("stroke", "rgba(120,120,120,0.5)");
@@ -593,11 +507,11 @@
 			.style("cursor", "none")
 			.attr("cx",function(d, i) {
 				var v = value(d, x_var);
-				return  xscale_c(v);
+				return  xscale(v);
 			})
 			.attr("cy",function(d) {
 				var v = value(d, y_var);
-				return yscale_c(v);
+				return yscale(v);
 			})
 			.attr("title", function(d) {return value(d, "Name"); });
 
@@ -609,10 +523,10 @@
 				.data([corr])
 				.enter().append("line")
 					.attr("class", "corr-line")
-					.attr("x1", function(d){ return xscale_c(xdomain[0]) - 5; })
-					.attr("y1", function(d){ return yscale_c(d["slope"]*xdomain[0] + d["intercept"])})
-					.attr("x2", function(d){ return xscale_c(xdomain[1]) - 5; })
-					.attr("y2", function(d){ return yscale_c(d["slope"]*xdomain[1] + d["intercept"]); })
+					.attr("x1", function(d){ return xscale(xdomain[0]) - 5; })
+					.attr("y1", function(d){ return yscale(d["slope"]*xdomain[0] + d["intercept"])})
+					.attr("x2", function(d){ return xscale(xdomain[1]) - 5; })
+					.attr("y2", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
 					.attr("stroke-width", 1)
 					.attr("stroke", "red");
 
@@ -621,8 +535,8 @@
 				.data([corr])
 				.enter().append("text")
 					.attr("class", "pearsonsr")
-					.attr("y", function(d){ return yscale_c(d["slope"]*xdomain[1] + d["intercept"]); })
-					.attr("x", function(d){ return xscale_c(xdomain[1]) + 5; })
+					.attr("y", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
+					.attr("x", function(d){ return xscale(xdomain[1]) + 5; })
 					.attr("fill", "red")
 					.style("text-anchor", "start")
 					.style("font-size", "10px")
@@ -740,8 +654,8 @@
 						// that all the points within that box are covered by the brush.
 						if (!node.length) {
 							const d = node.data;
-							const dx = xscale_c(value(d, x_var));
-							const dy = yscale_c(value(d, y_var));
+							const dx = xscale(value(d, x_var));
+							const dy = yscale(value(d, y_var));
 
 							if (rectContains(selection, [dx, dy])) {
 								brushedNodes.push(d);
@@ -759,12 +673,12 @@
 				// lets do zoom
 				if (!selection) {
 				  //if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-				  xscale_c.domain(xdomain);
-				  yscale_c.domain(ydomain);
+				  xscale.domain(xdomain);
+				  yscale.domain(ydomain);
 				  brushedNodes = dataset;
 				} else {
-				  xscale_c.domain([selection[0][0], selection[1][0]].map(xscale_c.invert, xscale_c));
-				  yscale_c.domain([selection[0][1], selection[1][1]].map(yscale_c.invert, yscale_c));
+				  xscale.domain([selection[0][0], selection[1][0]].map(xscale.invert, xscale));
+				  yscale.domain([selection[0][1], selection[1][1]].map(yscale.invert, yscale));
 				  clearbrush_quirk = true;
 				  svg.select(".brush").call(brush.move, null);
 				  clearbrush_quirk = false;
@@ -774,11 +688,11 @@
 				voronoi = d3.voronoi()
 					.x(function(d, i) {
 						var v = value(d, x_var);
-						return  xscale_c(v);
+						return  xscale(v);
 					})
 					.y(function(d) {
 						var v = value(d, y_var);
-						return yscale_c(v);
+						return yscale(v);
 					})
 					.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])(brushedNodes);
 
@@ -786,11 +700,11 @@
 				quadtree = d3.quadtree()
 					.x(function(d, i) {
 						var v = value(d, x_var);
-						return  xscale_c(v);
+						return  xscale(v);
 					})
 					.y(function(d) {
 						var v = value(d, y_var);
-						return yscale_c(v);
+						return yscale(v);
 					})
 					.addAll(brushedNodes);
 				
@@ -803,10 +717,10 @@
 					.duration(1000)
 					.attr("cx",function(d, i) {
 						var v = value(d, x_var);
-						return  xscale_c(v); })
+						return  xscale(v); })
 					.attr("cy",function(d) {
 						var v = value(d, y_var);
-						return yscale_c(v); })
+						return yscale(v); })
 
 			});
 
