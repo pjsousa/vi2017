@@ -40,58 +40,6 @@
 	var clearbrush_quirk;
 
 
-	function compute_personsr_linregress(row_nums){
-		/*
-			@TODO: Talvez mudar isto daqui para ser genérico entre qualquer par de colunas?
-
-			Por um lado, isto deviam ser 2 funções:
-				- compute pearson's r (a correlação)
-				- compute linear regression (o declive + o corte na origem)
-
-			Pelo outro, os cálculos iniciais são os mesmos... 
-
-			Para não fazer os 2 cálculos 2 vezes, juntámos ambos os na mesma funcção.
-
-			Usámos estas fórmulas:
-			 - https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
-			 - https://en.wikipedia.org/wiki/Linear_regression
-
-			não calculamos os residuais...
-		 */
-		
-		var result = {
-			pearsonr: 0,
-			slope: 0,
-			intercept: 0
-		};
-
-		if ( row_nums.length == 0 ){
-			return result;
-		};
-
-		var X_mu = d3.mean(row_nums, function(d){ return value(d, x_var) })
-		var X_0mu = row_nums.map(function(d){ return value(d, x_var) - X_mu; })
-
-		var Y_mu = d3.mean(row_nums, function(d){ return value(d, y_var) })
-		var Y_0mu = row_nums.map(function(d){ return value(d, y_var) - Y_mu; })
-
-		var _a = d3.sum(row_nums, function(d, i){ return X_0mu[i]*Y_0mu[i]; })
-
-		var _b = Math.sqrt(d3.sum(X_0mu, function(d){ return Math.pow(d, 2); }))
-		var _c = Math.sqrt(d3.sum(Y_0mu, function(d){ return Math.pow(d, 2); }))
-		var _d = _b*_c;
-
-		var r = _a / _d;
-		var slope = _a / Math.pow(_b, 2);;
-		var intercept = Y_mu - (slope* X_mu);
-
-		result["pearsonr"] = r;
-		result["slope"] = slope;
-		result["intercept"] = intercept;
-
-		return result;
-	};
-
 	dispatch.on("gamehover.scatterplot", function(d){
 		mouse_coord = d3.mouse(this);
 
@@ -156,40 +104,11 @@
 			return;
 		}
 
+
+
 		if(selection){
-			// begin an array to collect the brushed nodes
-
-			// traverse the quad tree, skipping branches where we do not overlap
-			// with the brushed selection box
-			quadtree.visit(function(node, x1, y1, x2, y2){
-				// check that quadtree node intersects
-				const overlaps = rectIntersects(selection, [[x1, y1], [x2, y2]]);
-
-				// skip if it doesn't overlap the brush
-				if (!overlaps) {
-					return true;
-				}
-
-				// if this is a leaf node (node.length is falsy), verify it is within the brush
-				// we have to do this since an overlapping quadtree box does not guarantee
-				// that all the points within that box are covered by the brush.
-				if (!node.length) {
-					const d = node.data;
-					const dx = xscale(value(d, x_var));
-					const dy = yscale(value(d, y_var));
-
-					if (rectContains(selection, [dx, dy])) {
-						brushedNodes.push(d);
-					}
-				}
-
-				// return false so that we traverse into branch (only useful for non-leaf nodes)
-				return false;
-			});
-
-			console.log(brushedNodes);
+			brushedNodes = vizutils.searchQuadtree_inrect(quadtree, selection, valueX, valueY)
 		}
-
 
 		// lets do zoom
 		if (!selection) {
@@ -206,29 +125,12 @@
 		}
 
 		// ### X) Calculate Voronoi points
-		voronoi = d3.voronoi()
-			.x(function(d, i) {
-				var v = value(d, x_var);
-				return  xscale(v);
-			})
-			.y(function(d) {
-				var v = value(d, y_var);
-				return yscale(v);
-			})
-			.extent([[xrange[0], yrange[0]], [xrange[1], yrange[1]]])(brushedNodes);
+		voronoi = vizutils.processVoronoi(brushedNodes, valueX, valueY, 
+																		[xrange[0], yrange[0]], [xrange[1], yrange[1]])
 
 		// ### X) generate a quadtree for faster lookups for brushing
-		quadtree = d3.quadtree()
-			.x(function(d, i) {
-				var v = value(d, x_var);
-				return  xscale(v);
-			})
-			.y(function(d) {
-				var v = value(d, y_var);
-				return yscale(v);
-			})
-			.addAll(brushedNodes);
-		
+		quadtree = vizutils.processQuadtree(brushedNodes, valueX, valueY)
+
 		var t = svg.transition().duration(750);
 		svg.select("g.x.axis").transition(t).call(xaxis);
 		svg.select("g.y.axis").transition(t).call(yaxis);
@@ -236,12 +138,9 @@
 		svg.selectAll("circle.data-point")
 			.transition()
 			.duration(1000)
-			.attr("cx",function(d, i) {
-				var v = value(d, x_var);
-				return  xscale(v); })
-			.attr("cy",function(d) {
-				var v = value(d, y_var);
-				return yscale(v); })
+			.attr("cx",valueX)
+			.attr("cy",valueY);
+
 	};
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -283,26 +182,6 @@
 	function valueY(d, i){
 		var v = value(d, y_var);
 		return yscale(v);
-	};
-
-	function rectIntersects(rect1, rect2) {
-		const X = 0;
-		const Y = 1;
-		const TOP_LEFT = 0;
-		const BOTTOM_RIGHT = 1;
-		return (rect1[TOP_LEFT][X] <= rect2[BOTTOM_RIGHT][X] &&
-						rect2[TOP_LEFT][X] <= rect1[BOTTOM_RIGHT][X] &&
-						rect1[TOP_LEFT][Y] <= rect2[BOTTOM_RIGHT][Y] &&
-						rect2[TOP_LEFT][Y] <= rect1[BOTTOM_RIGHT][Y]);
-	};
-
-	function rectContains(rect, point) {
-		const X = 0;
-		const Y = 1;
-		const TOP_LEFT = 0;
-		const BOTTOM_RIGHT = 1;
-		return rect[TOP_LEFT][X] <= point[X] && point[X] <= rect[BOTTOM_RIGHT][X] &&
-					 rect[TOP_LEFT][Y] <= point[Y] && point[Y] <= rect[BOTTOM_RIGHT][Y];
 	};
 
 	function moveCrossair(row_num){
@@ -418,7 +297,7 @@
 		w = boundingRect.width;
 		h = boundingRect.height;
 		console.log(w,h);
-	}
+	};
 
 	function initt5(){
 		dataset = appstate.datasetRows;
@@ -440,14 +319,6 @@
 		xrange = [];
 		xrange[0] = padding + xoffset;
 		xrange[1] = w - padding - xcutoff;
-
-		// Lets compute the mean and st. deviation of the data
-		// ( is done on the fly because these might change depending on the rows selected )
-		x_mu = d3.mean(dataset, function(d){ return raw_value(d, x_var); });
-		x_std = d3.deviation(dataset, function(d){ return raw_value(d, x_var); });
-		y_mu = d3.mean(dataset, function(d){ return raw_value(d, y_var); });
-		y_std = d3.deviation(dataset, function(d){ return raw_value(d, y_var); });
-
 
 
 		// 3) Resizing the SVG
@@ -554,7 +425,8 @@
 
 
 		// draws the Y axis with text label
-		svg.append("text")
+		svg.selectAll("text.y-axis-label")
+			.data([0]).enter().append("text")
 				.attr("class", "y-axis-label")
 				.attr("transform", "rotate(-90)")
 				.attr("x", -yrange[0])
@@ -564,13 +436,15 @@
 				.text("Global Sales ( Million Units )")
 
 		// draws the X axis with text label
-		svg.append("text")
+		svg.selectAll("text.x-axis-label")
+			.data([0]).enter().append("text")
 			.attr("class", "x-axis-label")
 			.attr("x", xrange[1])
 			.attr("y", yrange[1] + yoffset)
 			.attr("fill", "black")
 			.style("text-anchor", "end")
 			.text("Score ( / 100 )");
+
 
 
 			// 10) Place tooltips
@@ -586,6 +460,146 @@
 					.style("background-color", "rgba(255,255,255,0.7)")
 					.style("pointer-events", "none")
 					.style("padding", "5px 10px")
+	};
+
+	function updatePlot(row_numbers){
+		var dataset = row_numbers;
+
+		// 5) Create X and Y axis
+		// draws the Y axis with text label
+		gY = svg.select("g.y.axis")
+			.call(yaxis);
+
+		// draws the X axis with text label
+		gX = svg.select("g.x.axis")
+			.call(xaxis);
+
+		// 6) Create the background grid
+		// Draw the Y grid
+		svg.select("g.background").selectAll("line.y-grid")
+			.data(yscale.ticks())
+			.enter().append("line")
+				.attr("class", "y-grid")
+				.attr("x1", xrange[0])
+				.attr("y1", function(d){ return yscale(d); })
+				.attr("x2", xrange[1])
+				.attr("y2", function(d){ return yscale(d); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
+
+		// Draw the X grid
+		svg.select("g.background").selectAll("line.x-grid")
+			.data(xscale.ticks())
+			.enter().append("line")
+				.attr("class", "x-grid")
+				.attr("x1", function(d){ return xscale(d); })
+				.attr("y1", yrange[0])
+				.attr("x2", function(d){ return xscale(d); })
+				.attr("y2", yrange[1])
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
+
+		// Draw the Y zero
+		svg.select("g.background").selectAll("line.y-grid-0")
+			.data([1e-10])
+			.enter().append("line")
+				.attr("class", "y-grid-0")
+				.attr("x1", xrange[0])
+				.attr("y1", function(d){ return yscale(d); })
+				.attr("x2", xrange[1])
+				.attr("y2", function(d){ return yscale(d); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.5)");
+
+		// Draw the X zero
+		svg.select("g.background").selectAll("line.x-grid-0")
+			.data([1e-10])
+			.enter().append("line")
+				.attr("class", "x-grid-0")
+				.attr("x1", function(d){ return xscale(d); })
+				.attr("y1", yrange[0])
+				.attr("x2", function(d){ return xscale(d); })
+				.attr("y2", yrange[1])
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.5)");
+
+		// 7) Plot the data itself
+		// draws the plot itself
+		svg.select("g.datapoints").selectAll("circle.data-point")
+			.data(dataset)
+			.enter().append("circle")
+			.attr("id", function(d){ return "d-t5-"+ d; })
+			.attr("class", "data-point")
+			.attr("r",r)
+			.attr("opacity", 1)
+			.attr("fill","rgb(0,127,255)")
+			.style("cursor", "none")
+			.attr("cx",function(d, i) {
+				var v = value(d, x_var);
+				return  xscale(v);
+			})
+			.attr("cy",function(d) {
+				var v = value(d, y_var);
+				return yscale(v);
+			})
+			.attr("title", function(d) {return value(d, "Name"); });
+
+
+		// 8) Draw the regression line and the pearson's r value
+		var corr = data_utils.compute_personsr_linregress(dataset, x_var, y_var);
+
+		svg.select("g.datapoints").selectAll("line.corr-line")
+			.data([corr])
+			.enter().append("line")
+				.attr("class", "corr-line")
+				.attr("x1", function(d){ return xscale(xdomain[0]) - 5; })
+				.attr("y1", function(d){ return yscale(d["slope"]*xdomain[0] + d["intercept"])})
+				.attr("x2", function(d){ return xscale(xdomain[1]) - 5; })
+				.attr("y2", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "red");
+
+		// draws the pearsons r value of the right handside of the line
+		svg.select("g.datapoints").selectAll("text.pearsonsr")
+			.data([corr])
+			.enter().append("text")
+				.attr("class", "pearsonsr")
+				.attr("y", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
+				.attr("x", function(d){ return xscale(xdomain[1]) + 5; })
+				.attr("fill", "red")
+				.style("text-anchor", "start")
+				.style("font-size", "10px")
+				.text(function(d){ return "r: " + d3.format(".3f")(d["pearsonr"]); });
+
+		// 9) Draw the hovering crossair
+		// Draw the Y crossair
+		svg.select("g.highlight").selectAll("line.y-crossair")
+			.data([0])
+			.enter().append("line")
+				.attr("class", "y-crossair")
+				.attr("stroke-dasharray", 3, 3)
+				.attr("x1", xrange[0]) 
+				.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
+				.attr("x2", xrange[1]) 
+				.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
+				.attr("stroke-width", 1)
+				.style("pointer-events", "none")
+				.attr("stroke", "fuchsia");
+
+		// Draw the X crossair
+		svg.select("g.highlight").selectAll("line.x-crossair")
+			.data([0])
+			.enter().append("line")
+				.attr("class", "x-crossair")
+				.attr("stroke-dasharray", 3, 3)
+				.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
+				.attr("y1", yrange[0]) 
+				.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
+				.attr("y2", yrange[1]) 
+				.attr("stroke-width", 1)
+				.style("pointer-events", "none")
+				.attr("stroke", "fuchsia");
+
 	};
 
 	function drawt5(){
@@ -631,146 +645,7 @@
 
 		initt5();
 
-
-		// 5) Create X and Y axis
-		// draws the Y axis with text label
-		gY = svg.select("g.y.axis")
-			.call(yaxis);
-
-		// draws the X axis with text label
-		gX = svg.select("g.x.axis")
-			.call(xaxis);
-
-		// 6) Create the background grid
-		// Draw the Y grid
-		svg.select("g.background").selectAll("line.y-grid")
-			.data(yscale.ticks())
-			.enter().append("line")
-				.attr("class", "y-grid")
-				.attr("x1", xrange[0])
-				.attr("y1", function(d){ return yscale(d); })
-				.attr("x2", xrange[1])
-				.attr("y2", function(d){ return yscale(d); })
-				.attr("stroke-width", 1)
-				.attr("stroke", "rgba(120,120,120,0.2)");
-
-		// Draw the X grid
-		svg.select("g.background").selectAll("line.x-grid")
-			.data(xscale.ticks())
-			.enter().append("line")
-				.attr("class", "x-grid")
-				.attr("x1", function(d){ return xscale(d); })
-				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale(d); })
-				.attr("y2", yrange[1])
-				.attr("stroke-width", 1)
-				.attr("stroke", "rgba(120,120,120,0.2)");
-
-			// Draw the Y zero
-			svg.select("g.background").selectAll("line.y-grid-0")
-				.data([1e-10])
-				.enter().append("line")
-					.attr("class", "y-grid-0")
-					.attr("x1", xrange[0])
-					.attr("y1", function(d){ return yscale(d); })
-					.attr("x2", xrange[1])
-					.attr("y2", function(d){ return yscale(d); })
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.5)");
-
-			// Draw the X zero
-			svg.select("g.background").selectAll("line.x-grid-0")
-				.data([1e-10])
-				.enter().append("line")
-					.attr("class", "x-grid-0")
-					.attr("x1", function(d){ return xscale(d); })
-					.attr("y1", yrange[0])
-					.attr("x2", function(d){ return xscale(d); })
-					.attr("y2", yrange[1])
-					.attr("stroke-width", 1)
-					.attr("stroke", "rgba(120,120,120,0.5)");
-
-
-
-		// 7) Plot the data itself
-		// draws the plot itself
-		svg.select("g.datapoints").selectAll("circle.data-point")
-			.data(dataset)
-			.enter().append("circle")
-			.attr("id", function(d){ return "d-t5-"+ d; })
-			.attr("class", "data-point")
-			.attr("r",r)
-			.attr("opacity", 1)
-			.attr("fill","rgb(0,127,255)")
-			.style("cursor", "none")
-			.attr("cx",function(d, i) {
-				var v = value(d, x_var);
-				return  xscale(v);
-			})
-			.attr("cy",function(d) {
-				var v = value(d, y_var);
-				return yscale(v);
-			})
-			.attr("title", function(d) {return value(d, "Name"); });
-
-
-			// 8) Draw the regression line and the pearson's r value
-			var corr = compute_personsr_linregress(dataset);
-
-			svg.select("g.datapoints").selectAll("line.corr-line")
-				.data([corr])
-				.enter().append("line")
-					.attr("class", "corr-line")
-					.attr("x1", function(d){ return xscale(xdomain[0]) - 5; })
-					.attr("y1", function(d){ return yscale(d["slope"]*xdomain[0] + d["intercept"])})
-					.attr("x2", function(d){ return xscale(xdomain[1]) - 5; })
-					.attr("y2", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
-					.attr("stroke-width", 1)
-					.attr("stroke", "red");
-
-			// draws the pearsons r value of the right handside of the line
-			svg.select("g.datapoints").selectAll("text.pearsonsr")
-				.data([corr])
-				.enter().append("text")
-					.attr("class", "pearsonsr")
-					.attr("y", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
-					.attr("x", function(d){ return xscale(xdomain[1]) + 5; })
-					.attr("fill", "red")
-					.style("text-anchor", "start")
-					.style("font-size", "10px")
-					.text(function(d){ return "r: " + d3.format(".3f")(d["pearsonr"]); });
-
-
-
-			// 9) Draw the hovering crossair
-			// Draw the Y crossair
-			svg.select("g.highlight").selectAll("line.y-crossair")
-				.data([0])
-				.enter().append("line")
-					.attr("class", "y-crossair")
-					.attr("stroke-dasharray", 3, 3)
-					.attr("x1", xrange[0]) 
-					.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("x2", xrange[1]) 
-					.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("stroke-width", 1)
-					.style("pointer-events", "none")
-					.attr("stroke", "fuchsia");
-
-			// Draw the X crossair
-			svg.select("g.highlight").selectAll("line.x-crossair")
-				.data([0])
-				.enter().append("line")
-					.attr("class", "x-crossair")
-					.attr("stroke-dasharray", 3, 3)
-					.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("y1", yrange[0]) 
-					.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
-					.attr("y2", yrange[1]) 
-					.attr("stroke-width", 1)
-					.style("pointer-events", "none")
-					.attr("stroke", "fuchsia");
-
+		updatePlot(dataset);
 	};
 
 	window.drawt5 = drawt5;

@@ -355,6 +355,58 @@
 		return result;
 	};
 
+	function compute_personsr_linregress(row_nums, x_var, y_var){
+		/*
+			@TODO: Talvez mudar isto daqui para ser genérico entre qualquer par de colunas?
+
+			Por um lado, isto deviam ser 2 funções:
+				- compute pearson's r (a correlação)
+				- compute linear regression (o declive + o corte na origem)
+
+			Pelo outro, os cálculos iniciais são os mesmos... 
+
+			Para não fazer os 2 cálculos 2 vezes, juntámos ambos os na mesma funcção.
+
+			Usámos estas fórmulas:
+			 - https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+			 - https://en.wikipedia.org/wiki/Linear_regression
+
+			não calculamos os residuais...
+		 */
+		
+		var result = {
+			pearsonr: 0,
+			slope: 0,
+			intercept: 0
+		};
+
+		if ( row_nums.length == 0 ){
+			return result;
+		};
+
+		var X_mu = d3.mean(row_nums, function(d){ return read_value(d, x_var) })
+		var X_0mu = row_nums.map(function(d){ return read_value(d, x_var) - X_mu; })
+
+		var Y_mu = d3.mean(row_nums, function(d){ return read_value(d, y_var) })
+		var Y_0mu = row_nums.map(function(d){ return read_value(d, y_var) - Y_mu; })
+
+		var _a = d3.sum(row_nums, function(d, i){ return X_0mu[i]*Y_0mu[i]; })
+
+		var _b = Math.sqrt(d3.sum(X_0mu, function(d){ return Math.pow(d, 2); }))
+		var _c = Math.sqrt(d3.sum(Y_0mu, function(d){ return Math.pow(d, 2); }))
+		var _d = _b*_c;
+
+		var r = _a / _d;
+		var slope = _a / Math.pow(_b, 2);;
+		var intercept = Y_mu - (slope* X_mu);
+
+		result["pearsonr"] = r;
+		result["slope"] = slope;
+		result["intercept"] = intercept;
+
+		return result;
+	};
+
 	// isto faz com que a datasources exista nos outros ficheiros.
 	window.datasources = datasources;
 	window.data_utils = {
@@ -365,6 +417,7 @@
 		get_records: get_records,
 		get_index: get_index,
 		column_hasvalue: column_hasvalue,
-		read_value: read_value
+		read_value: read_value,
+		compute_personsr_linregress: compute_personsr_linregress
 	}
 })();
