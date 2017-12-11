@@ -15,12 +15,12 @@
 	var dispatch = d3.dispatch("gamehover", "gameout", "brushmove", "brushleave", "brushend");
 
 	var localstate = {
-			datasetRows: [],
-			selectedRows: [],
-			highlightedRows: [],
-			data_slices: {},
-			clearbrush_quirk: null
-		};
+		datasetRows: [],
+		selectedRows: [],
+		highlightedRows: [],
+		data_slices: {},
+		clearbrush_quirk: null
+	};
 
 	var xdomain = null;
 	var ydomain = null;
@@ -28,10 +28,6 @@
 	var yrange = null;
 	var xscale = null;
 	var yscale = null;
-	var x_mu = null;
-	var x_std = null;
-	var y_mu = null;
-	var y_std = null;
 
 	var axis_0;
 	var yaxis;
@@ -139,14 +135,7 @@
 		quadtree = vizutils.processQuadtree(brushedNodes, valueX, valueY)
 
 		// update plot
-		var t = svg.transition().duration(750);
-		svg.select("g.x.axis").transition(t).call(xaxis);
-		svg.select("g.y.axis").transition(t).call(yaxis);
-
-		svg.selectAll("circle.data-point")
-			.transition(t)
-			.attr("cx",valueX)
-			.attr("cy",valueY);
+		updatePlot(localstate.datasetRows);
 
 		appdispatch.dataslice.call("dataslice", this, "t5");
 	});
@@ -224,10 +213,10 @@
 		g.selectAll("circle.x-crossair.y-crossair")
 			.style("pointer-events", "none")
 			.attr("fill", "fuchsia")
-			.attr("cx", function(row_num){ return xscale(value(row_num, x_var))})
-			.attr("cy", function(row_num){ return yscale(value(row_num, y_var))})
+			.attr("cx", valueX)
+			.attr("cy", valueY)
 
-		if(from_target == "clv"){
+		if(["clv","t2"].indexOf(from_target) > -1){
 			g.selectAll("circle.x-crossair.y-crossair")
 				.transition()
 				.duration(100)
@@ -459,6 +448,35 @@
 			.text("Score ( / 100 )");
 
 
+			// 9) Draw the hovering crossair
+			// Draw the Y crossair
+			svg.select("g.highlight").selectAll("line.y-crossair")
+				.data([0])
+				.enter().append("line")
+					.attr("class", "y-crossair")
+					.attr("stroke-dasharray", 3, 3)
+					.attr("x1", xrange[0]) 
+					.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("x2", xrange[1]) 
+					.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("stroke-width", 1)
+					.style("pointer-events", "none")
+					.attr("stroke", "fuchsia");
+
+			// Draw the X crossair
+			svg.select("g.highlight").selectAll("line.x-crossair")
+				.data([0])
+				.enter().append("line")
+					.attr("class", "x-crossair")
+					.attr("stroke-dasharray", 3, 3)
+					.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("y1", yrange[0]) 
+					.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
+					.attr("y2", yrange[1]) 
+					.attr("stroke-width", 1)
+					.style("pointer-events", "none")
+					.attr("stroke", "fuchsia");
+
 
 			// 10) Place tooltips
 			// Data tooltip
@@ -478,13 +496,19 @@
 	function updatePlot(row_numbers){
 		var dataset = row_numbers;
 
+		// update plot
+		var t0 = svg.transition().duration(100);
+		var t1 = svg.transition().delay(100).duration(500);
+
 		// 5) Create X and Y axis
 		// draws the Y axis with text label
-		gY = svg.select("g.y.axis")
+		var gY = svg.select("g.y.axis")
+			.transition(t0)
 			.call(yaxis);
 
 		// draws the X axis with text label
-		gX = svg.select("g.x.axis")
+		var gX = svg.select("g.x.axis")
+			.transition(t0)
 			.call(xaxis);
 
 		// 6) Create the background grid
@@ -494,23 +518,33 @@
 			.enter().append("line")
 				.attr("class", "y-grid")
 				.attr("x1", xrange[0])
-				.attr("y1", function(d){ return yscale(d); })
 				.attr("x2", xrange[1])
-				.attr("y2", function(d){ return yscale(d); })
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
+		svg.select("g.background").selectAll("line.y-grid")
+			.data(yscale.ticks())
+			.exit().remove()
+		svg.select("g.background").selectAll("line.y-grid")
+				.transition(t1)
+				.attr("y1", function(d){ return yscale(d); })
+				.attr("y2", function(d){ return yscale(d); })
 
 		// Draw the X grid
 		svg.select("g.background").selectAll("line.x-grid")
 			.data(xscale.ticks())
 			.enter().append("line")
 				.attr("class", "x-grid")
-				.attr("x1", function(d){ return xscale(d); })
 				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale(d); })
 				.attr("y2", yrange[1])
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
+		svg.select("g.background").selectAll("line.x-grid")
+			.data(xscale.ticks())
+			.exit().remove()
+		svg.select("g.background").selectAll("line.x-grid")
+				.transition(t1)
+				.attr("x1", function(d){ return xscale(d); })
+				.attr("x2", function(d){ return xscale(d); })
 
 		// Draw the Y zero
 		svg.select("g.background").selectAll("line.y-grid-0")
@@ -518,100 +552,50 @@
 			.enter().append("line")
 				.attr("class", "y-grid-0")
 				.attr("x1", xrange[0])
-				.attr("y1", function(d){ return yscale(d); })
 				.attr("x2", xrange[1])
-				.attr("y2", function(d){ return yscale(d); })
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.5)");
+		svg.select("g.background").selectAll("line.y-grid-0")
+				.transition(t1)
+				.attr("y1", function(d){ return yscale(d); })
+				.attr("y2", function(d){ return yscale(d); })
 
 		// Draw the X zero
 		svg.select("g.background").selectAll("line.x-grid-0")
 			.data([1e-10])
 			.enter().append("line")
 				.attr("class", "x-grid-0")
-				.attr("x1", function(d){ return xscale(d); })
 				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale(d); })
 				.attr("y2", yrange[1])
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.5)");
+		svg.select("g.background").selectAll("line.x-grid-0")
+				.transition(t1)
+				.attr("x1", function(d){ return xscale(d); })
+				.attr("x2", function(d){ return xscale(d); })
+
+
 
 		// 7) Plot the data itself
 		// draws the plot itself
 		svg.select("g.datapoints").selectAll("circle.data-point")
 			.data(dataset)
 			.enter().append("circle")
-			.attr("id", function(d){ return "d-t5-"+ d; })
-			.attr("class", "data-point")
-			.attr("r",r)
-			.attr("opacity", 1)
-			.attr("fill","rgb(0,127,255)")
-			.style("cursor", "none")
-			.attr("cx",function(d, i) {
-				var v = value(d, x_var);
-				return  xscale(v);
-			})
-			.attr("cy",function(d) {
-				var v = value(d, y_var);
-				return yscale(v);
-			})
-			.attr("title", function(d) {return value(d, "Name"); });
-
-
-		// 8) Draw the regression line and the pearson's r value
-		var corr = data_utils.compute_personsr_linregress(dataset, x_var, y_var);
-
-		svg.select("g.datapoints").selectAll("line.corr-line")
-			.data([corr])
-			.enter().append("line")
-				.attr("class", "corr-line")
-				.attr("x1", function(d){ return xscale(xdomain[0]) - 5; })
-				.attr("y1", function(d){ return yscale(d["slope"]*xdomain[0] + d["intercept"])})
-				.attr("x2", function(d){ return xscale(xdomain[1]) - 5; })
-				.attr("y2", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
-				.attr("stroke-width", 1)
-				.attr("stroke", "red");
-
-		// draws the pearsons r value of the right handside of the line
-		svg.select("g.datapoints").selectAll("text.pearsonsr")
-			.data([corr])
-			.enter().append("text")
-				.attr("class", "pearsonsr")
-				.attr("y", function(d){ return yscale(d["slope"]*xdomain[1] + d["intercept"]); })
-				.attr("x", function(d){ return xscale(xdomain[1]) + 5; })
-				.attr("fill", "red")
-				.style("text-anchor", "start")
-				.style("font-size", "10px")
-				.text(function(d){ return "r: " + d3.format(".3f")(d["pearsonr"]); });
-
-		// 9) Draw the hovering crossair
-		// Draw the Y crossair
-		svg.select("g.highlight").selectAll("line.y-crossair")
-			.data([0])
-			.enter().append("line")
-				.attr("class", "y-crossair")
-				.attr("stroke-dasharray", 3, 3)
-				.attr("x1", xrange[0]) 
-				.attr("y1", -1000) // this value doesn't matter. we just don't want to see it right away
-				.attr("x2", xrange[1]) 
-				.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
-				.attr("stroke-width", 1)
-				.style("pointer-events", "none")
-				.attr("stroke", "fuchsia");
-
-		// Draw the X crossair
-		svg.select("g.highlight").selectAll("line.x-crossair")
-			.data([0])
-			.enter().append("line")
-				.attr("class", "x-crossair")
-				.attr("stroke-dasharray", 3, 3)
-				.attr("x1", -1000) // this value doesn't matter. we just don't want to see it right away
-				.attr("y1", yrange[0]) 
-				.attr("x2", -1000) // this value doesn't matter. we just don't want to see it right away
-				.attr("y2", yrange[1]) 
-				.attr("stroke-width", 1)
-				.style("pointer-events", "none")
-				.attr("stroke", "fuchsia");
+				.attr("id", function(d){ return "d-t5-"+ d; })
+				.attr("class", "data-point")
+				.attr("r",r)
+				.attr("opacity", 1)
+				.attr("fill","rgb(0,127,255)")
+				.style("cursor", "none")
+				.transition(t1)
+				.attr("title", function(d) {return value(d, "Name"); })
+		svg.select("g.datapoints").selectAll("circle.data-point")
+			.data(dataset)
+			.exit().remove();
+		svg.select("g.datapoints").selectAll("circle.data-point")
+			.transition(t1)
+			.attr("cx",valueX)
+			.attr("cy",valueY)
 	};
 
 	function drawt5(app_row_numbers, svgelement){
@@ -662,9 +646,9 @@
 
 		localstate.datasetRows = appstate.datasetRows.map(function(e){ return e; });
 
-		initt5(svgelement);
+		initt5();
 
-		updatePlot(localstate.datasetRows,svgelement);
+		updatePlot(localstate.datasetRows);
 	};
 
 	window.drawt5 = drawt5;

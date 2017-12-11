@@ -75,7 +75,9 @@
 	});
 
 	appdispatch.dataslice.on("dataslice", function(from){
+		appstate.datasetRows = d3.range(datasources["data_v2"].length);
 		appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
+
 		
 		// if(from!="t1"){
 		// 	drawt1(appstate.datasetRows);
@@ -127,7 +129,6 @@
 			else if(_id == "t4Panel"){
 				//setSizest4(this.getClientRects()[0])
 			}
-			
 		})
 	}
 
