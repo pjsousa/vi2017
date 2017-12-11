@@ -292,50 +292,42 @@
 					{Genre: "Action", JP_Sales: "2560", "EU_Sales": "100", "NA_Sales": "120", "Year_of_Release":1996 },
 				]
 		 */
-		Array.prototype.contains = function(v) {
-				for(var i = 0; i < this.length; i++) {
-						if(this[i] === v) return true;
-				}
-				return false;
-		};
+		var rows;
 
-		Array.prototype.unique = function() {
-				var arr = [];
-				for(var i = 0; i < this.length; i++) {
-						if(!arr.includes(this[i])) {
-								arr.push(this[i]);
-						}
-				}
-				return arr; 
+		if (rows === null){
+			rows = appstate.datasetRows;
 		}
+
+		rows = rows.map(function(row_num){ return datasources["data_v2"][row_num]; });
+
 		var sales = [];
 		var res = [];
 		var n = 0;
-		if(rows == null){
-				var r = datasources.data_v2.map(a => a["Year_of_Release"]);
-				var uniqueYears = r.unique();
-				for(var ind = 0; ind < uniqueYears.length; ind++){
-						var year = uniqueYears[ind];
-						var JP = 0;
-						var EU = 0;
-						var NA = 0;
-						var new_row = {};
-						for(var i = 0; i < datasources.data_v2.length; i++){
-								var row = datasources.data_v2[i];
-								if(row.Year_of_Release == year && row[ref_col_name]==ref_col_value){
-										JP += parseFloat(row["JP_Sales"]);
-										EU += parseFloat(row["EU_Sales"]);
-										NA += parseFloat(row["NA_Sales"]);
-								}
+		
+		var r = datasources.data_v2.map(a => a["Year_of_Release"]);
+		var uniqueYears = _.uniq(r);
+		for(var ind = 0; ind < uniqueYears.length; ind++){
+				var year = uniqueYears[ind];
+				var JP = 0;
+				var EU = 0;
+				var NA = 0;
+				var new_row = {};
+				for(var i = 0; i < datasources.data_v2.length; i++){
+						var row = datasources.data_v2[i];
+						if(row.Year_of_Release == year && row[ref_col_name]==ref_col_value){
+								JP += parseFloat(row["JP_Sales"]);
+								EU += parseFloat(row["EU_Sales"]);
+								NA += parseFloat(row["NA_Sales"]);
 						}
-						new_row["Year_of_Release"] = year;
-						new_row[ref_col_name] = ref_col_value;
-						new_row["JP_Sales"] = JP;
-						new_row["EU_Sales"] = EU;
-						new_row["NA_Sales"] = NA;
-						res[ind] = new_row;
 				}
+				new_row["Year_of_Release"] = year;
+				new_row[ref_col_name] = ref_col_value;
+				new_row["JP_Sales"] = JP;
+				new_row["EU_Sales"] = EU;
+				new_row["NA_Sales"] = NA;
+				res[ind] = new_row;
 		}
+		
 		return res;
 	};
 
