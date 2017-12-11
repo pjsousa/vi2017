@@ -12,8 +12,15 @@
 	var y_var = "Global_Sales";
 	var x_var = "Mean_UserCritic_Score";
 
-	var dispatch = d3.dispatch("gamehover");
-	var dispatch2 = d3.dispatch("gameout");
+	var dispatch = d3.dispatch("gamehover", "gameout", "brushmove", "brushleave", "brushend");
+
+	var localstate = {
+			datasetRows: [],
+			selectedRows: [],
+			highlightedRows: [],
+			data_slices: {},
+			clearbrush_quirk: null
+		};
 
 	var xdomain = null;
 	var ydomain = null;
@@ -37,25 +44,26 @@
 	var svg;
 	var brush;
 	var zoom;
-	var clearbrush_quirk;
 
 
 	dispatch.on("gamehover.scatterplot", function(d){
 		mouse_coord = d3.mouse(this);
 
+		localstate.highlightedRows.push(d);
 		appstate.highlightedRows.push(d);
 
 		moveCrossair(d);
 		showDataTooltip(d, mouse_coord);
 	});
 
-	dispatch2.on("gameout.scatterplot", function(d){
+	dispatch.on("gameout.scatterplot", function(d){
+		localstate.highlightedRows.splice(localstate.highlightedRows.indexOf(d), 1);
 		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
 		hideCrossair();
 		hideDataTooltip(d);
 	});
 
-	function mouseMove_handler(){
+	dispatch.on("brushmove", function(){
 		// get the current mouse position
 		var coords = d3.mouse(this);
 
@@ -67,7 +75,7 @@
 			last_hover = d;
 			
 			if (appstate.highlightedRows.indexOf(d) == -1){
-				dispatch2.call("gameout", null, last_hover);
+				dispatch.call("gameout", null, last_hover);
 				dispatch.call("gamehover", this, d);
 				
 				appdispatch.gamehover.call("gamehover", this, d, "t5");
@@ -76,35 +84,27 @@
 		else{
 			d = last_hover
 			
-			dispatch2.call("gameout", null, d);
+			dispatch.call("gameout", null, d);
 			
 			appdispatch.gameout.call("gameout", this, d, "t5");
 		}
-	};
+	});
 
-	function mouseLeave_handler(){
+	dispatch.on("brushleave", function(){
 		d = last_hover
 		// lets notify ourselves
-		dispatch2.call("gameout", null, d);
+		dispatch.call("gameout", null, d);
 		
 		appdispatch.gameout.call("gameout", this, d, "t5");
-	};
+	});
 
-	function brushEnd_handler(){
+	dispatch.on("brushend", function(){
 		var selection = d3.event.selection;
 		var brushedNodes = [];
 
-		// if we have no selection, just reset the brush highlight to no nodes
-		// if (!selection) {
-		// 	console.log("No selection");
-		// 	return;
-		// }
-		
-		if (clearbrush_quirk){
+		if (localstate.clearbrush_quirk){
 			return;
 		}
-
-
 
 		if(selection){
 			brushedNodes = vizutils.searchQuadtree_inrect(quadtree, selection, valueX, valueY)
@@ -112,17 +112,24 @@
 
 		// lets do zoom
 		if (!selection) {
-		  //if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-		  xscale.domain(xdomain);
-		  yscale.domain(ydomain);
-		  brushedNodes = dataset;
+			//if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+			xscale.domain(xdomain);
+			yscale.domain(ydomain);
+			brushedNodes = localstate.datasetRows;
 		} else {
-		  xscale.domain([selection[0][0], selection[1][0]].map(xscale.invert, xscale));
-		  yscale.domain([selection[0][1], selection[1][1]].map(yscale.invert, yscale));
-		  clearbrush_quirk = true;
-		  svg.select(".brush").call(brush.move, null);
-		  clearbrush_quirk = false;
+			xscale.domain([selection[0][0], selection[1][0]].map(xscale.invert, xscale));
+			yscale.domain([selection[0][1], selection[1][1]].map(yscale.invert, yscale));
+			localstate.clearbrush_quirk = true;
+			svg.select(".brush").call(brush.move, null);
+			localstate.clearbrush_quirk = false;
 		}
+
+		localstate.data_slices = brushedNodes;
+		slice_util.setSlice(appstate.data_slices, "t5", x_var, 
+												xscale.domain()[0], xscale.domain()[1])
+		slice_util.setSlice(appstate.data_slices, "t5", y_var, 
+												yscale.domain()[1], yscale.domain()[0])
+
 
 		// ### X) Calculate Voronoi points
 		voronoi = vizutils.processVoronoi(brushedNodes, valueX, valueY, 
@@ -131,17 +138,18 @@
 		// ### X) generate a quadtree for faster lookups for brushing
 		quadtree = vizutils.processQuadtree(brushedNodes, valueX, valueY)
 
+		// update plot
 		var t = svg.transition().duration(750);
 		svg.select("g.x.axis").transition(t).call(xaxis);
 		svg.select("g.y.axis").transition(t).call(yaxis);
 
 		svg.selectAll("circle.data-point")
-			.transition()
-			.duration(1000)
+			.transition(t)
 			.attr("cx",valueX)
 			.attr("cy",valueY);
 
-	};
+		appdispatch.dataslice.call("dataslice", this, "t5");
+	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
 		/*
@@ -300,7 +308,7 @@
 	};
 
 	function initt5(){
-		dataset = appstate.datasetRows;
+		var dataset = localstate.datasetRows;
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		ydomain = [];
@@ -326,8 +334,7 @@
 		d3.select("#t5Viz > img")
 			.remove();
 
-		svg = d3.selectAll("#t5Viz svg")
-			.attr("width",w)
+		svg.attr("width",w)
 			.attr("height",h);
 
 		svg.selectAll("defs")
@@ -417,10 +424,16 @@
 				.call(brush);
 
 		svg.selectAll("g.brush")
-			.on('mousemove.voronoi', mouseMove_handler)
-			.on("mouseleave.voronoi", mouseLeave_handler);
+			.on("mousemove", function(){
+				dispatch.call("brushmove", this);
+			})
+			.on("mouseleave", function(){
+				dispatch.call("brushleave", this);
+			});
 
-		brush.on('end', brushEnd_handler);
+		brush.on('end', function(){
+			dispatch.call("brushend", this);
+		});
 
 
 
@@ -599,10 +612,9 @@
 				.attr("stroke-width", 1)
 				.style("pointer-events", "none")
 				.attr("stroke", "fuchsia");
-
 	};
 
-	function drawt5(){
+	function drawt5(app_row_numbers, svgelement){
 		/*
 			"Drawing t5" means:
 	
@@ -640,12 +652,19 @@
 				The frequency of the viz are the games themselves. This makes it easier, 
 				since we have the same frequency as the raw data...
 		 */
+		
+		if(typeof svgelement === "undefined"){
+			svg = d3.selectAll("#t5Viz svg");
+		}
+		else{
+			svg = d3.select(svgelement);
+		}
 
-		var dataset = appstate.datasetRows;
+		localstate.datasetRows = appstate.datasetRows.map(function(e){ return e; });
 
-		initt5();
+		initt5(svgelement);
 
-		updatePlot(dataset);
+		updatePlot(localstate.datasetRows,svgelement);
 	};
 
 	window.drawt5 = drawt5;
