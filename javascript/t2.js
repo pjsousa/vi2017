@@ -6,6 +6,12 @@
 	var yoffset = 130;
 	var xcutoff = 80;
 	var ycutoff = 0;
+	
+	var xoffset_h = 20;
+	var yoffset_h = 130;
+	var xcutoff_h = 0;
+	var ycutoff_h = 0;
+
 	var max_names_len = 50;
 	var top_rows = 15;
 
@@ -37,6 +43,7 @@
 	var xaxis;
 
 	var dataset;
+	var dataset_h;
 	var rows_order;
 
 	var initdropdowns_quirk = false;
@@ -45,12 +52,12 @@
 		mouse_coord = d3.mouse(this);
 
 		appstate.highlightedRows.push(d);
-		drawHighlightt2();
+		drawHighlightt2("t2");
 	});
 
 	dispatch.on("gameout.t2", function(d){
 		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
-		drawHighlightt2();
+		drawHighlightt2("t2");
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -92,7 +99,13 @@
 
 	function drawHighlightt2(from_target){
 		var row_nums = appstate.highlightedRows;
-		
+
+		if(row_nums.length > 0){
+			localstate.datasetRows = localSlicet2(appstate.datasetRows);
+			initt2();
+			updatePlot(localstate.datasetRows);
+		}
+
 		var g = d3.selectAll("#t2Viz svg g.highlight");
 
 		var circles = g.selectAll("rect.highlight")
@@ -127,6 +140,10 @@
 				return yscale.range()[1] - yscale(v);
 			})
 			.attr("title", function(d) {return value(d, "Name"); });
+
+		if(from_target != "t2"){
+			updatePlotHighlight(row_nums.slice(0,1));
+		}
 	};
 
 	function setSizest2(boundingRect){
@@ -199,11 +216,18 @@
 	};
 
 	function updatePanelHeader(){
-		var current_dropdownatt = dropdown_util.read_atts();
-		var current_dropdownval = dropdown_util.read_values();
+		var current_att = dropdown_util.read_atts();
+		var current_val;
 
+		if ( dataset_h && dataset_h.length){
+			current_val = raw_value(dataset_h[0], current_att)
+		}
+		else{
+			current_val = dropdown_util.read_values();
+		}
+		
 		d3.select("#t2Panel .panel-heading small")
-			.html("Best Sellers in the " + current_dropdownval + " " + current_dropdownatt)
+			.html("Best Sellers in the " + current_val + " " + current_att)
 	};
 
 	function initt2(){
@@ -211,7 +235,7 @@
 
 		dataset = localstate.datasetRows;
 
-		aux_order = appstate.datasetRows.map(function(d){ return d; });
+		aux_order = dataset.map(function(d){ return d; });
 		aux_order = aux_order.sort(function(a,b){
 			return value(b, y_var) - value(a, y_var);
 		})
@@ -275,6 +299,9 @@
 		// 4) Creating the scales
 		yscale = d3.scaleLinear();
 		xscale = d3.scaleBand();
+		yscale_h = d3.scaleLinear();
+		xscale_h = d3.scaleBand();
+
 
 		yscale.domain(ydomain)
 				.range(yrange);
@@ -282,7 +309,6 @@
 		xscale.domain(d3.range.apply(null, xdomain))
 			.range(xrange)
 			.padding(0.1)
-
 
 
 		// 5) Create X and Y axis
@@ -297,8 +323,8 @@
 			.ticks(top_rows);
 
 
-
 		// X) Append group for Axis and background grid
+		// for data
 		svg.selectAll("g.background")
 			.data([0]).enter().append("g")
 				.attr("class", "background");
@@ -313,6 +339,19 @@
 				.attr("transform","translate("+ axis_0["x"] +",0)")
 				.attr("class", "y axis");
 
+		// for the right highlight
+		svg.selectAll("g.background-h")
+			.data([0]).enter().append("g")
+				.attr("class", "background-h");
+
+		svg.selectAll("g.x.axis-h")
+			.data([0]).enter().append("g")
+				.attr("class", "x axis-h")
+
+		svg.selectAll("g.y.axis-h")
+			.data([0]).enter().append("g")
+				.attr("class", "y axis-h");
+
 
 
 		// X) Append group for data points grid
@@ -320,6 +359,10 @@
 			.data([0]).enter().append("g")
 				.attr("class", "datapoints")
 				.attr("clip-path","url(#t2clip)")
+
+		svg.selectAll("g.datapoints-h")
+			.data([0]).enter().append("g")
+				.attr("class", "datapoints-h");
 
 
 
@@ -482,6 +525,141 @@
 					
 					appdispatch.gameout.call("gameout", this, d, "t2");
 				});
+	};
+
+	function updatePlotHighlight(row_numbers){
+		var dataset = row_numbers;
+		dataset_h = dataset;
+
+		updatePanelHeader();
+
+		// update plot
+		var t0 = svg.transition().delay(100).duration(300);
+		var t1 = svg.transition().duration(100);
+
+		if(row_numbers.length == 0){
+			svg.select("g.datapoints-h").selectAll("rect.data-point")
+				.transition(t1)
+				.attr("y", yscale(0))
+				.attr("height", 0)
+			return;
+		}
+
+		// 1) Settle the values for the x and y domains (this are the values in the data)
+		
+		var xdomain = [];
+		xdomain[0] = 0;
+		xdomain[1] = 1;
+
+
+
+		// 2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
+		var yrange = [];
+		yrange[0] = padding + ycutoff_h;
+		yrange[1] = h - padding - yoffset_h;
+		var xrange = [];
+		xrange[0] = w - padding - xcutoff + xoffset_h;
+		xrange[1] = xrange[1] = w - padding - xcutoff_h;
+
+
+
+		// 4) Creating the scales
+		var xscale_h = d3.scaleBand();
+
+		xscale_h.domain(d3.range.apply(null, xdomain))
+			.range(xrange)
+		// we'll reset the padding based on the proportion of the current bandwidth and the main chart's bandwith
+		// so that they look the same.
+		xscale_h.padding((1 - (xscale_h.bandwidth() - xscale.bandwidth()) / xscale_h.bandwidth()) * 2);
+
+
+
+		// 5) Create X and Y axis
+		//calculate the placement of the origins for both axis
+		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale_h, yscale);
+
+		var xaxis = d3.axisBottom()
+			.scale(xscale_h)
+			.ticks(1);
+
+		// 5) Create X and Y axis
+		// var gY = svg.select("g.y.axis-h")
+		// 	.attr("transform","translate("+ axis_0["x"] +",0)")
+		// 	.transition(t0)
+		// 	.call(yaxis);
+
+		// draws the X axis with text label
+		var gX = svg.select("g.x.axis-h")
+			.attr("transform","translate(0," + axis_0["y"] + ")")
+			.call(xaxis);
+
+		gX.selectAll("text")
+			.attr("class", "x tick")
+			.attr("transform", "rotate(-40)")
+			.style("text-anchor", "end")
+			.text(function(d, i){ 
+				var result = null;
+				try{
+					var game_name = raw_value(d, x_var);
+				}
+				catch(e){
+					var game_name = "";
+				}
+
+				result = _.truncate(game_name, {'length': max_names_len, 'omission': '...'});
+
+				return result;
+			})
+
+
+
+		// 6) Create the background grid
+		// Draw the Y grid
+		svg.select("g.background-h").selectAll("line.y-grid")
+			.data(yscale.ticks())
+			.enter().append("line")
+				.attr("class", "y-grid")
+				.attr("x1", xrange[0])
+				.attr("x2", xrange[1])
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
+		svg.select("g.background-h").selectAll("line.y-grid")
+			.data(yscale.ticks())
+			.exit().remove()
+		svg.select("g.background-h").selectAll("line.y-grid")
+				.transition(t0)
+				.attr("y1", function(d){ return yscale(d); })
+				.attr("y2", function(d){ return yscale(d); })
+
+
+
+		// 7) Plot the data itself
+		// draws the plot itself
+		svg.select("g.datapoints-h").selectAll("rect.data-point")
+			.data(dataset)
+			.enter().append("rect")
+			.attr("class", "data-point")
+			.attr("fill","rgb(255,0,255)")
+			.attr("opacity", 1)
+		svg.select("g.datapoints-h").selectAll("rect.data-point")
+			.data(dataset)
+			.exit().remove();
+		svg.select("g.datapoints-h").selectAll("rect.data-point")
+			.transition(t0)
+			.attr("x",function(d, i) {
+				return  xscale_h(i);
+			})
+			.attr("y", function(d, i) {
+				var v = value(d, y_var);
+				return yscale(v);
+			})
+			.attr("width", xscale_h.bandwidth())
+			.attr("height", function(d, i) {
+				var v = value(d, y_var);
+				
+				return yscale.range()[1] - yscale(v);
+			})
+			.attr("title", function(d) {return value(d, "Name"); })
 	};
 
 	function drawt2(app_row_numbers, svgelement){
