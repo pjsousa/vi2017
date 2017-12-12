@@ -3,8 +3,8 @@
 	var h = -1;
 	var padding = 20;
 	var xoffset = 30;
-	var yoffset = 100;
-	var xcutoff = 0;
+	var yoffset = 130;
+	var xcutoff = 80;
 	var ycutoff = 0;
 	var max_names_len = 50;
 	var top_rows = 15;
@@ -21,7 +21,8 @@
 		selectedRows: [],
 		highlightedRows: [],
 		data_slices: {},
-		clearbrush_quirk: null
+		clearbrush_quirk: null,
+		dropdown_vals: []
 	};
 
 	var xdomain = null;
@@ -37,6 +38,8 @@
 
 	var dataset;
 	var rows_order;
+
+	var initdropdowns_quirk = false;
 
 	dispatch.on("gamehover.t2", function(d){
 		mouse_coord = d3.mouse(this);
@@ -123,38 +126,84 @@
 				
 				return yscale.range()[1] - yscale(v);
 			})
-			.attr("title", function(d) {return value(d, "Name"); })
-
-		if(from_target == "t5"){
-			// g.selectAll("circle.highlight")
-			// 	.transition()
-			// 	.duration(100)
-			// 	.attr("r", r+10)
-
-			// 	g.selectAll("circle.highlight")
-			// 		.transition()
-			// 		.delay(100)
-			// 		.duration(100)
-			// 		.attr("r", r+1)
-
-			// g.selectAll("circle.highlight")
-			// 	.transition()
-			// 	.delay(200)
-			// 	.duration(100)
-			// 	.attr("r", r+10)
-
-			// g.selectAll("circle.highlight")
-			// 	.transition()
-			// 	.delay(300)
-			// 	.duration(100)
-			// 	.attr("r", r+1)
-		}
+			.attr("title", function(d) {return value(d, "Name"); });
 	};
 
 	function setSizest2(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
 		console.log(w,h);
+	};
+
+	function localSlicet2(row_numbers, highlighted_row, rules){
+		highlighted_row = typeof highlighted_row === "number" ? highlighted_row : appstate.highlightedRows[0];
+		rules = rules || appstate.data_slices;
+
+		var result;
+		var current_dropdownatt = rules["t2"][0];
+		var current_dropdownval = rules["t2"][1];
+		var current_recordval;
+
+		if(current_dropdownval !== null){
+			result = datasources["index_"+current_dropdownatt].index[current_dropdownval]
+			result = _.intersection(row_numbers, result);
+		}
+		else if(typeof highlighted_row !== "undefined"){
+			current_recordval = raw_value(highlighted_row, current_dropdownatt);
+			result = datasources["index_"+current_dropdownatt].index[current_recordval]
+			result = _.intersection(row_numbers, result);
+		}
+		else{
+			result = row_numbers;
+		}
+
+		return result;
+	};
+
+	function initDropdowns(){
+		if(!initdropdowns_quirk){
+			initdropdowns_quirk = true;
+
+			resetDropdownValues();
+
+			dropdown_util.setSelection_values(appstate.data_slices["t2"][1])
+
+			dropdown_util.register_listener("#t2Atts", function(idx, value_str){
+				value_str = value_str.split(" ").join("_");
+				resetDropdownValues();
+				slice_util.clearSlice(appstate.data_slices, "t2", "");
+				slice_util.setSlice(appstate.data_slices, "t2", "", value_str, null)
+				appdispatch.dataslice.call("dataslice", this, "t2");
+			});
+
+			dropdown_util.register_listener("#t2Values", function(idx, value_str){
+				var current_dropdownatt = dropdown_util.read_atts();
+				slice_util.setSlice(appstate.data_slices, "t2", "", current_dropdownatt, value_str)
+
+				/* maybe this shouln't be here? */
+				// appstate.datasetRows = d3.range(datasources["data_v2"].length);
+				// appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
+
+				// localstate.datasetRows = localSlicet2(appstate.datasetRows);
+				// updatePlot(localstate.datasetRows);
+				appdispatch.dataslice.call("dataslice", this, "t2");
+			});
+		}
+	};
+
+	function resetDropdownValues(){
+		var current_dropdownatt = dropdown_util.read_atts();
+
+		localstate.dropdown_vals = data_utils.get_uniquevalues_dataset(current_dropdownatt);
+		dropdown_util.setValueList_values(localstate.dropdown_vals);
+	};
+
+	function updatePanelHeader(){
+		var current_dropdownatt = dropdown_util.read_atts();
+		var current_dropdownval = dropdown_util.read_values();
+
+		d3.select("#t2Panel .panel-heading small")
+			.html("Best Sellers in the " + current_dropdownval + " " + current_dropdownatt)
 	};
 
 	function initt2(){
@@ -304,6 +353,7 @@
 		var t0 = svg.transition().duration(100);
 		var t1 = svg.transition().delay(100).duration(500);
 
+		updatePanelHeader();
 
 		aux_order = appstate.datasetRows.map(function(d){ return d; });
 		aux_order = aux_order.sort(function(a,b){
@@ -442,7 +492,9 @@
 			svg = d3.select(svgelement);
 		}
 
-		localstate.datasetRows = appstate.datasetRows.map(function(e){ return e; });
+		localstate.datasetRows = localSlicet2(appstate.datasetRows);
+
+		initDropdowns();
 
 		initt2();
 
@@ -452,4 +504,5 @@
 	window.drawt2 = drawt2;
 	window.setSizest2 = setSizest2;
 	window.drawHighlightt2 = drawHighlightt2;
+	window.localSlicet2 = localSlicet2;
 })();

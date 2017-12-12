@@ -32,7 +32,7 @@
 		result["t1"]                      = [-Infinity, Infinity];
 		result["t5Global_Sales"]          = [-Infinity, Infinity];
 		result["t5Mean_UserCritic_Score"] = [-Infinity, Infinity];
-		result["t2"]                      = ["Platform", null]
+		result["t2"]                      = ["Platform", null];
 		result["t4Year_of_Release"]       = [-Infinity, Infinity];
 		result["t4Rating"]                = ["Rating", null];
 		result["t6Year_of_Release"]       = [-Infinity, Infinity];

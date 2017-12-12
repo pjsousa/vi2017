@@ -487,7 +487,7 @@
 					.style("position", "absolute")
 					.style("z-index", "10")
 					.style("opacity", 0)
-					.style("border", "solid 3px rgba(0,127,255,0.7)")
+					.style("border", "solid 3px rgba(0,0,0,0.7)")
 					.style("background-color", "rgba(255,255,255,0.7)")
 					.style("pointer-events", "none")
 					.style("padding", "5px 10px")

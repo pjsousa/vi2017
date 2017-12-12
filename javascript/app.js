@@ -87,9 +87,9 @@
 			drawt5(appstate.datasetRows);
 		}
 
-		if(from!="t2"){
-			drawt2(appstate.datasetRows);
-		}
+		
+		drawt2(appstate.datasetRows);
+		
 
 		if(from!="clv"){
 			drawclv(appstate.datasetRows);

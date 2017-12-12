@@ -283,7 +283,7 @@
 			}
 			return result;
 	};
-		
+
 	function get_sales_sum(rows, ref_col_name, ref_col_value){
 		/*
 			get_sum(null, "Genre","Action")  /// devolve o somatorio dos valores das Sales em cada ano em relaçao ao Genre de Action
@@ -399,6 +399,18 @@
 		return result;
 	};
 
+	function get_uniquevalues_dataset(col_name){
+		var result = [];
+
+		if (typeof datasources["index_" + col_name] === "undefined"){
+			throw new Error(col_name + " as col_names is not valid.");
+		}
+
+		result = Object.keys(datasources["index_"+col_name].index);
+
+		return result;
+	};
+
 	// isto faz com que a datasources exista nos outros ficheiros.
 	window.datasources = datasources;
 	window.data_utils = {
@@ -410,6 +422,7 @@
 		get_index: get_index,
 		column_hasvalue: column_hasvalue,
 		read_value: read_value,
-		compute_personsr_linregress: compute_personsr_linregress
+		compute_personsr_linregress: compute_personsr_linregress,
+		get_uniquevalues_dataset: get_uniquevalues_dataset
 	}
 })();
