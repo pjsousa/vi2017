@@ -3,7 +3,7 @@
 			datasetRows: [],
 			selectedRows: [],
 			highlightedRows: [],
-			data_slices: []
+			data_slices: {}
 		};
 
 		/* About appstate..
@@ -36,10 +36,15 @@
 
 	var appdispatch = {
 		gamehover: d3.dispatch("gamehover"),
-		gameout: d3.dispatch("gameout")
+		gameout: d3.dispatch("gameout"),
+		dataslice: d3.dispatch("dataslice")
 	};
 
 	appdispatch.gamehover.on("gamehover", function(d, from){
+
+		if(from != "t2"){
+			drawHighlightt2(from);
+		}
 
 		if(from != "t5"){
 			drawHighlightt5(from);
@@ -55,12 +60,39 @@
 	});
 
 	appdispatch.gameout.on("gameout", function(d, from){
+		if(from != "t2"){
+			drawHighlightt2(from);
+		}
+
 		if(from != "t5"){
 			drawHighlightt5();
 		}
 
 		if(from != "clv"){
 			drawHighlightclv();
+		}
+
+	});
+
+	appdispatch.dataslice.on("dataslice", function(from){
+		appstate.datasetRows = d3.range(datasources["data_v2"].length);
+		appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
+
+		
+		// if(from!="t1"){
+		// 	drawt1(appstate.datasetRows);
+		// }
+
+		if(from!="t5"){
+			drawt5(appstate.datasetRows);
+		}
+
+		
+		drawt2(appstate.datasetRows);
+		
+
+		if(from!="clv"){
+			drawclv(appstate.datasetRows);
 		}
 
 	});
@@ -83,7 +115,7 @@
 				setSizest5(this.getClientRects()[0]);
 			}
 			else if(_id == "t2Viz"){
-				//setSizest2(this.getClientRects()[0])
+				setSizest2(this.getClientRects()[0])
 			}
 			else if(_id == "clvViz"){
 				setSizesclv(this.getClientRects()[0]);
@@ -97,19 +129,21 @@
 			else if(_id == "t4Panel"){
 				//setSizest4(this.getClientRects()[0])
 			}
-			
 		})
 	}
 
 	function data_ready(){
 		console.log("All data fetched!!!");
 
+		appstate.data_slices = slice_util.slicerules_factory()
 		appstate.datasetRows = d3.range(datasources["data_v2"].length);
+		appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
 
-		drawt1();
-		drawt5();
-        drawt6();
-		drawclv();
+
+		drawt1(appstate.datasetRows);
+		drawt5(appstate.datasetRows);
+		drawt2(appstate.datasetRows);
+		drawclv(appstate.datasetRows);
 	};
 
 	window.main = main;

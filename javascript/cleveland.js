@@ -15,21 +15,22 @@
 
 	var sort_var = "Global_Sales";
 
-	var dispatch = d3.dispatch("gamehover");
-	var dispatch2 = d3.dispatch("gameout");
+	var dispatch = d3.dispatch("gamehover", "gameout");
 
-	var isLogScale = false;
-	var isCenteredData = false;
+	var localstate = {
+		datasetRows: [],
+		selectedRows: [],
+		highlightedRows: [],
+		data_slices: {},
+		rows_order: []
+	};
 
+	var xdomain = null;
+	var ydomain = null;
+	var xrange = null;
+	var yrange = null;
 	var xscale = null;
 	var yscale = null;
-	// centered scales (<v> - mu / std)
-	var xscale_c = null;
-	var yscale_c = null;
-	var x_mu = null;
-	var x_std = null;
-	var y_mu = null;
-	var y_std = null;
 
 	var dataset;
 	var rows_order;
@@ -41,7 +42,7 @@
 		drawHighlightclv();
 	});
 
-	dispatch2.on("gameout.cleveland", function(d){
+	dispatch.on("gameout.cleveland", function(d){
 		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
 		drawHighlightclv();
 	});
@@ -56,14 +57,8 @@
 			y: null
 		};
 
-		if(isLogScale){
-			result["x"] = xrange[0];
-			result["y"] = yrange[1];
-		}
-		else{
-			result["x"] = xrange[0];
-			result["y"] = yrange[1];
-		}
+		result["x"] = xrange[0];
+		result["y"] = yrange[1];
 
 		return result;
 	};
@@ -73,35 +68,10 @@
 		return data_utils.read_value(row_num, variable);
 	};
 
-	function centered_value(row_num, variable){
-
-		return raw_value(row_num, variable);
-	};
-
 	function value(row_num, variable){
 		var result;
 		var raw_v = raw_value(row_num, variable);
-
-		// setle on the correct mean and st.deviation
-		var _mu = x_var == variable ? x_mu : y_mu;
-		var _std = x_var == variable ? x_std : y_std;
-		
-		if (isLogScale && isCenteredData){
-			// we need to calculate the log ourselves and center it
-			result = (Math.log(raw_v) - _mu) / _std;
-		}
-		else if(isLogScale && !isCenteredData){
-			// we can just return the value since the d3.scaleLog will do the log for us.
-			result = raw_v;
-		}
-		else if(!isLogScale && isCenteredData){
-			// we just need to center it
-			result = (raw_v - _mu) / _std;
-		}
-		else{
-			result = raw_v;
-		}
-
+		result = raw_v;
 		return result;
 	};
 
@@ -133,7 +103,7 @@
 			.attr("r", r+1)
 			.style("pointer-events", "none")
 			.attr("fill", "fuchsia")
-			.attr("cx", function(row_num){ return xscale_c(value(row_num, x_var))})
+			.attr("cx", function(row_num){ return xscale(value(row_num, x_var))})
 			.attr("cy", function(row_num){ 
 				var i = dataset.indexOf(row_num);
 
@@ -141,7 +111,7 @@
 					return -1000;
 				}
 
-				return yscale_c(rows_order[i]); })
+				return yscale(rows_order[i]); })
 
 		if(from_target == "t5"){
 			g.selectAll("circle.highlight")
@@ -167,7 +137,6 @@
 				.duration(100)
 				.attr("r", r+1)
 		}
-
 	};
 
 	function setSizesclv(boundingRect){
@@ -175,10 +144,18 @@
 		h = boundingRect.height;
 	};
 
-	function drawclv(){
+	function initclv(){
+
+	};
+
+	function updatePlot(row_numbers){
+
+	}
+
+	function drawclv(app_row_numbers){
 		var aux_order;
 
-		dataset = appstate.datasetRows
+		dataset = app_row_numbers;
 
 		aux_order = appstate.datasetRows.map(function(d){ return d; });
 		aux_order = aux_order.sort(function(a,b){
@@ -205,7 +182,7 @@
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		var ydomain = [];
 		ydomain[0] = 0
-		ydomain[1] = dataset.length -1;
+		ydomain[1] = top_rows - 1;
 		var xdomain = [];
 		xdomain[0] = 0.95 * d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
 		xdomain[1] = 1.05 * d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
@@ -242,21 +219,21 @@
 		xscale.domain(xdomain)
 			.range(xrange);
 
-		yscale_c = yscale;
-		xscale_c = xscale;
+		yscale = yscale;
+		xscale = xscale;
 
 
 		// 5) Create X and Y axis
 		//calculate the placement of the origins for both axis
-		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale_c, yscale);
+		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale);
 
 		var yaxis = d3.axisLeft()
-			.scale(yscale_c);
+			.scale(yscale);
 
 		var xaxis = d3.axisBottom()
-			.scale(xscale_c)
+			.scale(xscale)
 			.ticks(10);
-		
+
 
 
 		// 6) Create the background grid
@@ -266,19 +243,22 @@
 			.enter().append("line")
 				.attr("class", "y-grid")
 				.attr("x1", xrange[0])
-				.attr("y1", function(d, i){ return yscale_c(rows_order[i]); })
+				.attr("y1", function(d, i){ return yscale(rows_order[i]); })
 				.attr("x2", xrange[1])
-				.attr("y2", function(d, i){ return yscale_c(rows_order[i]); })
-				.attr("stroke-width", 2)
-				.attr("stroke", "rgba(120,120,120,1)");
+				.attr("y2", function(d, i){ return yscale(rows_order[i]); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "rgba(120,120,120,0.2)");
 
 		// Draw the Y ticks and y label
+		svg.selectAll("text.y-axis-tick")
+			.data(dataset)
+			.exit().remove();
 		svg.selectAll("text.y-axis-tick")
 			.data(dataset)
 			.enter().append("text")
 				.attr("class", "y-axis-tick")
 				.attr("x", xrange[0])
-				.attr("y", function(d,i){ return yscale_c(rows_order[i]); })
+				.attr("y", function(d,i){ return yscale(rows_order[i]); })
 				.append("title")
 					.html(function(d){ return raw_value(d, y_var) });
 		svg.selectAll("text.y-axis-tick")
@@ -286,10 +266,10 @@
 				.transition()
 				.duration(500)
 				.attr("x", xrange[0])
-				.attr("y", function(d,i){ return yscale_c(rows_order[i]); })
+				.attr("y", function(d,i){ return yscale(rows_order[i]); })
 				.attr("dx", "-5px")
 				.attr("dy", "1px")
-				.attr("y", function(d,i){ return yscale_c(rows_order[i]); })
+				.attr("y", function(d,i){ return yscale(rows_order[i]); })
 				.attr("fill", "black")
 				.style("cursor", "default")
 				.style("text-anchor", "end")
@@ -303,31 +283,21 @@
 					return result;
 				})
 
-		// Draw the X grid
-		svg.selectAll("line.x-grid")
-			.data(xscale_c.ticks())
-			.enter().append("line")
-				.attr("class", "x-grid")
-				.attr("x1", function(d){ return xscale_c(d); })
-				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale_c(d); })
-				.attr("y2", yrange[1])
-				.attr("stroke-width", 1)
-				.attr("stroke", "rgba(120,120,120,0.2)")
-
 		// Draw the X ticks and x label
 		svg.selectAll("text.x-axis-tick")
-			.data(xscale_c.ticks())
+			.data(xscale.ticks())
 			.enter().append("text")
 				.attr("class", "x-axis-tick")
-				.attr("x", function(d){ return xscale_c(d) })
+				.attr("x", function(d){ return xscale(d) })
 				.attr("y", yrange[1] + 25)
 				.attr("fill", "black")
 				.style("text-anchor", "middle")
 				.style("font-size", 10)
 				.text(function(d){ return d; });
 
-		svg.append("text")
+		svg.selectAll("text.x-axis-label")
+			.data([0])
+			.enter().append("text")
 			.attr("class", "x-axis-label")
 			.attr("x", xrange[1])
 			.attr("y", yrange[1] + yoffset)
@@ -340,9 +310,9 @@
 			.data([1e-10])
 			.enter().append("line")
 				.attr("class", "x-grid-0")
-				.attr("x1", function(d){ return xscale_c(d); })
+				.attr("x1", function(d){ return xscale(d); })
 				.attr("y1", yrange[0])
-				.attr("x2", function(d){ return xscale_c(d); })
+				.attr("x2", function(d){ return xscale(d); })
 				.attr("y2", yrange[1])
 				.attr("stroke-width", xdomain[0] < 0 ? 1 : 0) // but only show it when we really have data behind it
 				.attr("stroke", "rgba(120,120,120,0.5)");
@@ -358,8 +328,11 @@
 			.attr("class", "data-points")
 			.attr("cx", xrange[0])
 			.attr("cy",function(d, i) {
-				return yscale_c(rows_order[i]);
+				return yscale(rows_order[i]);
 			})
+		svg.selectAll("circle.data-points")
+			.data(dataset)
+			.exit().remove();
 		svg.selectAll("circle.data-points")
 			.data(dataset)
 			.transition()
@@ -370,10 +343,10 @@
 			.style("cursor", "none")
 			.attr("cx",function(d, i) {
 				var v = value(d, x_var);
-				return  xscale_c(v);
+				return  xscale(v);
 			})
 			.attr("cy",function(d, i) {
-				return yscale_c(rows_order[i]);
+				return yscale(rows_order[i]);
 			})
 
 
@@ -385,10 +358,10 @@
 			.data(dataset)
 			.enter().append("rect")
 			.attr("class", "event-grabbers")
-			.attr("fill","rgba(200, 200, 200, 0.2)")
+			.attr("fill","rgba(200, 200, 200, 0.0)")
 			.attr("x",function(d){ return xrange[0]; } )
 			.attr("width",function(d){ return xrange[1] - xrange[0]; } )
-			.attr("y",function(d, i) { return yscale_c(rows_order[i]) - r; })
+			.attr("y",function(d, i) { return yscale(rows_order[i]) - r; })
 			.attr("height", 2*r)
 			.on("mouseover", function(d, i){
 				// lets notify ourselves
@@ -399,7 +372,7 @@
 			})
 			.on("mouseout", function(d){
 				// lets notify ourselves
-				dispatch2.call("gameout", null, d);
+				dispatch.call("gameout", null, d);
 				
 				appdispatch.gameout.call("gameout", this, d, "clv");
 			});

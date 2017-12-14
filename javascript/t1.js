@@ -91,7 +91,7 @@
 		console.log(w,h);
 	}
 	
-	function drawt1(){
+	function drawt1(app_row_numbers){
 		/*
 			"Drawing t1" means:
 				1) ...
@@ -101,7 +101,7 @@
 		 */
 
 		//var dataset = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales", "Year_of_Release"]);
-		dataset = data_utils.get_sales_sum(null,"Developer","Nintendo");
+		dataset = data_utils.get_sales_sum(app_row_numbers,"Developer","Nintendo");
 		var r = dataset.map(a => a.Year_of_Release);
 		var maxYear = r.reduce(function(a,b){ return Math.max(a,b);});
 		var minYear = 1987;  // [Q] Why though?
@@ -197,7 +197,7 @@
 			legend.append("circle")
 				.attr("r",3)
 				.attr("cx",10)
-				.attr("cy",legendSpace * i/2 + legendSpace)
+				.attr("cy",legendSpace * i/2 + legendSpace - 5)
 				.attr("class","legend")
 				.style("fill",function(d){return colors[i];});
 										  

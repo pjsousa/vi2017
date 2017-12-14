@@ -7,32 +7,28 @@
 	<script src="libs/lodash.min.js" charset="utf-8"></script>
 	<script src="libs/handsontable.full.min.js" charset="utf-8"></script>
 	<script src="libs/d3.v4.min.js" charset="utf-8"></script>
+	<script src="libs/bootstrap-select.min.js" type="text/javascript"></script>
+
 
 	<link rel="stylesheet" type="text/css" href="libs/bootstrap/css/bootstrap.min.css" />
 	<link rel="stylesheet" type="text/css" href="libs/handsontable.full.min.css" />
+	<link rel="stylesheet" type="text/css" href="libs/bootstrap-select.min.css" />
 	<link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <meta charset="utf-8">
 <body>
 	<div class="container-fluid">
 		<div class="page-toolbar row">
-			<div class="col-xs-6 col-xs-offset-3">
+			<div class="col-xs-8 col-xs-offset-2">
 				<div class="panel" style="margin:0">
 					<div class="panel-body text-center">
-						<form class="form-inline">
-							<div class="form-group">
-								<div class="input-group">
-											<div class="input-group-addon"> <span class="glyphicon glyphicon-filter"></span> </div>
-											<input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="<not this template>">
-										</div>
+						<div class="col-xs-6 col-xs-offset-3">
+							<div class="input-group">
+								<div class="input-group-addon"> <span class="glyphicon glyphicon-search"></span> </div>
+								<input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="Look for a game name">
 							</div>
-							<div class="form-group">
-								<div class="input-group">
-											<div class="input-group-addon"> <span class="glyphicon glyphicon-search"></span> </div>
-											<input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="Look for a game name">
-										</div>
-							</div>
-						</form>
+						</div>
+							
 					</div>
 				</div>
 			</div>
@@ -73,10 +69,27 @@
 				<div class="left-panel col-xs-4">
 					<div id="t2Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
-							<span>Best Sellers</span>
+							<small>
+								Best Sellers for [...]
+							</small>
 						</div>
 						<div id="t2Viz" class="panel-body">
+							<div class="col-xs-12 text-center">
+								<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+
+								<select id="t2Atts" class="t2Atts selectpicker show-menu-arrow" >
+								  <option data-tokens="Platform">Platform</option>
+								  <option data-tokens="Genre">Genre</option>
+								  <option data-tokens="Publisher">Publisher</option>
+								  <option data-tokens="Developer">Developer</option>
+								</select>
+
+								
+								<select id="t2Values" class="t2Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+								</select>
+							</div>
 							<img class="img-responsive" src="images/t2.png" />
+							<svg></svg>
 						</div>
 					</div>
 					<!-- ./t2Panel -->
@@ -111,16 +124,16 @@
 				<div class="right-panel col-xs-3">
 					<div id="dtlPanel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
-								<h2 id="name" style="text-align: center;">Name</h2>
+								<h2 id="name" style="text-align: center; white-space: nowrap;text-overflow: ellipsis;">Name</h2>
 								<h5 style="text-align: center;">
 									<span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
 								</h5>
 								<div class="row" style="margin: 20px 0">
 									<div class="col-xs-6" style="text-align: center;">
-											<p><small>Mean User Score</small></p><h5 id="mean_usercritic_score">mean_usercritic_score</h5>
+											<p><small>Score ( / 100 )</small></p><h5 id="mean_usercritic_score">mean_usercritic_score</h5>
 									</div>
 									<div class="col-xs-6" style="text-align: center;">
-											<p><small>Global Sales</small></p><h5 id="global_sales">global_sales</h5>
+											<p><small>Global Sales ( Million Units )</small></p><h5 id="global_sales">global_sales</h5>
 									</div>
 								</div>
 								
@@ -179,6 +192,9 @@
 	<!-- Os "includes" das nossas sources -->
 	<script src="javascript/app.js" ></script>
 	<script src="javascript/datahandler.js" ></script>
+	<script src="javascript/sliceutils.js" ></script>
+	<script src="javascript/vizutils.js" ></script>
+	<script src="javascript/dropdownutil.js" ></script>
  
 	<script src="javascript/t1.js" ></script>
 	<script src="javascript/t2.js" ></script>
@@ -192,6 +208,19 @@
 		$(document).ready(function(){
 			// esta função vai disparar quando todo o HTML tiver carregado e quando todas as 
 			// sources files estiverem do nosso lado.
+
+			$('.t2Atts').selectpicker({
+				style: 'btn-link btn-xs',
+			  header: "Select a data attribute",
+			  width: "100px"
+			});
+
+			$('.t2Values').selectpicker({
+			  style: 'btn-link btn-xs',
+			  header: "Select a value to filter your data",
+			  title:"Choose one of the following...",
+			  width: "100px"
+			});
 			
 			// step 1. fetch data
 			main();
