@@ -100,11 +100,11 @@
 	function drawHighlightt2(from_target){
 		var row_nums = appstate.highlightedRows;
 
-		if(row_nums.length > 0){
-			localstate.datasetRows = localSlicet2(appstate.datasetRows);
-			initt2();
-			updatePlot(localstate.datasetRows);
-		}
+		// if(row_nums.length > 0){
+		// 	localstate.datasetRows = localSlicet2(appstate.datasetRows);
+		// 	initt2();
+		// 	updatePlot(localstate.datasetRows);
+		// }
 
 		var g = d3.selectAll("#t2Viz svg g.highlight");
 

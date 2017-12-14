@@ -1,7 +1,7 @@
 ;(function(){
 	var dutil = {};
 
-	var ATT_COLS_LOOKUP = ["Platform", "Genre", "Year of Release", "Publisher", "Developer"];
+	var ATT_COLS_LOOKUP = ["Platform", "Genre", "Publisher", "Developer"];
 
 	function read_atts(){
 		var result = $('.t2Atts').selectpicker('val').split(" ").join("_");
