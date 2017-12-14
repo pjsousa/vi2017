@@ -3,46 +3,54 @@
 
 	var ATT_COLS_LOOKUP = ["Platform", "Genre", "Publisher", "Developer"];
 
-	function read_atts(){
-		var result = $('.t2Atts').selectpicker('val').split(" ").join("_");
+	function read_atts(attSelector){
+		attSelector = attSelector || '.t2Atts';
+		var result = $(attSelector).selectpicker('val').split(" ").join("_");
 		return result;
 	};
 
-	function read_values(){
-		var result = $('.t2Values').selectpicker('val');
+	function read_values(valSelector){
+		valSelector = valSelector || '.t2Values';
+		var result = $(valSelector).selectpicker('val');
 		return result;
 	};
 
-	function reset_atts(){
-		$('.t2Atts').selectpicker('deselectAll');
-		$('.t2Atts').selectpicker('refresh');
+	function reset_atts(attSelector){
+		attSelector = attSelector || '.t2Atts';
+		$(attSelector).selectpicker('deselectAll');
+		$(attSelector).selectpicker('refresh');
 	};
 
-	function reset_values(){
-		$('.t2Values').selectpicker('deselectAll');
-		$('.t2Values').selectpicker('refresh');
+	function reset_values(valSelector){
+		valSelector = valSelector || '.t2Values';
+		$(valSelector).selectpicker('deselectAll');
+		$(valSelector).selectpicker('refresh');
 	};
 
-	function setSelection_atts(value){
-		$('.t2Atts').selectpicker('val', value);
-		$('.t2Atts').selectpicker('refresh');
+	function setSelection_atts(attSelector, value){
+		attSelector = attSelector || '.t2Atts';
+		$(attSelector).selectpicker('val', value);
+		$(attSelector).selectpicker('refresh');
 	};
 
-	function setSelection_values(value){
-		$('.t2Values').selectpicker('val', value);
-		$('.t2Values').selectpicker('refresh');
+	function setSelection_values(valSelector, value){
+		valSelector = valSelector || '.t2Values';
+		$(valSelector).selectpicker('val', value);
+		$(valSelector).selectpicker('refresh');
 	};
 
-	function setValueList_values(values_arr){
-		d3.selectAll(".t2Values select option")
+	function setValueList_values(valSelector, values_arr){
+		valSelector = valSelector || ".t2Values";
+
+		d3.selectAll(valSelector + " select option")
 			.remove();
 
-		d3.select(".t2Values select").selectAll("option")
+		d3.select(valSelector + " select").selectAll("option")
 			.data(values_arr)
 			.enter().append("option")
 			.html(function(d){ return d; })
 
-		$('.t2Values').selectpicker('refresh');
+		$(valSelector).selectpicker('refresh');
 	}
 
 	function register_listener(target_dropdown, fn_callback){

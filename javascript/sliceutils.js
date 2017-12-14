@@ -6,6 +6,7 @@
 	// and to enforce the order in which the slices will be applied
 	var VALID_SLICES = [
 		"t1",
+		"t1Genre",
 		"t5Global_Sales",
 		"t5Mean_UserCritic_Score",
 		"t2",
@@ -17,6 +18,7 @@
 
 	var COLUMN_NAMES = [
 		"Year_of_Release",
+		"Genre",
 		"Global_Sales",
 		"Mean_UserCritic_Score",
 		"", // These are text rules. They will use the column on the rule dict.
@@ -30,6 +32,7 @@
 		var result = {};
 
 		result["t1"]                      = [-Infinity, Infinity];
+		result["t1Genre"]                 = ["Genre", null];
 		result["t5Global_Sales"]          = [-Infinity, Infinity];
 		result["t5Mean_UserCritic_Score"] = [-Infinity, Infinity];
 		result["t2"]                      = ["Platform", null];
@@ -39,7 +42,7 @@
 		result["t6Mean_UserCritic_Score"] = [-Infinity, Infinity];
 
 		return result;
-	}
+	};
 
 	function setSlice(rules, source, column, from, to){
 
@@ -57,7 +60,7 @@
 		}
 
 		// Validate var types
-		if(["t2","t4Rating"].indexOf(_key) > -1){
+		if(["t2","t4Rating", "t1Genre"].indexOf(_key) > -1){
 			//"t2" and "t4Rating" must take strings
 			if (from !== null && typeof from !== "string"){
 				throw new Error("'from' parameter got an invalid vartype for the source|column pair specified.")
@@ -105,7 +108,7 @@
 		}
 
 		// Validate var types
-		if(["t2","t4Rating"].indexOf(_key) > -1){
+		if(["t2","t4Rating", "t1Genre"].indexOf(_key) > -1){
 			rules[_key] = [rules[_key][0], null];
 		}
 		else{
@@ -126,7 +129,7 @@
 			_r[itr_key] = [];
 
 			// Validate var types
-			if(["t2","t4Rating"].indexOf(itr_key) > -1){
+			if(["t2","t4Rating","t1Genre"].indexOf(itr_key) > -1){
 				_column_name = rules[itr_key][0];
 				_value = rules[itr_key][1];
 

@@ -182,8 +182,8 @@
 			initdropdowns_quirk = true;
 
 			resetDropdownValues();
-
-			dropdown_util.setSelection_values(appstate.data_slices["t2"][1])
+			
+			dropdown_util.setSelection_values('.t2Values', appstate.data_slices["t2"][1])
 
 			dropdown_util.register_listener("#t2Atts", function(idx, value_str){
 				value_str = value_str.split(" ").join("_");
@@ -212,7 +212,7 @@
 		var current_dropdownatt = dropdown_util.read_atts();
 
 		localstate.dropdown_vals = data_utils.get_uniquevalues_dataset(current_dropdownatt);
-		dropdown_util.setValueList_values(localstate.dropdown_vals);
+		dropdown_util.setValueList_values(".t2Values", localstate.dropdown_vals);
 	};
 
 	function updatePanelHeader(){
