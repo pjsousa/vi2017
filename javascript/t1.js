@@ -72,28 +72,23 @@
 	function brushed() {
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
 		var s = d3.event.selection || x_brush.range();
-        
-        //var extent = brush.extent(); //returns [xMin, xMax]
-        //var rangeExtent = [x2( extent[0] ), x2( extent[1] ) ]; //convert
-        //var rangeWidth  = rangeExtent[1] - rangeExtent[0];
 
-        console.log(this);
         var range = x_brush.range();
-        if(s[1] == range[1]){
-            svg.select(".selection").attr("width",s[1]-s[0]);
-            svg.select(".handle handle--e").attr("x",s[1]);
-        }
-        else if(s[1]-s[0] <=60 || s[1]-s[0] < 0){
+        
+        if(s[1]-s[0] <=60 || s[1]-s[0] < 0){
             svg.select(".selection").attr("width","60");
             s[1] = s[0]+60;
             if(s[1]>range[1]){
                 s[1] = range[1];
+                s[0] = range[1] - 60;
+                svg.select(".handle--w").attr("x",s[1]-60);
+                svg.select(".selection").attr("x",s[1]-60-3);
             }
-            svg.select(".handle handle--e").attr("x",s[1]);
+            svg.select(".handle--e").attr("x",s[1]);
         }
         
         console.log(this);
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        if(s[1] <= range[1]){
 		x.domain(s.map(x_brush.invert, x_brush));
 		svg.selectAll(".line1").attr("d",valueline);
 		svg.selectAll(".line2").attr("d",valueline2);
@@ -106,6 +101,7 @@
 		svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
 								 .scale(xrange[1] / (s[1] - s[0]))
 								 .translate(-s[0], 0));
+        }
 	}
 
 	function zoomed() {
@@ -327,8 +323,8 @@
 		
         svg.select(".y-axis-label").remove();
         svg.select(".y-axis").remove();
-        svg.select(".axis axis--x").remove();
-        svg.select("x-axis-label").remove();
+        svg.select(".axis--x").remove();
+        svg.select(".x-axis-label").remove();
         
 		svg.append("g")
 			.attr("transform","translate("+(xrange[0])+",0)")
