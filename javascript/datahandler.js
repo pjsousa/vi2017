@@ -284,7 +284,7 @@
 			return result;
 	};
 
-	function get_sales_sum(rows, ref_col_name, ref_col_value){
+	function get_sales_sum(rows, ref_col_value){
 		/*
 			get_sum(null, "Genre","Action")  /// devolve o somatorio dos valores das Sales em cada ano em relaçao ao Genre de Action
 			> [
@@ -314,14 +314,14 @@
 				var new_row = {};
 				for(var i = 0; i < datasources.data_v2.length; i++){
 						var row = datasources.data_v2[i];
-						if(row.Year_of_Release == year && row[ref_col_name]==ref_col_value){
+						if(row.Year_of_Release == year && row["Genre"]==ref_col_value){
 								JP += parseFloat(row["JP_Sales"]);
 								EU += parseFloat(row["EU_Sales"]);
 								NA += parseFloat(row["NA_Sales"]);
 						}
 				}
 				new_row["Year_of_Release"] = year;
-				new_row[ref_col_name] = ref_col_value;
+				new_row["Genre"] = ref_col_value;
 				new_row["JP_Sales"] = JP;
 				new_row["EU_Sales"] = EU;
 				new_row["NA_Sales"] = NA;
