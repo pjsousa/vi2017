@@ -19,6 +19,7 @@
 
 	var localstate = {
 		datasetRows: [],
+		drawnRows: [],
 		selectedRows: [],
 		highlightedRows: [],
 		data_slices: {},
@@ -153,11 +154,14 @@
 	}
 
 	function drawclv(app_row_numbers){
+		localstate.datasetRows = app_row_numbers;
+		localstate.drawnRows = localstate.datasetRows;
+
 		var aux_order;
 
 		dataset = app_row_numbers;
 
-		aux_order = appstate.datasetRows.map(function(d){ return d; });
+		aux_order = localstate.datasetRows.map(function(d){ return d; });
 		aux_order = aux_order.sort(function(a,b){
 			return value(b, x_var) - value(a, x_var);
 		})
@@ -384,6 +388,8 @@
 			.enter().append("g")
 				.attr("class", "highlight");
 	};
+
+	localstate.data_slices = slice_util.slicerules_factory();
 
 	window.drawclv = drawclv;
 	window.setSizesclv = setSizesclv;

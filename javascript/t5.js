@@ -16,6 +16,7 @@
 
 	var localstate = {
 		datasetRows: [],
+		drawnRows: [],
 		selectedRows: [],
 		highlightedRows: [],
 		data_slices: {},
@@ -120,24 +121,30 @@
 			localstate.clearbrush_quirk = false;
 		}
 
-		localstate.data_slices = brushedNodes;
-		slice_util.setSlice(appstate.data_slices, "t5", x_var, 
-												xscale.domain()[0], xscale.domain()[1])
-		slice_util.setSlice(appstate.data_slices, "t5", y_var, 
-												yscale.domain()[1], yscale.domain()[0])
+		localstate.drawnRows = brushedNodes;
+		// global slice
+		// slice_util.setSlice(appstate.data_slices, "t5", x_var, 
+		// 										xscale.domain()[0], xscale.domain()[1])
+		// slice_util.setSlice(appstate.data_slices, "t5", y_var, 
+		// 										yscale.domain()[1], yscale.domain()[0])
+		// local slice
+		// slice_util.setSlice(localstate.data_slices, "t5", x_var, 
+		// 										xscale.domain()[0], xscale.domain()[1])
+		// slice_util.setSlice(localstate.data_slices, "t5", y_var, 
+		// 										yscale.domain()[1], yscale.domain()[0])
 
 
 		// ### X) Calculate Voronoi points
-		voronoi = vizutils.processVoronoi(brushedNodes, valueX, valueY, 
+		voronoi = vizutils.processVoronoi(localstate.drawnRows, valueX, valueY, 
 																		[xrange[0], yrange[0]], [xrange[1], yrange[1]])
 
 		// ### X) generate a quadtree for faster lookups for brushing
-		quadtree = vizutils.processQuadtree(brushedNodes, valueX, valueY)
+		quadtree = vizutils.processQuadtree(localstate.drawnRows, valueX, valueY)
 
 		// update plot
 		updatePlot(localstate.datasetRows);
 
-		appdispatch.dataslice.call("dataslice", this, "t5");
+		appdispatch.dataslice.call("dataslice", this, "t5", localstate.drawnRows);
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -377,7 +384,8 @@
 		// X) Append group for Axis and background grid
 		svg.selectAll("g.background")
 			.data([0]).enter().append("g")
-				.attr("class", "background");
+				.attr("class", "background")
+				.attr("clip-path","url(#t5clip)");
 
 		svg.selectAll("g.x.axis")
 			.data([0]).enter().append("g")
@@ -644,12 +652,15 @@
 			svg = d3.select(svgelement);
 		}
 
-		localstate.datasetRows = appstate.datasetRows.map(function(e){ return e; });
+		localstate.datasetRows = app_row_numbers;
+		localstate.drawnRows = localstate.datasetRows
 
 		initt5();
 
 		updatePlot(localstate.datasetRows);
 	};
+
+	localstate.data_slices = slice_util.slicerules_factory();
 
 	window.drawt5 = drawt5;
 	window.setSizest5 = setSizest5;

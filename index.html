@@ -87,6 +87,8 @@
 								
 								<select id="t2Values" class="t2Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
 								</select>
+
+								<a id="synct2" class="btn btn-default btn-xs"> <span class="glyphicon glyphicon-transfer"></span> </a>
 							</div>
 							<img class="img-responsive" src="images/t2.png" />
 							<svg></svg>
@@ -221,11 +223,14 @@
 			  title:"Choose one of the following...",
 			  width: "100px"
 			});
+
+			$("#synct2").on("click", syncdropdownt2_click)
 			
 			// step 1. fetch data
 			main();
 			// step 2. the world!
 			// 
+
 		})
 
 		$(window).resize(function(){
