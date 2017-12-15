@@ -175,6 +175,20 @@
 						<div class="panel-heading">
 							<span>Most Praised</span>
 						</div>
+                        <div class="col-xs-12 text-center">
+				            <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+
+						  <select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
+						      <option data-tokens="Platform">Platform</option>
+						      <option data-tokens="Genre">Genre</option>
+						      <option data-tokens="Publisher">Publisher</option>
+						      <option data-tokens="Developer">Developer</option>
+						  </select>
+
+								
+						  <select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+						  </select>
+						</div>
 						<div id="t6Viz" class="panel-body">
 							<img class="img-responsive" src="images/t6.png" />
 						</div>
@@ -242,6 +256,8 @@
 			  title:"Choose one of the following...",
 			  width: "100px"
 			});
+            
+            
             
 			// step 1. fetch data
 			main();

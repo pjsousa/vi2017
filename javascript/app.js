@@ -77,12 +77,16 @@
 	appdispatch.dataslice.on("dataslice", function(from){
 		appstate.datasetRows = d3.range(datasources["data_v2"].length);
 		appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
-        console.log(appstate.datasetRows);
+        
 		/**/
         if(from=="t1"){;
 		 	drawt1(appstate.datasetRows);
 		}
-
+        
+        if(from=="t6"){
+            drawt6(appstate.datasetRows);
+        }
+        
 		if(from!="t5"){
 			drawt5(appstate.datasetRows);
 		}
@@ -124,7 +128,7 @@
 				setSizesdtl(this.getClientRects()[0]);
 			}
 			else if(_id == "t6Viz"){
-				//setSizest6(this.getClientRects()[0])
+				setSizest6(this.getClientRects()[0]);
 			}
 			else if(_id == "t4Panel"){
 				//setSizest4(this.getClientRects()[0])
@@ -143,6 +147,7 @@
 		drawt1(appstate.datasetRows);
 		drawt5(appstate.datasetRows);
 		drawt2(appstate.datasetRows);
+        drawt6(appstate.datasetRows);
 		drawclv(appstate.datasetRows);
 	};
 

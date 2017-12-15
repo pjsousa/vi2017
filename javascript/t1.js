@@ -60,14 +60,6 @@
 			appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(row_num), 1);
 		});
 	});
-
-    function raw_value(row_num, variable){
-		var result = null;
-
-		result = data_utils.read_value(row_num, variable);
-
-		return result;
-	};
 	
 	function brushed() {
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
@@ -87,7 +79,6 @@
             svg.select(".handle--e").attr("x",s[1]);
         }
         
-        console.log(this);
         if(s[1] <= range[1]){
 		x.domain(s.map(x_brush.invert, x_brush));
 		svg.selectAll(".line1").attr("d",valueline);
@@ -131,6 +122,7 @@
 			resetDropdownValues();
 			
 			dropdown_util.setSelection_values('.t1Values', appstate.data_slices["t1Genre"][1]);
+            
 			dropdown_util.register_listener("#t1Values", function(idx, value_str){
 				var current_dropdownatt = dropdown_util.read_atts(".t1Atts");
 				slice_util.setSlice(appstate.data_slices, "t1Genre", "", current_dropdownatt, value_str);
@@ -162,7 +154,6 @@
         
         initt1();
         
-        //updatePlot(localstate.datasetRows);
     }
     
 	function initt1(){
@@ -446,7 +437,7 @@
 
                 var year = dataset[row_num].Year_of_Release;//raw_value(row_num,x_variable);
                 var sales = dataset[row_num][column_name];
-				//var year = dataset[row_num][x_variable].getFullYear() + ".0";
+            
 				var all_rownums = datasources["index_"+x_variable].index[year.getFullYear()+".0"];
                 
 				dispatch2.call("gameout", null, d, all_rownums, dataset);

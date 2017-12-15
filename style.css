@@ -68,6 +68,26 @@ body{
 	stroke-dasharray: 3,3;
 }
 
+/*t6*/
+      rect.bordered {
+        stroke: #E6E6E6;
+        stroke-width:2px;   
+      }
+
+      text.mono {
+        font-size: 9pt;
+        font-family: Consolas, courier;
+        fill: #aaa;
+      }
+
+      text.axis-interval {
+        fill: #000;
+      }
+
+      text.axis-year {
+        fill: #000;
+      }
+
 /*
 		.line {
 			fill: none;
