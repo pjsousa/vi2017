@@ -33,8 +33,14 @@
 	var xscale = null;
 	var yscale = null;
 
+	var axis_0;
+	var yaxis;
+	var xaxis;
+
 	var dataset;
 	var rows_order;
+
+	var svg;
 
 	dispatch.on("gamehover.cleveland", function(d){
 		mouse_coord = d3.mouse(this);
@@ -146,20 +152,7 @@
 	};
 
 	function initclv(){
-
-	};
-
-	function updatePlot(row_numbers){
-
-	}
-
-	function drawclv(app_row_numbers){
-		localstate.datasetRows = app_row_numbers;
-		localstate.drawnRows = localstate.datasetRows;
-
-		var aux_order;
-
-		dataset = app_row_numbers;
+		dataset = localstate.drawnRows;
 
 		rows_order = data_utils.sortBy(dataset, x_var);
 		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
@@ -169,21 +162,23 @@
 			rows_order = data_utils.sortBy(rows_order, sort_var);
 		}
 
+
+
 		// 1) Settle the values for the x and y domains (this are the values in the data)
-		var ydomain = [];
+		ydomain = [];
 		ydomain[0] = 0
 		ydomain[1] = top_rows - 1;
-		var xdomain = [];
+		xdomain = [];
 		xdomain[0] = 0.95 * d3.min(rows_order, function(d) { return parseFloat(raw_value(d, x_var)) });
 		xdomain[1] = 1.05 * d3.max(rows_order, function(d) { return parseFloat(raw_value(d, x_var)) });
 
 
 
 		// 2) Settle the values for the x and y ranges (this are the values/dimensions in pixels)
-		var yrange = [];
+		yrange = [];
 		yrange[0] = padding + ycutoff;
 		yrange[1] = h - padding - yoffset;
-		var xrange = [];
+		xrange = [];
 		xrange[0] = padding + xoffset;
 		xrange[1] = w - padding - xcutoff;
 
@@ -194,9 +189,20 @@
 		d3.select("#clvViz > img")
 			.remove();
 
-		var svg = d3.selectAll("#clvViz svg")
+		svg = d3.selectAll("#clvViz svg")
 			.attr("width",w)
 			.attr("height",h);
+
+		svg.selectAll("defs")
+			.data([0])
+			.enter().append("defs").append("clipPath")
+				.attr("id","clvclip")
+				.append("rect")
+				.attr("x",xrange[0]-10)
+				.attr("y",yrange[0]-10)
+				.attr("width",xrange[1]-xrange[0]+20)
+				.attr("height",yrange[1]-yrange[0]+20);
+
 
 
 		// 4) Creating the scales
@@ -215,41 +221,118 @@
 
 		// 5) Create X and Y axis
 		//calculate the placement of the origins for both axis
-		var axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale);
+		axis_0 = axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale);
 
-		var yaxis = d3.axisLeft()
+		yaxis = d3.axisLeft()
 			.scale(yscale);
 
-		var xaxis = d3.axisBottom()
+		xaxis = d3.axisBottom()
 			.scale(xscale)
 			.ticks(10);
 
 
 
+		// X) Append group for Axis and background grid
+		// for data
+		svg.selectAll("g.background")
+			.data([0]).enter().append("g")
+				.attr("class", "background");
+
+		svg.selectAll("g.x.axis")
+			.data([0]).enter().append("g")
+				.attr("transform","translate(0," + axis_0["y"] + ")")
+				.attr("class", "x axis")
+
+
+		svg.selectAll("g.y.axis")
+			.data([0]).enter().append("g")
+				.attr("transform","translate("+ axis_0["x"] +",0)")
+				.attr("class", "y axis");
+
+
+
+		// X) Append group for data points grid
+		svg.selectAll("g.datapoints")
+			.data([0]).enter().append("g")
+				.attr("class", "datapoints")
+				.attr("clip-path","url(#clvclip)")
+
+		svg.selectAll("g.datapoints-h")
+			.data([0]).enter().append("g")
+				.attr("class", "datapoints-h");
+
+
+
+		// X) Append group for highlighting artifacts
+		svg.selectAll("g.highlight")
+			.data([0]).enter().append("g")
+				.attr("class", "highlight")
+
+
+
+		// X) Append group for catching events
+		svg.selectAll("g.brush")
+			.data([0]).enter().append("g")
+				.attr("class", "brush");
+
+
+
+		// draws the X text label
+		svg.selectAll("text.x-axis-label")
+			.data([0])
+			.enter().append("text")
+			.attr("class", "x-axis-label")
+			.attr("x", xrange[1])
+			.attr("y", yrange[1] + yoffset)
+			.attr("fill", "black")
+			.style("text-anchor", "end")
+			.text("Global Sales ( Million Units )");
+	};
+
+	function updatePlot(row_numbers){
+		dataset = row_numbers;
+
+		var t0 = svg.transition().duration(100);
+		var t1 = svg.transition().delay(100).duration(500);
+
+		rows_order = data_utils.sortBy(dataset, x_var);
+		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
+		rows_order = rows_order.reverse();
+
+		if(sort_var == y_var){
+			rows_order = data_utils.sortBy(rows_order, sort_var);
+		}
+
 		// 6) Create the background grid
 		// Draw the Y grid
-		svg.selectAll("line.y-grid")
+		svg.select("g.background").selectAll("line.y-grid")
 			.data(rows_order)
 			.enter().append("line")
 				.attr("class", "y-grid")
 				.attr("x1", xrange[0])
-				.attr("y1", function(d, i){ return yscale(i); })
 				.attr("x2", xrange[1])
-				.attr("y2", function(d, i){ return yscale(i); })
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
-
-		// Draw the Y ticks and y label
-		svg.selectAll("text.y-axis-tick")
+		svg.select("g.background").selectAll("line.y-grid")
 			.data(rows_order)
 			.exit().remove();
-		svg.selectAll("text.y-axis-tick")
+		svg.select("g.background").selectAll("line.y-grid")
+			.transition(t1)
+			.attr("y1", function(d, i){ return yscale(i); })
+			.attr("y2", function(d, i){ return yscale(i); });
+
+
+		// Draw the Y ticks and y label
+		svg.select("g.background").selectAll("text.y-axis-tick")
+			.data(rows_order)
+			.exit().remove();
+		svg.select("g.background").selectAll("text.y-axis-tick")
 			.data(rows_order)
 			.enter().append("text")
 				.attr("class", "y-axis-tick")
 				.attr("x", xrange[0])
 				.attr("y", function(d, i){ return yscale(i); })
-		svg.selectAll("text.y-axis-tick")
+		svg.select("g.background").selectAll("text.y-axis-tick")
 				.transition()
 				.duration(500)
 				.attr("x", xrange[0])
@@ -271,7 +354,7 @@
 				})
 
 		// Draw the X ticks and x label
-		svg.selectAll("text.x-axis-tick")
+		svg.select("g.background").selectAll("text.x-axis-tick")
 			.data(xscale.ticks())
 			.enter().append("text")
 				.attr("class", "x-axis-tick")
@@ -282,18 +365,8 @@
 				.style("font-size", 10)
 				.text(function(d){ return d; });
 
-		svg.selectAll("text.x-axis-label")
-			.data([0])
-			.enter().append("text")
-			.attr("class", "x-axis-label")
-			.attr("x", xrange[1])
-			.attr("y", yrange[1] + yoffset)
-			.attr("fill", "black")
-			.style("text-anchor", "end")
-			.text("Global Sales ( Million Units )");
-
 		// (for completeness...) Draw the X zero
-		svg.selectAll("line.x-grid-0")
+		svg.select("g.background").selectAll("line.x-grid-0")
 			.data([1e-10])
 			.enter().append("line")
 				.attr("class", "x-grid-0")
@@ -308,7 +381,7 @@
 
 		// 7) Plot the data itself
 		// draws the plot itself
-		svg.selectAll("circle.data-points")
+		svg.select("g.datapoints").selectAll("circle.data-points")
 			.data(rows_order)
 			.enter().append("circle")
 			.attr("id", function(d){ return "d-clv-"+ rows_order[d]; })
@@ -317,10 +390,10 @@
 			.attr("cy",function(d, i) {
 				return yscale(i);
 			})
-		svg.selectAll("circle.data-points")
+		svg.select("g.datapoints").selectAll("circle.data-points")
 			.data(rows_order)
 			.exit().remove();
-		svg.selectAll("circle.data-points")
+		svg.select("g.datapoints").selectAll("circle.data-points")
 			.data(rows_order)
 			.transition()
 			.delay(500)
@@ -339,9 +412,9 @@
 
 
 		// 8) Overlay boxes over the plot to grab highlight events
-		svg.selectAll("rect.event-grabbers")
+		svg.select("g.brush").selectAll("rect.event-grabbers")
 			.remove();
-		svg.selectAll("rect.event-grabbers")
+		svg.select("g.brush").selectAll("rect.event-grabbers")
 			.data(rows_order)
 			.enter().append("rect")
 			.attr("class", "event-grabbers")
@@ -363,13 +436,21 @@
 				
 				appdispatch.gameout.call("gameout", this, d, "clv");
 			});
+	}
 
-		// Draw the group to highlight dots (as there are rownums in appstate.highlightedRows)
-		// The dots themselves are added/removed latter in drawHighlightclv when the events fire.
-		svg.selectAll("g.highlight")
-			.data([0])
-			.enter().append("g")
-				.attr("class", "highlight");
+	function drawclv(app_row_numbers, svgelement){
+		if(typeof svgelement === "undefined"){
+			svg = d3.selectAll("#t2Viz svg");
+		}
+		else{
+			svg = d3.select(svgelement);
+		}
+
+		localstate.datasetRows = app_row_numbers;
+		localstate.drawnRows = localstate.datasetRows;
+
+		initclv();
+		updatePlot(localstate.drawnRows);
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();

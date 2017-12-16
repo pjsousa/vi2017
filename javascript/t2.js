@@ -47,6 +47,8 @@
 	var dataset_h;
 	var rows_order;
 
+	var svg;
+
 	var initdropdowns_happenedonce = false;
 
 	dispatch.on("gamehover.t2", function(d){
@@ -316,10 +318,10 @@
 			.enter().append("defs").append("clipPath")
 				.attr("id","t2clip")
 				.append("rect")
-				.attr("x",xrange[0])
-				.attr("y",yrange[0])
-				.attr("width",xrange[1]-xrange[0])
-				.attr("height",yrange[1]-yrange[0]);
+				.attr("x",xrange[0]-10)
+				.attr("y",yrange[0]-10)
+				.attr("width",xrange[1]-xrange[0]+20)
+				.attr("height",yrange[1]-yrange[0]+20);
 
 
 		// 4) Creating the scales
@@ -419,7 +421,6 @@
 	function updatePlot(row_numbers){
 		dataset = row_numbers;
 
-		// update plot
 		var t0 = svg.transition().duration(100);
 		var t1 = svg.transition().delay(100).duration(500);
 
@@ -472,7 +473,7 @@
 				.attr("stroke", "rgba(120,120,120,0.2)");
 		svg.select("g.background").selectAll("line.y-grid")
 			.data(yscale.ticks())
-			.exit().remove()
+			.exit().remove();
 		svg.select("g.background").selectAll("line.y-grid")
 				.transition(t1)
 				.attr("y1", function(d){ return yscale(d); })
@@ -700,9 +701,7 @@
 		localstate.drawnRows = localstate.datasetRows;
 
 		initDropdowns();
-
 		initt2();
-
 		updatePlot(localstate.drawnRows);
 	};
 

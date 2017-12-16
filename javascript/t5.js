@@ -338,10 +338,10 @@
 			.enter().append("defs").append("clipPath")
 				.attr("id","t5clip")
 				.append("rect")
-				.attr("x",xrange[0])
-				.attr("y",yrange[0])
-				.attr("width",xrange[1]-xrange[0])
-				.attr("height",yrange[1]-yrange[0]);
+				.attr("x",xrange[0]-10)
+				.attr("y",yrange[0]-10)
+				.attr("width",xrange[1]-xrange[0]+20)
+				.attr("height",yrange[1]-yrange[0]+20);
 
 
 
