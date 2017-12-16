@@ -1,18 +1,24 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-    var gridSize = -1;
+    var gridSizeX = 25;
+    var gridSizeY = 20;
     var legendElementWidth = -1;
     var buckets = 10;
 	var padding = 20;
+    
 	var xoffset = 30;
 	var yoffset = 30;
-	var xcutoff = 60;
-	var ycutoff = 50;
+    
+	var xcutoff = 30;
+	var ycutoff = 30;
+    
     var dataset;
     var initdropdowns_quirk = false;
+    var aux;
     
-    var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];
+    var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
+    var emptyColor = "#ffffff";
     var scoreIntervals = ["90/100","80/90","70/80","60/70","50/60","40/50","30/40","20/30","10/20","0/10"];
     var years;
     
@@ -29,7 +35,7 @@
 	function setSizest6(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-        legendElementWidth = gridSize*2;
+        legendElementWidth = gridSizeY*2;
 	}
     
     function initDropdowns(){
@@ -73,10 +79,19 @@
         localstate.datasetRows = app_row_numbers;
 		dataset = data_utils.read_column(localstate.datasetRows,["Mean_UserCritic_Score","Year_of_Release"]);
         years = data_utils.get_uniquevalues_dataset("Year_of_Release");
-        gridSize = Math.floor(w/years.length);
 		//initDropdowns();
-        
+        aux = new Array(years.length);
+        for(var i = 0; i< years.length; i++){
+            aux[i] = new Array(scoreIntervals.length);
+        }
         initt6();
+    }
+    
+    function getNumber(d){
+        var yearInd = years.findIndex(x=> x == d.year);
+        var intInd = scoreIntervals.findIndex(x => x == d.interval);
+        if(aux[yearInd][intInd] == -1){ return emptyColor};
+        return aux[yearInd][intInd];
     }
     
 	function initt6(){	
@@ -84,10 +99,13 @@
         var row_indexes = data_utils.get_index(["Genre"],["Action"]);
         var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
         
+
+        var yScale = ycutoff + yoffset;
+        var xScale = xcutoff  + xoffset;
         
         svg = d3.select("#t6Viz").append("svg")
-                                     .attr("width", 400)
-                                     .attr("height", 300);
+                                     .attr("width", w)
+                                     .attr("height", h);
         
         var scoreLabels = svg.selectAll(".scoreLabel")
             .data(scoreIntervals)
@@ -95,9 +113,9 @@
                 .text(function(d){return d;})
                 .style("text-anchor","end")
                 .attr("transform",function(d,i){
-                    return "translate("+ (padding + xoffset )+"," + (padding +ycutoff + gridSize/1.5 + yoffset * i)+ ")";
+                    return "translate("+ (padding + xoffset )+"," + (yScale + gridSizeY* i)+ ")";
                 })
-                .attr("class",function(d,i){return ((i>=0 && i<=6) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");});
+                .attr("class",function(d,i){return ((i>=0 && i<=9) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");});
         
         var yearLabels = svg.selectAll(".yearLabel")
             .data(years)
@@ -106,9 +124,10 @@
     
         svg.selectAll(".year-legend")    
             .attr("transform",function(d,i){
-                return "translate(" + (xcutoff  + gridSize/2 + xoffset*i) + ","+ yoffset+ ") rotate(40)";
+                return "translate(" + (xScale+ gridSizeX*i) + ","+ yoffset+ ") rotate(40)";
             })
-            .style("text-anchor","middle")
+            .style("text-anchor","middle")                
+            .attr("class",function(d,i){return ((i>=0 && i<=22) ? "yearLabel mono axis axis-year" : "yearLabel mono axis");})
             .text(function(d){ return d; });
        
 
@@ -146,43 +165,74 @@
             }
         };
         
-        //nest values in the intervals
-        var grouped = d3.nest()
-            .key(function(d) {
-                return setInterval(d.Mean_UserCritic_Score);
-            })
-            /*.rollup(function(d){
-                return{
-                    
+        
+        var grouped = [];
+
+        
+        dataset.forEach(function(d,i){
+            
+            var interval = setInterval(d.Mean_UserCritic_Score);
+            var year = d.Year_of_Release;
+            
+            grouped.push({
+                year: year,
+                interval: interval,
+                value: d.Mean_UserCritic_Score
+            });
+            
+            var yearInd = years.findIndex(x=> x == year);
+            var intInd = scoreIntervals.findIndex(x => x == interval);
+            
+            var element = aux[yearInd][intInd];
+            if(element == null)
+                aux[yearInd][intInd] = 1;
+            else
+                aux[yearInd][intInd]+= 1;
+        });
+        
+        for(var i = 0; i< years.length; i++){
+            for(var j = 0; j < scoreIntervals.length; j++){
+                if(aux[i][j]==null){
+                    aux[i][j] = -1;
+                    grouped.push({
+                        year: years[i],
+                        interval: scoreIntervals[j],
+                        value: 0
+                    })
                 }
-            })*/
-        .entries(dataset);
+            }
+        }
+        
+        
         
         var colorScale = d3.scaleQuantile()
-                        .domain([0, buckets - 1, d3.max(grouped, function(d){return d["values"]["length"].Mean_UserCritic_Score;})])
+                        .domain([0, buckets - 1, d3.max(grouped, function(d){            
+                            return getNumber(d);
+                        })])
                         .range(colors);
-        var cards = svg.selectAll(".year")
-                .data(grouped, function(d){ return d["key"] + ":" + d["values"]["length"]});
         
+        var cards = svg.selectAll(".year")
+                .data(grouped, function(d){
+                    return d.interval + ":" + d.year;
+                });
+
         cards.append("title");
         
         cards.enter().append("rect")
-            .attr("y", function(d,i){ return (i) * gridSize; })
-            .attr("x", function(d){ return (d["values"]["length"] -1) * gridSize; })
-            .attr("rx",4)
-            .attr("ry",4)
+            .attr("y", function(d,i){ return yoffset+15 +(scoreIntervals.findIndex(x => x == d.interval) ) * gridSizeY; })
+            .attr("x", function(d,i){ return xScale + (years.findIndex(x=> x ==d.year)) * gridSizeX; })
             .attr("class","score bordered")
-            .attr("width", gridSize)
-            .attr("height", gridSize)
-            .style("fill", colors[0]);
+            .attr("width", gridSizeX)
+            .attr("height", gridSizeY)
+            .style("fill", function(d){
+                if(!isNaN(getNumber(d)) )
+                    return colorScale(getNumber(d))
+                return getNumber(d);
+            });
         
-        cards.transition().duration(1000)
-            .style("fill", function(d){ return colorScale(d["key"]);});
-        
-        cards.exit().remove();
         
         var legend = svg.selectAll(".legend")
-            .data([0].concat(colorScale.quantiles()), function(d){ return d; });
+            .data([0].concat(colorScale.quantiles()), function(d){ return d.value; });
         
         legend.enter().append("g")
             .attr("class","legend");
@@ -191,21 +241,18 @@
             .attr("x", function(d,i){ return legendElemetnWidth * i;})
             .attr("y",h)
             .attr("width", legendElementWidth)
-            .attr("height", gridSize/2)
+            .attr("height", gridSizeY/2)
             .style("fill", function(d,i){ return colors[i];});
         
         legend.append("text")
             .attr("class", "mono")
-            .text(function(d) { return "≥ " + Math.round(d["values"]["length"]); })
+            .text(function(d) { return "≥ " + Math.round(d); })
             .attr("x", function(d, i) { return legendElementWidth * i; })
-            .attr("y", h + gridSize);
-
-        legend.exit().remove();
-        
-
+            .attr("y", h + gridSizeY);
         
         
 	};
+    
     window.drawt6 = drawt6;
     window.setSizest6 = setSizest6;
 })();
