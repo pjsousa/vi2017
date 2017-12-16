@@ -402,6 +402,7 @@
 				.attr("class", "highlight")
 
 
+
 		// X) Append group for catching events
 		svg.selectAll("g.brush")
 			.data([0]).enter().append("g")
