@@ -430,7 +430,7 @@
 		rows_order = rows_order.reverse();
 
 		if(sort_var == x_var){
-			rows_order = data_utils.sortBy(dataset, sort_var);
+			rows_order = data_utils.sortBy(rows_order, sort_var);
 		}
 
 		// 5) Create X and Y axis

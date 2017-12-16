@@ -84,7 +84,7 @@
 			sort_var = y_var;
 		}
 
-		drawclv();
+		drawclv(localstate.drawnRows);
 	};
 
 	function drawHighlightclv(from_target){
@@ -106,13 +106,13 @@
 			.attr("fill", "fuchsia")
 			.attr("cx", function(row_num){ return xscale(value(row_num, x_var))})
 			.attr("cy", function(row_num){ 
-				var i = dataset.indexOf(row_num);
+				var i = rows_order.indexOf(row_num);
 
 				if(i == -1){
 					return -1000;
 				}
 
-				return yscale(rows_order[i]); })
+				return yscale(i); })
 
 		if(from_target == "t5"){
 			g.selectAll("circle.highlight")
@@ -161,35 +161,21 @@
 
 		dataset = app_row_numbers;
 
-		aux_order = localstate.datasetRows.map(function(d){ return d; });
-		aux_order = aux_order.sort(function(a,b){
-			return value(b, x_var) - value(a, x_var);
-		})
-		aux_order = aux_order.slice(0, top_rows);
+		rows_order = data_utils.sortBy(dataset, x_var);
+		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
+		rows_order = rows_order.reverse();
 
-		rows_order = _.range(aux_order.length);
-
-		if (sort_var == y_var){
-			rows_order = rows_order.sort(function(a, b){ 
-				var result;
-				var v1 = value(aux_order[a], sort_var);
-				var v2 = value(aux_order[b], sort_var);
-				
-				result = v1.localeCompare(v2);
-				
-				console.log(a,v1, b, v2, result)
-				return result; })
+		if(sort_var == y_var){
+			rows_order = data_utils.sortBy(rows_order, sort_var);
 		}
-
-		dataset = aux_order;
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		var ydomain = [];
 		ydomain[0] = 0
 		ydomain[1] = top_rows - 1;
 		var xdomain = [];
-		xdomain[0] = 0.95 * d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
-		xdomain[1] = 1.05 * d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
+		xdomain[0] = 0.95 * d3.min(rows_order, function(d) { return parseFloat(raw_value(d, x_var)) });
+		xdomain[1] = 1.05 * d3.max(rows_order, function(d) { return parseFloat(raw_value(d, x_var)) });
 
 
 
@@ -243,37 +229,34 @@
 		// 6) Create the background grid
 		// Draw the Y grid
 		svg.selectAll("line.y-grid")
-			.data(dataset)
+			.data(rows_order)
 			.enter().append("line")
 				.attr("class", "y-grid")
 				.attr("x1", xrange[0])
-				.attr("y1", function(d, i){ return yscale(rows_order[i]); })
+				.attr("y1", function(d, i){ return yscale(i); })
 				.attr("x2", xrange[1])
-				.attr("y2", function(d, i){ return yscale(rows_order[i]); })
+				.attr("y2", function(d, i){ return yscale(i); })
 				.attr("stroke-width", 1)
 				.attr("stroke", "rgba(120,120,120,0.2)");
 
 		// Draw the Y ticks and y label
 		svg.selectAll("text.y-axis-tick")
-			.data(dataset)
+			.data(rows_order)
 			.exit().remove();
 		svg.selectAll("text.y-axis-tick")
-			.data(dataset)
+			.data(rows_order)
 			.enter().append("text")
 				.attr("class", "y-axis-tick")
 				.attr("x", xrange[0])
-				.attr("y", function(d,i){ return yscale(rows_order[i]); })
-				.append("title")
-					.html(function(d){ return raw_value(d, y_var) });
+				.attr("y", function(d, i){ return yscale(i); })
 		svg.selectAll("text.y-axis-tick")
-			.data(dataset)
 				.transition()
 				.duration(500)
 				.attr("x", xrange[0])
-				.attr("y", function(d,i){ return yscale(rows_order[i]); })
+				.attr("y", function(d,i){ return yscale(i); })
 				.attr("dx", "-5px")
 				.attr("dy", "1px")
-				.attr("y", function(d,i){ return yscale(rows_order[i]); })
+				.attr("y", function(d,i){ return yscale(i); })
 				.attr("fill", "black")
 				.style("cursor", "default")
 				.style("text-anchor", "end")
@@ -326,19 +309,19 @@
 		// 7) Plot the data itself
 		// draws the plot itself
 		svg.selectAll("circle.data-points")
-			.data(dataset)
+			.data(rows_order)
 			.enter().append("circle")
 			.attr("id", function(d){ return "d-clv-"+ rows_order[d]; })
 			.attr("class", "data-points")
 			.attr("cx", xrange[0])
 			.attr("cy",function(d, i) {
-				return yscale(rows_order[i]);
+				return yscale(i);
 			})
 		svg.selectAll("circle.data-points")
-			.data(dataset)
+			.data(rows_order)
 			.exit().remove();
 		svg.selectAll("circle.data-points")
-			.data(dataset)
+			.data(rows_order)
 			.transition()
 			.delay(500)
 			.duration(500)
@@ -350,7 +333,7 @@
 				return  xscale(v);
 			})
 			.attr("cy",function(d, i) {
-				return yscale(rows_order[i]);
+				return yscale(i);
 			})
 
 
@@ -359,13 +342,13 @@
 		svg.selectAll("rect.event-grabbers")
 			.remove();
 		svg.selectAll("rect.event-grabbers")
-			.data(dataset)
+			.data(rows_order)
 			.enter().append("rect")
 			.attr("class", "event-grabbers")
 			.attr("fill","rgba(200, 200, 200, 0.0)")
 			.attr("x",function(d){ return xrange[0]; } )
 			.attr("width",function(d){ return xrange[1] - xrange[0]; } )
-			.attr("y",function(d, i) { return yscale(rows_order[i]) - r; })
+			.attr("y",function(d, i) { return yscale(i) - r; })
 			.attr("height", 2*r)
 			.on("mouseover", function(d, i){
 				// lets notify ourselves
