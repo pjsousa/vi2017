@@ -1,8 +1,8 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-    var gridSizeX = 25;
-    var gridSizeY = 20;
+    var gridSizeX = 40;
+    var gridSizeY = 25;
     var legendElementWidth = -1;
     var buckets = 10;
 	var padding = 20;
@@ -16,6 +16,9 @@
     var dataset;
     var initdropdowns_quirk = false;
     var aux;
+    var y_brush, x_brush,xrange=[];
+    var xScale, yScale;
+    var scoreLabels;
     
     var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
     var emptyColor = "#ffffff";
@@ -79,12 +82,20 @@
         localstate.datasetRows = app_row_numbers;
 		dataset = data_utils.read_column(localstate.datasetRows,["Mean_UserCritic_Score","Year_of_Release"]);
         years = data_utils.get_uniquevalues_dataset("Year_of_Release");
+        years.reverse();
+        var index = years.indexOf("2017.0");
+        years.splice(index,1);
+        index = years.indexOf("2020.0");
+        years.splice(index,1);
+        
+        
 		//initDropdowns();
         aux = new Array(years.length);
         for(var i = 0; i< years.length; i++){
             aux[i] = new Array(scoreIntervals.length);
         }
         initt6();
+        createScroll();
     }
     
     function getNumber(d){
@@ -93,29 +104,43 @@
         if(aux[yearInd][intInd] == -1){ return emptyColor};
         return aux[yearInd][intInd];
     }
+
+    
+    function createScroll(){
+        var content = document.getElementById("t6Viz");
+        content.addEventListener('scroll',function(evt){
+            var n = 0;
+            var head = document.getElementById("score-container");
+            var children = head.children;
+            for(var i = 0; i < children.length; i++){
+                if(head.children[i].getAttribute("id") == "score"){
+                    head.children[i].setAttribute("transform","translate("+ (xScale+ gridSizeX*n) + ","+ (yoffset+this.scrollTop) +") rotate(-40)");
+                    n++;
+                }else if(head.children[i].getAttribute("id") == "score-rect"){
+                    head.children[i].setAttribute("y",this.scrollTop);
+                }
+            }
+            
+            
+        }, false);
+    }
     
 	function initt6(){	
         d3.select("#t6Viz > img").remove();
-        var row_indexes = data_utils.get_index(["Genre"],["Action"]);
+        var row_indexes = data_utils.get_index(["Genre"],["Shooter"]);
         var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
         
 
-        var yScale = ycutoff + yoffset;
-        var xScale = xcutoff  + xoffset;
+        yScale = ycutoff + yoffset+padding;
+        xScale = xcutoff  + xoffset+50;
+        xrange[0] = padding + xoffset;
+		xrange[1] = w-padding - xcutoff;
         
         svg = d3.select("#t6Viz").append("svg")
-                                     .attr("width", w)
-                                     .attr("height", h);
+                                .attr("width", w)
+                                     .attr("height", h+500);
         
-        var scoreLabels = svg.selectAll(".scoreLabel")
-            .data(scoreIntervals)
-            .enter().append("text")
-                .text(function(d){return d;})
-                .style("text-anchor","end")
-                .attr("transform",function(d,i){
-                    return "translate("+ (padding + xoffset )+"," + (yScale + gridSizeY* i)+ ")";
-                })
-                .attr("class",function(d,i){return ((i>=0 && i<=9) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");});
+
         
         var yearLabels = svg.selectAll(".yearLabel")
             .data(years)
@@ -124,14 +149,16 @@
     
         svg.selectAll(".year-legend")    
             .attr("transform",function(d,i){
-                return "translate(" + (xScale+ gridSizeX*i) + ","+ yoffset+ ") rotate(40)";
+                return "translate(" + (padding + xoffset )+"," + (yScale + gridSizeY* i)+ ")";
             })
             .style("text-anchor","middle")                
-            .attr("class",function(d,i){return ((i>=0 && i<=22) ? "yearLabel mono axis axis-year" : "yearLabel mono axis");})
-            .text(function(d){ return d; });
+            .attr("class",function(d,i){return ((i>=0 && i<=40) ? "yearLabel mono axis axis-year" : "yearLabel mono axis");})
+            .text(function(d){ return d.split(".")[0]; });
        
 
 
+
+        
         var setInterval = function(value){
             if(value >= 90 && value < 100){
                 return scoreIntervals[0];
@@ -219,8 +246,8 @@
         cards.append("title");
         
         cards.enter().append("rect")
-            .attr("y", function(d,i){ return yoffset+15 +(scoreIntervals.findIndex(x => x == d.interval) ) * gridSizeY; })
-            .attr("x", function(d,i){ return xScale + (years.findIndex(x=> x ==d.year)) * gridSizeX; })
+            .attr("x", function(d,i){ return xcutoff+ xoffset+10 +(scoreIntervals.findIndex(x => x == d.interval) ) * gridSizeX; })
+            .attr("y", function(d,i){ return yoffset+ycutoff+4 + (years.findIndex(x=> x ==d.year)) * gridSizeY; })
             .attr("class","score bordered")
             .attr("width", gridSizeX)
             .attr("height", gridSizeY)
@@ -249,6 +276,29 @@
             .text(function(d) { return "≥ " + Math.round(d); })
             .attr("x", function(d, i) { return legendElementWidth * i; })
             .attr("y", h + gridSizeY);
+        
+        var container = svg.append("g").attr("id","score-container");
+        container.append("rect")
+            .attr("id","score-rect")
+            .attr("x",0)
+            .attr("y",0)
+            .attr("width",500)
+            .attr("height",60)
+            .style("fill","#eee");
+        
+        scoreLabels = container.selectAll(".scoreLabel")
+            .data(scoreIntervals)
+            .enter().append("text").attr("transform",function(d,i){
+                    return "translate("+ (xScale+ gridSizeX*i) + ","+ (yoffset)+ ") rotate(-40)"
+                })
+                .attr("id","score")
+                .attr("class",function(d,i){return ((i>=0 && i<=9) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");})
+            .text(function(d){return d;})
+            .style("text-anchor","end");
+        
+        
+            
+
         
         
 	};

@@ -47,6 +47,8 @@ body{
 #t6Viz{
 	padding: 0;
 	height: calc(40vw);
+    width: 40vw;
+    overflow: auto;
 }
 
 #t4Viz{
@@ -87,3 +89,4 @@ text.axis-interval {
 text.axis-year {
     fill: #000;
 }
+
