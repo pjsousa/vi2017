@@ -411,6 +411,30 @@
 		return result;
 	};
 
+	function sortBy(row_numbers, col_name){
+		var result = row_numbers.map(function(e){ return e; });
+
+		result = _.sortBy(result, [function(a){ 
+			var _v = read_value(a, col_name);
+			var _vParsed = parseFloat(_v);
+
+			return  isNaN(_vParsed) ? _v : _vParsed}]);
+
+		return result;
+	};
+
+	function get_sortindex(row_numbers, col_name, desc){
+		var result = sortBy(row_numbers, col_name);
+
+		result = row_numbers.map(function(e){ return result.indexOf(e); });
+
+		if (desc){
+			result = result.reverse();
+		}
+
+		return result;
+	};
+
 	// isto faz com que a datasources exista nos outros ficheiros.
 	window.datasources = datasources;
 	window.data_utils = {
@@ -423,6 +447,8 @@
 		column_hasvalue: column_hasvalue,
 		read_value: read_value,
 		compute_personsr_linregress: compute_personsr_linregress,
-		get_uniquevalues_dataset: get_uniquevalues_dataset
+		get_uniquevalues_dataset: get_uniquevalues_dataset,
+		sortBy: sortBy,
+		get_sortindex: get_sortindex
 	}
 })();

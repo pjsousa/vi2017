@@ -139,28 +139,34 @@
 			.attr("fill","rgb(255,0,255)")
 			.style("pointer-events", "none")
 			.attr("x",function(d) {
-				var i = localstate.drawnRows.indexOf(d);
+				var i = rows_order.indexOf(d);
 
 				if(i == -1){
 					return -1000;
 				}
 
-				return  xscale(rows_order[i]);
+				return  xscale(i);
 			})
-			.attr("y", function(d, i) {
-				var i = localstate.drawnRows.indexOf(d);
-				var v = value(dataset[rows_order[i]], y_var);
+			.attr("y", function(d) {
+				var i = rows_order.indexOf(d);
 
 				if(i == -1){
 					return -1000;
 				}
+
+				var v = value(d, y_var);
 
 				return yscale(v);
 			})
 			.attr("width", xscale.bandwidth())
-			.attr("height", function(d, i) {
-				var i = localstate.drawnRows.indexOf(d);
-				var v = value(dataset[rows_order[i]], y_var);
+			.attr("height", function(d) {
+				var i = rows_order.indexOf(d);
+
+				if(i == -1){
+					return 0;
+				}
+
+				var v = value(d, y_var);
 				
 				return yscale.range()[1] - yscale(v);
 			})
@@ -266,35 +272,20 @@
 	};
 
 	function initt2(){
-		var aux_order;
-
 		var dataset = localstate.drawnRows;
 
-		aux_order = dataset.map(function(d){ return d; });
-		aux_order = aux_order.sort(function(a,b){
-			return value(b, y_var) - value(a, y_var);
-		})
-		aux_order = aux_order.slice(0, top_rows);
+		rows_order = data_utils.sortBy(dataset, y_var);
+		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
+		rows_order = rows_order.reverse();
 
-		rows_order = _.range(aux_order.length);
-
-		if (sort_var == y_var){
-			rows_order = rows_order.sort(function(a, b){ 
-				var result;
-				var v1 = value(aux_order[a], sort_var);
-				var v2 = value(aux_order[b], sort_var);
-				
-				result = v2.localeCompare(v1);
-				
-				return result; })
+		if(sort_var == x_var){
+			rows_order = data_utils.sortBy(dataset, sort_var);
 		}
-
-		dataset = aux_order;
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		ydomain = [];
-		ydomain[0] = 1.05 * d3.max(dataset, function(d) { return parseFloat(raw_value(d, y_var)) });
-		ydomain[1] = d3.min([0, 0.95 * d3.min(dataset, function(d) { return parseFloat(raw_value(d, y_var)) })]);
+		ydomain[0] = 1.05 * d3.max(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) });
+		ydomain[1] = d3.min([0, 0.95 * d3.min(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) })]);
 
 		xdomain = [];
 		xdomain[0] = 0;
@@ -426,7 +417,6 @@
 	};
 
 	function updatePlot(row_numbers){
-		var aux_order;
 		dataset = row_numbers;
 
 		// update plot
@@ -435,26 +425,13 @@
 
 		updatePanelHeader();
 
-		aux_order = localstate.drawnRows.map(function(d){ return d; });
-		aux_order = aux_order.sort(function(a,b){
-			return value(b, y_var) - value(a, y_var);
-		})
-		aux_order = aux_order.slice(0, top_rows);
+		rows_order = data_utils.sortBy(dataset, y_var);
+		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
+		rows_order = rows_order.reverse();
 
-		rows_order = _.range(aux_order.length);
-
-		if (sort_var == y_var){
-			rows_order = rows_order.sort(function(a, b){ 
-				var result;
-				var v1 = value(aux_order[a], sort_var);
-				var v2 = value(aux_order[b], sort_var);
-				
-				result = v2.localeCompare(v1);
-				
-				return result; })
+		if(sort_var == x_var){
+			rows_order = data_utils.sortBy(dataset, sort_var);
 		}
-
-		dataset = aux_order;
 
 		// 5) Create X and Y axis
 		var gY = svg.select("g.y.axis")
@@ -463,8 +440,6 @@
 
 		// draws the X axis with text label
 		var gX = svg.select("g.x.axis")
-		// 	.call(xaxis);
-		// debugger;
 		gX.selectAll("text")
 			.attr("class", "x tick")
 			.attr("transform", "rotate(-40)")
@@ -472,7 +447,7 @@
 			.text(function(d, i){ 
 				var result = null;
 				try{
-					var game_name = raw_value(dataset[rows_order[i]], x_var);
+					var game_name = raw_value(rows_order[d], x_var);
 				}
 				catch(e){
 					var game_name = "";
@@ -508,26 +483,32 @@
 		// 7) Plot the data itself
 		// draws the plot itself
 		svg.select("g.datapoints").selectAll("rect.data-point")
-			.data(dataset)
+			.data(rows_order)
 			.enter().append("rect")
 			.attr("class", "data-point")
 			.attr("fill","rgb(0,127,255)")
 			.attr("opacity", 1)
 		svg.select("g.datapoints").selectAll("rect.data-point")
-			.data(dataset)
+			.data(rows_order)
 			.exit().remove();
 		svg.select("g.datapoints").selectAll("rect.data-point")
 			.transition().duration(750)
-			.attr("x",function(d, i) {
-				return  xscale(rows_order[i]);
+			.attr("x",function(d) {
+				var i = rows_order.indexOf(d);
+
+				if (i==-1){
+					return -100000;
+				}
+
+				return  xscale(i);
 			})
 			.attr("y", function(d, i) {
-				var v = value(dataset[rows_order[i]], y_var);
+				var v = value(d, y_var);
 				return yscale(v);
 			})
 			.attr("width", xscale.bandwidth())
 			.attr("height", function(d, i) {
-				var v = value(dataset[rows_order[i]], y_var);
+				var v = value(d, y_var);
 				
 				return yscale.range()[1] - yscale(v);
 			})
@@ -538,12 +519,18 @@
 			svg.select("g.brush").selectAll("rect.event-grabbers")
 				.remove();
 			svg.select("g.brush").selectAll("rect.event-grabbers")
-				.data(dataset)
+				.data(rows_order)
 				.enter().append("rect")
 				.attr("class", "event-grabbers")
 				.attr("fill","rgba(200, 0, 200, 0.0)")
-				.attr("x",function(d, i) {
-					return  xscale(rows_order[i]);
+				.attr("x",function(d){
+					var i = rows_order.indexOf(d);
+
+					if (i==-1){
+						return -100000;
+					}
+
+					return  xscale(i);
 				})
 				.attr("width", xscale.bandwidth())
 				.attr("y", yrange[0])
