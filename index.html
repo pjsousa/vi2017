@@ -40,6 +40,20 @@
 					<div id="t1Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
 							<span>Sales evolution over time</span>
+                            <div id = "div-info-line">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-line" >
+                                    <span class="glyphicon glyphicon-info-sign"></span>
+				                </button>
+                            </div>
+						</div>
+                        <div class="col-xs-12 text-center">
+						  <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+
+						  <select id="t1Atts" class="t1Atts selectpicker show-menu-arrow" >
+                              <option data-tokens="Genre">Genre</option>
+                           </select>
+                            <select id="t1Values" class="t1Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+						  </select>
 						</div>
 						<div id="t1Viz" class="panel-body">
 							<img class="img-responsive" src="images/t1.png" />
@@ -165,9 +179,29 @@
 					<div id="t6Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
 							<span>Most Praised</span>
+                            <div id = "div-info-heatmap">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-heatmap" >
+                                    <span class="glyphicon glyphicon-info-sign"></span>
+				                </button>
+                            </div>
+						</div>
+                        <div class="col-xs-12 text-center">
+				            <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+
+						  <select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
+						      <option data-tokens="Platform">Platform</option>
+						      <option data-tokens="Genre">Genre</option>
+						      <option data-tokens="Publisher">Publisher</option>
+						      <option data-tokens="Developer">Developer</option>
+						  </select>
+
+								
+						  <select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+						  </select>
 						</div>
 						<div id="t6Viz" class="panel-body">
 							<img class="img-responsive" src="images/t6.png" />
+                            <svg></svg>
 						</div>
 					</div>
 					<!-- ./t6Panel -->
@@ -189,6 +223,16 @@
 		<!-- ./page-content -->
 	</div>
 
+    <div id="myModal" class="modal">
+
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="info-text">Some text in the Modal..</p>
+      </div>
+
+    </div>
+    
 	<!-- Os "includes" das nossas sources -->
 	<script src="javascript/app.js" ></script>
 	<script src="javascript/datahandler.js" ></script>
@@ -222,6 +266,33 @@
 			  width: "100px"
 			});
 			
+            $('.t1Atts').selectpicker({
+				style: 'btn-link btn-xs',
+			  width: "100px"
+			});
+
+			$('.t1Values').selectpicker({
+			  style: 'btn-link btn-xs',
+			  header: "Select a value to filter your data",
+			  title:"Choose one of the following...",
+			  width: "100px"
+			});
+            
+            			
+            $('.t6Atts').selectpicker({
+				style: 'btn-link btn-xs',
+			  width: "100px"
+			});
+
+			$('.t6Values').selectpicker({
+			  style: 'btn-link btn-xs',
+			  header: "Select a value to filter your data",
+			  title:"Choose one of the following...",
+			  width: "100px"
+			});
+            
+            
+            
 			// step 1. fetch data
 			main();
 			// step 2. the world!

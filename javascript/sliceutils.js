@@ -10,8 +10,10 @@
 		"t5Global_Sales",
 		"t5Mean_UserCritic_Score",
 		"t2",
+		"t4",
 		"t4Year_of_Release",
 		"t4Rating",
+		"t6",
 		"t6Year_of_Release",
 		"t6Mean_UserCritic_Score"
 	];
@@ -22,10 +24,20 @@
 		"Global_Sales",
 		"Mean_UserCritic_Score",
 		"", // These are text rules. They will use the column on the rule dict.
+		"", // These are text rules. They will use the column on the rule dict.
 		"Year_of_Release",
+		"", // These are text rules. They will use the column on the rule dict.
 		"", // These are text rules. They will use the column on the rule dict.
 		"Year_of_Release",
 		"Mean_UserCritic_Score"
+	];
+    
+    var LOOKUP_SLICES = [
+		"t1Genre",
+		"t2",
+		"t4",
+		"t4Rating",
+		"t6"
 	];
 
 	function slicerules_factory(){
@@ -36,8 +48,10 @@
 		result["t5Global_Sales"]          = [-Infinity, Infinity];
 		result["t5Mean_UserCritic_Score"] = [-Infinity, Infinity];
 		result["t2"]                      = ["Platform", null];
+		result["t4"]                      = ["Platform", null];
 		result["t4Year_of_Release"]       = [-Infinity, Infinity];
 		result["t4Rating"]                = ["Rating", null];
+		result["t6"]                      = ["Platform", null];
 		result["t6Year_of_Release"]       = [-Infinity, Infinity];
 		result["t6Mean_UserCritic_Score"] = [-Infinity, Infinity];
 
@@ -60,7 +74,7 @@
 		}
 
 		// Validate var types
-		if(["t2","t4Rating", "t1Genre"].indexOf(_key) > -1){
+		if(LOOKUP_SLICES.indexOf(_key) > -1){
 			//"t2" and "t4Rating" must take strings
 			if (from !== null && typeof from !== "string"){
 				throw new Error("'from' parameter got an invalid vartype for the source|column pair specified.")
@@ -108,7 +122,7 @@
 		}
 
 		// Validate var types
-		if(["t2","t4Rating", "t1Genre"].indexOf(_key) > -1){
+		if(LOOKUP_SLICES.indexOf(_key) > -1){
 			rules[_key] = [rules[_key][0], null];
 		}
 		else{
@@ -119,7 +133,7 @@
 	};
 
 	function computeSlices(rules, row_numbers){
-		var _r = {};
+        var _r = {};
 		var _column_name;
 		var _value;
 		var _from;
@@ -129,7 +143,7 @@
 			_r[itr_key] = [];
 
 			// Validate var types
-			if(["t2","t4Rating","t1Genre"].indexOf(itr_key) > -1){
+			if(LOOKUP_SLICES.indexOf(itr_key) > -1){
 				_column_name = rules[itr_key][0];
 				_value = rules[itr_key][1];
 

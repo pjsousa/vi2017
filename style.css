@@ -47,6 +47,8 @@ body{
 #t6Viz{
 	padding: 0;
 	height: calc(40vw);
+    width: 45vw;
+    overflow: auto;
 }
 
 #t4Viz{
@@ -68,19 +70,64 @@ body{
 	stroke-dasharray: 3,3;
 }
 
-/*
-		.line {
-			fill: none;
-			stroke: steelblue;
-			stroke-width: 1.5px;
-		}
-		.axis path,
-		.axis line {
-			fill: none;
-			stroke: #000;
-			shape-rendering: crispEdges;
-		}
-		
-		.x.axis path {
-			display: none;
-		}*/
+/*t6*/
+rect.bordered {
+    stroke: #E6E6E6;
+    stroke-width:2px;   
+}
+
+text.mono {
+    font-size: 9pt;
+    font-family: Consolas, courier;
+    fill: #aaa;
+}
+
+text.axis-interval {
+    fill: #000;
+}
+
+text.axis-year {
+    fill: #000;
+}
+
+
+
+/*info popup*/
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+

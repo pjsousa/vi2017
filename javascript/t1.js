@@ -11,7 +11,7 @@
 	var ycutoff = 30;
 	var r = 2;
 
-	// [Q] Reparei que não butastes o Other_Sales, e então não butei também... mas... O_o
+
 	var x_variable = "Year_of_Release";
 	var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
 	var colors = [ "#e41a1c", "#377eb8", "#4daf4a" ]; // these were taken from color brewer
@@ -38,6 +38,16 @@
 	var dataset = null;
 	var xrange = [];
 	
+    var localstate = {
+		datasetRows: [],
+		selectedRows: [],
+		highlightedRows: [],
+		data_slices: {},
+		clearbrush_quirk: null,
+        selectedGenre: "Action"
+	};
+	var initdropdowns_quirk = false;
+    
 	dispatch.on("gamehover.lineplot", function(d, all_rownums, dataset){
 		// lets place ALL the rows in highligh!
 		all_rownums.forEach(function(row_num){
@@ -50,11 +60,26 @@
 			appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(row_num), 1);
 		});
 	});
-
 	
 	function brushed() {
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
 		var s = d3.event.selection || x_brush.range();
+
+        var range = x_brush.range();
+        
+        if(s[1]-s[0] <=60 || s[1]-s[0] < 0){
+            svg.select(".selection").attr("width","60");
+            s[1] = s[0]+60;
+            if(s[1]>range[1]){
+                s[1] = range[1];
+                s[0] = range[1] - 60;
+                svg.select(".handle--w").attr("x",s[1]-60);
+                svg.select(".selection").attr("x",s[1]-60-3);
+            }
+            svg.select(".handle--e").attr("x",s[1]);
+        }
+        
+        if(s[1] <= range[1]){
 		x.domain(s.map(x_brush.invert, x_brush));
 		svg.selectAll(".line1").attr("d",valueline);
 		svg.selectAll(".line2").attr("d",valueline2);
@@ -67,11 +92,11 @@
 		svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
 								 .scale(xrange[1] / (s[1] - s[0]))
 								 .translate(-s[0], 0));
+        }
 	}
 
 	function zoomed() {
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
-		console.log("zooom");
 		var t = d3.event.transform;
 		x.domain(t.rescaleX(x_brush).domain());
 		svg.selectAll(".line1").attr("d",valueline);
@@ -88,10 +113,80 @@
 	function setSizest1(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-		console.log(w,h);
 	}
+    
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-line");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This is the line chart";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            console.log("here");
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
+    function initDropdowns(){
+		if(!initdropdowns_quirk){
+			initdropdowns_quirk = true;
+
+			resetDropdownValues();
+			
+			dropdown_util.setSelection_values('.t1Values', appstate.data_slices["t1Genre"][1]);
+            
+			dropdown_util.register_listener("#t1Values", function(idx, value_str){
+				var current_dropdownatt = dropdown_util.read_atts(".t1Atts");
+				slice_util.setSlice(appstate.data_slices, "t1Genre", "", current_dropdownatt, value_str);
+                localstate.selectedGenre = value_str;
+				appdispatch.dataslice.call("dataslice", this, "t1");
+               
+			});
+		}
+	};
+    
+    function resetDropdownValues(){
+		var current_dropdownatt = dropdown_util.read_atts(".t1Atts");
+		localstate.dropdown_vals = data_utils.get_uniquevalues_dataset(current_dropdownatt);
+		dropdown_util.setValueList_values(".t1Values", localstate.dropdown_vals);
+	};
 	
-	function drawt1(app_row_numbers){
+    function drawt1(app_row_numbers){
+        if(typeof svgelement === "undefined"){
+			svg = d3.selectAll("#t1Viz svg");
+		}
+		else{
+			svg = d3.select(svgelement);
+		}
+        
+        localstate.datasetRows = app_row_numbers;
+		dataset = data_utils.get_sales_sum(localstate.datasetRows,localstate.selectedGenre);
+        
+		initDropdowns();
+        
+        initt1();
+        
+        showInfo();
+        
+    }
+    
+	function initt1(){
 		/*
 			"Drawing t1" means:
 				1) ...
@@ -99,9 +194,9 @@
 				
 				The frequency of the viz are ...
 		 */
+		var t0 = svg.transition().duration(100);
+		var t1 = svg.transition().delay(100).duration(500);
 
-		//var dataset = data_utils.read_column(null, ["JP_Sales", "EU_Sales", "NA_Sales", "Year_of_Release"]);
-		dataset = data_utils.get_sales_sum(app_row_numbers,"Developer","Nintendo");
 		var r = dataset.map(a => a.Year_of_Release);
 		var maxYear = r.reduce(function(a,b){ return Math.max(a,b);});
 		var minYear = 1987;  // [Q] Why though?
@@ -134,7 +229,8 @@
 			.attr("class","zoom")
 			.attr("width", w)
 			.attr("height",h)
-			.call(zoom);
+			.call(zoom)
+                .on("wheel.zoom", null);
 		
 		//definir o eixo y
 		y = d3.scaleLinear()
@@ -150,6 +246,7 @@
 			}
 			d.Year_of_Release= parseTime(date[0]);
 		});
+        
 		x = d3.scaleTime()
 			.range([xrange[0],xrange[1]]);
 		
@@ -177,7 +274,8 @@
 			.scale(y);
 
 		xaxis = d3.axisBottom()
-			.scale(x);
+			.scale(x)
+            .tickFormat(d3.timeFormat("%Y"));
 		
 		//legendas   
 		var legW = 200;
@@ -211,6 +309,7 @@
 		})
 		
 		//tooltip       
+        svg.select(".focus").remove();
 		var focus = svg.append("g")
 						.attr("class","focus")
 						.attr("pointer-events", "none")
@@ -243,9 +342,14 @@
 			.attr("width",xrange[1]-xrange[0])
 			.attr("height",yrange[1]-yrange[0]);
 		
+        svg.select(".y-axis-label").remove();
+        svg.select(".y-axis").remove();
+        svg.select(".axis--x").remove();
+        svg.select(".x-axis-label").remove();
+        
 		svg.append("g")
 			.attr("transform","translate("+(xrange[0])+",0)")
-			.attr("class","y axis")
+			.attr("class","y-axis")
 			.call(yaxis);
 
 		svg.append("text")
@@ -268,9 +372,10 @@
 			.attr("fill", "black")
 			.style("text-anchor", "end")
 			.text("Year");
-
+        
+        svg.select(".line1").remove();
 		svg.append("path")
-			.datum(dataset) // [Q] Nestes datums, acho que querias chamar o data() e depois o enter()? Pareceu-me que não tão a ser usados, so...
+			.datum(dataset) 
 			.attr("class", "line1")
 			.attr("clip-path","url(#t1clip)")
 			.attr("fill","none")
@@ -278,6 +383,7 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline);
 
+        svg.select(".line2").remove();
 		svg.append("path")
 			.datum(dataset)
 			.attr("class", "line2")
@@ -287,6 +393,7 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline2);
 		
+        svg.select(".line3").remove();
 		svg.append("path")
 			.datum(dataset)
 			.attr("class", "line3")
@@ -296,38 +403,18 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline3);
 
-		/* 
-			[Q] Daqui para baixo foi adicionado por mim.
-			Isto "rouba" algumas variáveis das tuas e desenha circulos transparantes que coincidem com os dados 
-			para apanharem os eventos do rato.
-
-			[Q] O que mudei mais lá para cima (dentro da drawt1) foi a parte das 
-			dimensões, offsets, cutoffs... Que nos vai dar jeito para pôr 
-			o layout com tamanhos mais consistentes na página toda.
-
-			We'll steal these from above:
-				- dataset
-				- x
-				- y
-				- parseTime
-		 */
 
 		var all_points = d3.range(dataset.length)
 			.map(function(itr_x){ return y_variable.map(function(itr_y){ return [itr_x, itr_y]; })});
-
+        
 		all_points = _.flatten(all_points);
-		/*   ^--- think of all_points as if it was a todo list of circles to draw...
-			we need to do:
-			[[0, "NA_Sales"]
-			 [0, "EU_Sales"]
-			 ....]
-		 */
-
+        
+        svg.selectAll("g.g-focus").remove();
 		var gfocus = svg.selectAll("g.g-focus")
 			.data([0])
 			.enter().append("g")
 				.attr("class", "g-focus");
-
+        
 		gfocus.selectAll("circle.data-points")
 			.data(all_points)
 			.enter().append("circle")
@@ -341,49 +428,31 @@
 		gfocus.selectAll("circle.data-points")
 			.attr("r", 4)
 			.attr("clip-path","url(#t1clip)")
-			.attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
+			.attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) 
 			.attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
-			.attr("fill", function(d){ return colors[y_variable.indexOf(d[1])];}); //rgba(255,0,0,1) would make the circles red
+			.attr("fill", function(d){ return colors[y_variable.indexOf(d[1])];}); 
 		
 		gfocus.selectAll("circle.data-points-hidden")
 			.attr("r", 7)
 			.attr("clip-path","url(#t1clip)")
-			.attr("cx", function(d){ return x(dataset[d[0]][x_variable]) }) // d[0] is the row_num, d[1] is the column name
+			.attr("cx", function(d){ return x(dataset[d[0]][x_variable]); })
 			.attr("cy", function(d){ return y(dataset[d[0]][d[1]]) })
-			.attr("fill", "rgba(1,0,0,0)")//function(d){ return colors[y_variable.indexOf(d[1])];}) //rgba(255,0,0,1) would make the circles red
+			.attr("fill", "rgba(1,0,0,0)")
 			.on("mouseover", function(d){
-				// 
-				// DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER 
-				// [Q] Há aqui um bug... Amanhã falamos.
-				// DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER DISCLAIMER 
-				// 
-				// now our events can have context!
-				// the d argument as things like :
-				// [27, "NA_Sales"]
-				// [30, "NA_Sales"]
-				// ...
-				// we can use d to look for stuff in the dataset var or in data_utils
-				// 
-				// Also, for code inspiration purposes, this is pretty much the same kind of circles from T5... :)
-				// 
-				// 
-				// 
-				
 				var row_num = d[0];
 				var column_name = d[1];
-
-				var year = dataset[row_num][x_variable].getFullYear() + ".0";
-				var all_rownums = datasources["index_"+x_variable].index[year];
-
+                
+                var year = dataset[row_num].Year_of_Release;//raw_value(row_num,x_variable);
+                var sales = dataset[row_num][column_name];
+				var all_rownums = datasources["index_"+x_variable].index[year.getFullYear()+".0"];
+            
 				dispatch.call("gamehover", null, d, all_rownums, dataset);
 				appdispatch.gamehover.call("gamehover", null, all_rownums, "t1");
 
 				var textForm = d3.format(".3f");
-			
-				// this is kind of the same as Iris did.
-				focus.attr("transform", "translate(" + x(dataset[row_num][x_variable]) + "," + y(dataset[row_num][column_name]) + ")");
-				focus.select("text").text(function() { return textForm(dataset[row_num][column_name]); });
-				focus.select(".x-hover-line").attr("y2", yrange[1]- y(dataset[row_num][column_name]));
+				focus.attr("transform", "translate(" + x(year) + "," + y(sales) + ")");
+				focus.select("text").text(function() { return textForm(sales); });
+				focus.select(".x-hover-line").attr("y2", yrange[1]- y(sales));
 				focus.select(".y-hover-line").attr("x2", w + w);
 				
 				focus.style("display", null); 
@@ -396,9 +465,11 @@
 				var row_num = d[0];
 				var column_name = d[1];
 
-				var year = dataset[row_num][x_variable].getFullYear() + ".0";
-				var all_rownums = datasources["index_"+x_variable].index[year];
-
+                var year = dataset[row_num].Year_of_Release;//raw_value(row_num,x_variable);
+                var sales = dataset[row_num][column_name];
+            
+				var all_rownums = datasources["index_"+x_variable].index[year.getFullYear()+".0"];
+                
 				dispatch2.call("gameout", null, d, all_rownums, dataset);
 				appdispatch.gameout.call("gameout", null, all_rownums, "t1");
 
@@ -424,7 +495,8 @@
 		brush = d3.brushX()
 			.extent([[xrange[0],0],[xrange[1],brush_height]])
 			.on("brush end", brushed);
-		
+            
+		svg.select(".context").remove();
 		context = svg.append("g")
 			.attr("class","context")
 			.attr("transform","translate(0,"+ (yrange[1]+35)+")");
@@ -436,10 +508,11 @@
 			.attr("class","brush")
 			.call(brush)
 			.call(brush.move, x_brush.range());
-		
+        
 		//////////////////////////////////////////////////////////////////////////END BRUSH
 
 	};
 window.drawt1 = drawt1;    
 window.setSizest1 = setSizest1;
 })();
+

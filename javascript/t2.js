@@ -196,13 +196,6 @@
 			dropdown_util.register_listener("#t2Values", function(idx, value_str){
 				var current_dropdownatt = dropdown_util.read_atts();
 				slice_util.setSlice(appstate.data_slices, "t2", "", current_dropdownatt, value_str)
-
-				/* maybe this shouln't be here? */
-				// appstate.datasetRows = d3.range(datasources["data_v2"].length);
-				// appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
-
-				// localstate.datasetRows = localSlicet2(appstate.datasetRows);
-				// updatePlot(localstate.datasetRows);
 				appdispatch.dataslice.call("dataslice", this, "t2");
 			});
 		}
