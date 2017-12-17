@@ -40,6 +40,11 @@
 					<div id="t1Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
 							<span>Sales evolution over time</span>
+                            <div id = "div-info-line">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-line" >
+                                    <span class="glyphicon glyphicon-info-sign"></span>
+				                </button>
+                            </div>
 						</div>
                         <div class="col-xs-12 text-center">
 						  <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
@@ -174,6 +179,11 @@
 					<div id="t6Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
 							<span>Most Praised</span>
+                            <div id = "div-info-heatmap">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-heatmap" >
+                                    <span class="glyphicon glyphicon-info-sign"></span>
+				                </button>
+                            </div>
 						</div>
                         <div class="col-xs-12 text-center">
 				            <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
@@ -191,6 +201,7 @@
 						</div>
 						<div id="t6Viz" class="panel-body">
 							<img class="img-responsive" src="images/t6.png" />
+                            <svg></svg>
 						</div>
 					</div>
 					<!-- ./t6Panel -->
@@ -212,6 +223,16 @@
 		<!-- ./page-content -->
 	</div>
 
+    <div id="myModal" class="modal">
+
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="info-text">Some text in the Modal..</p>
+      </div>
+
+    </div>
+    
 	<!-- Os "includes" das nossas sources -->
 	<script src="javascript/app.js" ></script>
 	<script src="javascript/datahandler.js" ></script>

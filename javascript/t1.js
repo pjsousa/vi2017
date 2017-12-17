@@ -115,6 +115,34 @@
 		h = boundingRect.height;
 	}
     
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-line");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This is the line chart";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            console.log("here");
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
     function initDropdowns(){
 		if(!initdropdowns_quirk){
 			initdropdowns_quirk = true;
@@ -153,6 +181,8 @@
 		initDropdowns();
         
         initt1();
+        
+        showInfo();
         
     }
     

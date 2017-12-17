@@ -21,6 +21,8 @@
     var scoreLabels;
     var legendYoffset, legendXoffset;
     
+    var infoOn = false;
+    
     var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
     var emptyColor = "#ffffff";
     var scoreIntervals = ["90/100","80/90","70/80","60/70","50/60","40/50","30/40","20/30","10/20","0/10"];
@@ -32,8 +34,8 @@
 		highlightedRows: [],
 		data_slices: {},
 		clearbrush_quirk: null,
-        selectedAttr: "Genre",
-        selectedValue: "Action"
+        selectedAttr: "Platform",
+        selectedValue: "PS2"
 	};
 
 	function setSizest6(boundingRect){
@@ -44,27 +46,58 @@
         legendXoffset = 120;
 	}
     
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-heatmap");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This is the heatmap chart";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            console.log("here");
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
     function initDropdowns(){
 		if(!initdropdowns_quirk){
 			initdropdowns_quirk = true;
 
 			resetDropdownValues();
 			
-			dropdown_util.setSelection_values('.t6Values', appstate.data_slices["t6Mean_UserCritic_Score"][1]);
+			dropdown_util.setSelection_values('.t6Values', appstate.data_slices["t6"][1]);
             
 			dropdown_util.register_listener("#t6Atts", function(idx, value_str){
 				value_str = value_str.split(" ").join("_");
 				resetDropdownValues();
-				slice_util.clearSlice(appstate.data_slices, "t6Mean_UserCritic_Score", "");
-				slice_util.setSlice(appstate.data_slices, "t6Mean_UserCritic_Score", "", value_str, null);
+                localstate.selectedAttr = value_str;
+				slice_util.clearSlice(appstate.data_slices, "t6", "");
+				slice_util.setSlice(appstate.data_slices, "t6", "", value_str, null);
 				appdispatch.dataslice.call("dataslice", this, "t6");
 			});
 
 			dropdown_util.register_listener("#t6Values", function(idx, value_str){
 				var current_dropdownatt = dropdown_util.read_atts();
+                localstate.selectedValue = value_str;
 				slice_util.setSlice(appstate.data_slices, "t6", "", current_dropdownatt, value_str)
 				appdispatch.dataslice.call("dataslice", this, "t6");
 			});
+            
 		}
 	};
     
@@ -81,24 +114,27 @@
 		else{
 			svg = d3.select(svgelement);
 		}
-        
-        localstate.datasetRows = app_row_numbers;
+
+        localstate.datasetRows = data_utils.get_index([localstate.selectedAttr],[localstate.selectedValue]);//app_row_numbers;
 		dataset = data_utils.read_column(localstate.datasetRows,["Mean_UserCritic_Score","Year_of_Release"]);
+
         years = data_utils.get_uniquevalues_dataset("Year_of_Release");
         years.reverse();
-        var index = years.indexOf("2017.0");
-        years.splice(index,1);
-        index = years.indexOf("2020.0");
-        years.splice(index,1);
+        //var index = years.indexOf("2017.0");
+        //years.splice(index,1);
+        //index = years.indexOf("2020.0");
+        //years.splice(index,1);
         
         
-		//initDropdowns();
+		initDropdowns();
         aux = new Array(years.length);
         for(var i = 0; i< years.length; i++){
             aux[i] = new Array(scoreIntervals.length);
         }
+        
         initt6();
         createScroll();
+        showInfo();
     }
     
     function getNumber(d){
@@ -149,22 +185,29 @@
 
     }
     
+    function handleInformation(d){
+        
+    }
+    
 	function initt6(){	
         d3.select("#t6Viz > img").remove();
-        var row_indexes = data_utils.get_index(["Genre"],["Shooter"]);
-        var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
-        
+        //var row_indexes = data_utils.get_index(["Genre"],["Shooter"]);
+        //var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
 
         yScale = ycutoff + yoffset+padding;
         xScale = xcutoff  + xoffset+50;
         xrange[0] = padding + xoffset;
 		xrange[1] = w-padding - xcutoff;
         
-        svg = d3.select("#t6Viz").append("svg")
+        svg = d3.select("#t6Viz svg")
                                 .attr("width", w)
-                                .attr("height", h+500);
+                                .attr("height", h+520);
         
 
+        svg.selectAll(".yearLabel").remove();
+        svg.selectAll(".scoreLabel").remove();
+        svg.selectAll(".year").remove();
+        svg.selectAll(".legend-heatmap").remove();
         
         var yearLabels = svg.selectAll(".yearLabel")
             .data(years)
@@ -233,7 +276,7 @@
             
             var yearInd = years.findIndex(x=> x == year);
             var intInd = scoreIntervals.findIndex(x => x == interval);
-            
+
             var element = aux[yearInd][intInd];
             if(element == null)
                 aux[yearInd][intInd] = 1;
@@ -325,8 +368,6 @@
             .text(function(d){return d;})
             .style("text-anchor","end"); 
         
-            
-
         
         
 	};
