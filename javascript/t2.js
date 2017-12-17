@@ -80,14 +80,16 @@
 	dispatch.on("dropdowvals", function(idx, value_str){
 		var current_dropdownatt = dropdown_util.read_atts(".t2Atts");
 		slice_util.setSlice(localstate.data_slices, "t2", "", current_dropdownatt, value_str)
-		d3.select("#cleart2").style("display", "initial");
+		
+		d3.select("#cleart2")
+			.style("visibility", "visible")
+			.style("pointer-events", "all");
 
 		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
 
 		initt2();
 		updatePlot(localstate.drawnRows);
 	});
-
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
 		/*
@@ -263,7 +265,9 @@
 		slice_util.clearSlice(localstate.data_slices, "t2", "")
 		slice_util.setSlice(localstate.data_slices, "t2", "", current_dropdownatt, null);
 		
-		d3.select("#cleart2").style("display", "initial");
+		d3.select("#cleart2")
+			.style("visibility", "hidden")
+			.style("pointer-events", "none");
 
 		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
 
