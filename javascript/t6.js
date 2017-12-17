@@ -19,6 +19,7 @@
     var y_brush, x_brush,xrange=[];
     var xScale, yScale;
     var scoreLabels;
+    var legendYoffset, legendXoffset;
     
     var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
     var emptyColor = "#ffffff";
@@ -38,7 +39,9 @@
 	function setSizest6(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-        legendElementWidth = gridSizeY*2;
+        legendElementWidth = gridSizeX;
+        legendYoffset = 60;
+        legendXoffset = 120;
 	}
     
     function initDropdowns(){
@@ -109,9 +112,9 @@
     function createScroll(){
         var content = document.getElementById("t6Viz");
         content.addEventListener('scroll',function(evt){
-            var n = 0;
             var head = document.getElementById("score-container");
             var children = head.children;
+            var n = 0;
             for(var i = 0; i < children.length; i++){
                 if(head.children[i].getAttribute("id") == "score"){
                     head.children[i].setAttribute("transform","translate("+ (xScale+ gridSizeX*n) + ","+ (yoffset+this.scrollTop) +") rotate(-40)");
@@ -121,8 +124,29 @@
                 }
             }
             
+            var heatmapLegends = document.getElementsByClassName("legend-heatmap");
+            for(var i = 0; i < heatmapLegends.length; i++){
+                document.getElementsByClassName("legend-heatmap")[i].children[0].setAttribute("y", legendElementWidth * i + legendYoffset + this.scrollTop);
+                document.getElementsByClassName("legend-heatmap")[i].children[1].setAttribute("y", legendElementWidth * i + legendYoffset + 25 + this.scrollTop);
+                
+            }
+            
+            
             
         }, false);
+    }
+    
+    function drawHighlightt6(from_target){
+        
+    }
+    
+    
+    // Create Event Handlers for mouse
+    function handleMouseOver(d, i) {  
+    }
+
+    function handleMouseOut(d, i) {
+
     }
     
 	function initt6(){	
@@ -138,7 +162,7 @@
         
         svg = d3.select("#t6Viz").append("svg")
                                 .attr("width", w)
-                                     .attr("height", h+500);
+                                .attr("height", h+500);
         
 
         
@@ -233,7 +257,7 @@
         
         
         var colorScale = d3.scaleQuantile()
-                        .domain([0, buckets - 1, d3.max(grouped, function(d){            
+                        .domain([0, buckets - 1, d3.max(grouped, function(d){      
                             return getNumber(d);
                         })])
                         .range(colors);
@@ -255,27 +279,32 @@
                 if(!isNaN(getNumber(d)) )
                     return colorScale(getNumber(d))
                 return getNumber(d);
-            });
+            })
+            .on("mouseover",handleMouseOver)
+            .on("mouseout", handleMouseOut);
         
         
-        var legend = svg.selectAll(".legend")
-            .data([0].concat(colorScale.quantiles()), function(d){ return d.value; });
+        var legend = svg.selectAll(".legend-heatmap")
+            .data([0].concat(colorScale.quantiles()), function(d){ return d; });
         
         legend.enter().append("g")
-            .attr("class","legend");
+            .attr("class","legend-heatmap");
         
-        legend.append("rect")
-            .attr("x", function(d,i){ return legendElemetnWidth * i;})
-            .attr("y",h)
-            .attr("width", legendElementWidth)
-            .attr("height", gridSizeY/2)
+        svg.selectAll(".legend-heatmap").append("rect")
+            .attr("id","legend-heatmap-rect")
+            .attr("x", w-legendXoffset)
+            .attr("y",function(d,i){ return legendElementWidth * i + legendYoffset;})
+            .attr("width", gridSizeX/2)
+            .attr("height", legendElementWidth)
             .style("fill", function(d,i){ return colors[i];});
         
-        legend.append("text")
+        svg.selectAll(".legend-heatmap").append("text")
             .attr("class", "mono")
+            .attr("id","legend-heatmap-text")
+            .style("fill","#000000")
             .text(function(d) { return "≥ " + Math.round(d); })
-            .attr("x", function(d, i) { return legendElementWidth * i; })
-            .attr("y", h + gridSizeY);
+            .attr("x", w-legendXoffset+30)
+            .attr("y", function(d,i){ return legendElementWidth * i + legendYoffset + 25;});
         
         var container = svg.append("g").attr("id","score-container");
         container.append("rect")
@@ -294,8 +323,7 @@
                 .attr("id","score")
                 .attr("class",function(d,i){return ((i>=0 && i<=9) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");})
             .text(function(d){return d;})
-            .style("text-anchor","end");
-        
+            .style("text-anchor","end"); 
         
             
 
