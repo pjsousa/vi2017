@@ -40,20 +40,22 @@
 					<div id="t1Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
 							<span>Sales evolution over time</span>
-                            <div id = "div-info-line">
-                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-line" >
-                                    <span class="glyphicon glyphicon-info-sign"></span>
-				                </button>
-                            </div>
+							<div class="pull-right">
+								<div id = "div-info-line">
+									<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-line" >
+										<span class="glyphicon glyphicon-info-sign"></span>
+									</button>
+								</div>
+							</div>
 						</div>
-                        <div class="col-xs-12 text-center">
-						  <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+						<div class="col-xs-12 text-center">
+							<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
 
-						  <select id="t1Atts" class="t1Atts selectpicker show-menu-arrow" >
-                              <option data-tokens="Genre">Genre</option>
-                           </select>
-                            <select id="t1Values" class="t1Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
-						  </select>
+							<select id="t1Atts" class="t1Atts selectpicker show-menu-arrow" >
+								<option data-tokens="Genre">Genre</option>
+							</select>
+							<select id="t1Values" class="t1Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+							</select>
 						</div>
 						<div id="t1Viz" class="panel-body">
 							<img class="img-responsive" src="images/t1.png" />
@@ -204,29 +206,30 @@
 					<div id="t6Panel" class="panel panel-default panel-viz">
 						<div class="panel-heading">
 							<span>Most Praised</span>
-                            <div id = "div-info-heatmap">
-                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-heatmap" >
-                                    <span class="glyphicon glyphicon-info-sign"></span>
-				                </button>
-                            </div>
-						</div>
-                        <div class="col-xs-12 text-center">
-				            <a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
-
-						  <select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
-						      <option data-tokens="Platform">Platform</option>
-						      <option data-tokens="Genre">Genre</option>
-						      <option data-tokens="Publisher">Publisher</option>
-						      <option data-tokens="Developer">Developer</option>
-						  </select>
-
-								
-						  <select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
-						  </select>
+							<div class="pull-right">
+								<div id = "div-info-heatmap">
+									<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"  id="button-info-heatmap" >
+										<span class="glyphicon glyphicon-info-sign"></span>
+									</button>
+								</div>
+							</div>
 						</div>
 						<div id="t6Viz" class="panel-body">
+							<div class="col-xs-12 text-center">
+								<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+
+							  <select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
+							      <option data-tokens="Platform">Platform</option>
+							      <option data-tokens="Genre">Genre</option>
+							      <option data-tokens="Publisher">Publisher</option>
+							      <option data-tokens="Developer">Developer</option>
+							  </select>
+
+							  <select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+							  </select>
+							</div>
 							<img class="img-responsive" src="images/t6.png" />
-                            <svg></svg>
+              <svg></svg>
 						</div>
 					</div>
 					<!-- ./t6Panel -->
