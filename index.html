@@ -75,7 +75,10 @@
 						</div>
 						<div id="t2Viz" class="panel-body">
 							<div class="col-xs-12 text-center">
-								<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+								<a id="synct2" class="btn btn-default btn-xs"> 
+									<span class="glyphicon glyphicon-filter"></span>
+									<span class="glyphicon glyphicon-transfer"></span>
+								</a>
 
 								<select id="t2Atts" class="t2Atts selectpicker show-menu-arrow" >
 								  <option data-tokens="Platform">Platform</option>
@@ -88,7 +91,7 @@
 								<select id="t2Values" class="t2Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
 								</select>
 
-								<a id="synct2" class="btn btn-default btn-xs"> <span class="glyphicon glyphicon-transfer"></span> </a>
+								<a id="cleart2" class="btn btn-default btn-xs" style="display: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 							</div>
 							<img class="img-responsive" src="images/t2.png" />
 							<svg></svg>
@@ -124,7 +127,7 @@
 					<!-- ./clvPanel -->
 				</div>
 				<div class="right-panel col-xs-3">
-					<div id="dtlPanel" class="panel panel-default panel-viz" style="overflow-y: auto;">
+					<div id="dtlPanel" class="panel panel-default panel-viz" style="overflow-y: hidden;">
 						<div class="panel-heading">
 								<div class="row">
 									<h5 id="name" style="margin-top:0; text-align: center; white-space: nowrap; overflow-x: auto;">Name</h5>
@@ -244,7 +247,8 @@
 			  width: "100px"
 			});
 
-			$("#synct2").on("click", syncdropdownt2_click)
+			$("#synct2").on("click", syncdropdownt2_click);
+			$("#cleart2").on("click", cleardropdownt2_click);
 			
 			// step 1. fetch data
 			main();

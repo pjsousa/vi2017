@@ -38,6 +38,8 @@
 	var yrange = null;
 	var xscale = null;
 	var yscale = null;
+	var xscale_h = null;
+	var yscale_h = null;
 
 	var axis_0;
 	var yaxis;
@@ -78,6 +80,7 @@
 	dispatch.on("dropdowvals", function(idx, value_str){
 		var current_dropdownatt = dropdown_util.read_atts(".t2Atts");
 		slice_util.setSlice(localstate.data_slices, "t2", "", current_dropdownatt, value_str)
+		d3.select("#cleart2").style("display", "initial");
 
 		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
 
@@ -109,11 +112,6 @@
 		result = data_utils.read_value(row_num, variable);
 
 		return result;
-	};
-
-	function centered_value(row_num, variable){
-
-		return raw_value(row_num, variable);
 	};
 
 	function value(row_num, variable){
@@ -258,6 +256,23 @@
 		updatePlot(localstate.drawnRows);
 	};
 
+	function cleardropdownt2_click(evt){
+		resetDropdownValues();
+
+		var current_dropdownatt = dropdown_util.read_atts(".t2Atts");
+		slice_util.clearSlice(localstate.data_slices, "t2", "")
+		slice_util.setSlice(localstate.data_slices, "t2", "", current_dropdownatt, null);
+		
+		d3.select("#cleart2").style("display", "initial");
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		initt2();
+		updatePlot(localstate.drawnRows);
+
+		evt.preventDefault();
+	};
+
 	function updatePanelHeader(){
 		var current_att = dropdown_util.read_atts(".t2Atts");
 		var current_val = dropdown_util.read_values(".t2Values");
@@ -291,6 +306,8 @@
 		if(sort_var == x_var){
 			rows_order = data_utils.sortBy(dataset, sort_var);
 		}
+
+
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		ydomain = [];
@@ -615,7 +632,7 @@
 		yrange[1] = h - padding - yoffset_h;
 		var xrange = [];
 		xrange[0] = w - padding - xcutoff + xoffset_h;
-		xrange[1] = xrange[1] = w - padding - xcutoff_h;
+		xrange[1] = w - padding - xcutoff_h;
 
 
 
@@ -745,4 +762,5 @@
 	window.localSlicet2 = localSlicet2;
 	window.syncdropdownt2 = syncdropdownt2;
 	window.syncdropdownt2_click = syncdropdownt2_click;
+	window.cleardropdownt2_click = cleardropdownt2_click;
 })();
