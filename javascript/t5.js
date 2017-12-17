@@ -1,10 +1,10 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-	var padding = 20;
-	var xoffset = 30;
+	var padding = 30;
+	var xoffset = 40;
 	var yoffset = 30;
-	var xcutoff = 30;
+	var xcutoff = 40;
 	var ycutoff = 0;
 	var r = 2;
 	var voronoiRadius = 30;
@@ -308,11 +308,11 @@
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		ydomain = [];
-		ydomain[0] = d3.max(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });
-		ydomain[1] = d3.min(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });;
+		ydomain[0] = 1.05 * d3.max(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });
+		ydomain[1] = 0.95 * d3.min(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });;
 		xdomain = [];
-		xdomain[0] = d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });;
-		xdomain[1] = d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
+		xdomain[0] = 0.95 * d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });;
+		xdomain[1] = 1.05 * d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
 
 
 
@@ -338,10 +338,10 @@
 			.enter().append("defs").append("clipPath")
 				.attr("id","t5clip")
 				.append("rect")
-				.attr("x",xrange[0]-10)
-				.attr("y",yrange[0]-10)
-				.attr("width",xrange[1]-xrange[0]+20)
-				.attr("height",yrange[1]-yrange[0]+20);
+				.attr("x",xrange[0])
+				.attr("y",yrange[0])
+				.attr("width",xrange[1]-xrange[0])
+				.attr("height",yrange[1]-yrange[0]);
 
 
 
@@ -411,6 +411,7 @@
 		svg.selectAll("g.highlight")
 			.data([0]).enter().append("g")
 				.attr("class", "highlight")
+				.attr("clip-path","url(#t5clip)")
 
 
 

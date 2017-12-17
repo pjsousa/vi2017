@@ -1,10 +1,10 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-	var padding = 20;
-	var xoffset = 30;
+	var padding = 30;
+	var xoffset = 40;
 	var yoffset = 130;
-	var xcutoff = 80;
+	var xcutoff = 100;
 	var ycutoff = 0;
 	
 	var xoffset_h = 20;
@@ -12,8 +12,8 @@
 	var xcutoff_h = 0;
 	var ycutoff_h = 0;
 
-	var max_names_len = 50;
-	var top_rows = 15;
+	var max_names_len = 40;
+	var top_rows = 10;
 
 	var y_var = "Global_Sales";
 	var x_var = "Name";
@@ -125,6 +125,10 @@
 
 	function drawHighlightt2(from_target){
 		var row_nums = appstate.highlightedRows;
+
+		if(from_target != "t2"){
+			updatePlot(localstate.drawnRows);
+		}
 
 		var g = d3.selectAll("#t2Viz svg g.highlight");
 
@@ -257,10 +261,14 @@
 	function updatePanelHeader(){
 		var current_att = dropdown_util.read_atts(".t2Atts");
 		var current_val = dropdown_util.read_values(".t2Values");
-		var result = "Best Sellers in the ";
+		var result = "Best Sellers";
 		var game_name;
 
-		result = result + current_val + " " + current_att;
+		
+
+		if (current_val){
+			result = result + " in the " + current_val + " " + current_att
+		}
 
 		if ( dataset_h && dataset_h.length == 1){
 			game_name = raw_value(dataset_h[0], "Name")
@@ -400,6 +408,7 @@
 		svg.selectAll("g.highlight")
 			.data([0]).enter().append("g")
 				.attr("class", "highlight")
+				.attr("clip-path","url(#t2clip)")
 
 
 
@@ -412,8 +421,12 @@
 
 		// draws the Y axis with text label
 		svg.selectAll("text.y-axis-label")
+			.data([0])
+			.enter().append("text")
+			.attr("class", "y-axis-label")
+			.attr("transform", "rotate(-90)")
 			.attr("x", -yrange[0])
-			.attr("y", xrange[0] - xoffset)
+			.attr("y", xoffset - 10)
 			.attr("fill", "black")
 			.style("text-anchor", "end")
 			.text("Global Sales ( Million Units )")
@@ -435,6 +448,20 @@
 			rows_order = data_utils.sortBy(rows_order, sort_var);
 		}
 
+		// 1) Settle the values for the x and y domains (this are the values in the data)
+		if( appstate.highlightedRows.length == 1 ){
+			ydomain = [];
+			ydomain[0] = 1.05 * d3.max(rows_order.concat(appstate.highlightedRows[0]), function(d) { return parseFloat(raw_value(d, y_var)) });
+			ydomain[1] = d3.min([0, 0.95 * d3.min(rows_order.concat(appstate.highlightedRows[0]), function(d) { return parseFloat(raw_value(d, y_var)) })]);
+		}
+		else{
+			ydomain = [];
+			ydomain[0] = 1.05 * d3.max(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) });
+			ydomain[1] = d3.min([0, 0.95 * d3.min(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) })]);
+		}
+		yscale.domain(ydomain);
+
+
 		// 5) Create X and Y axis
 		var gY = svg.select("g.y.axis")
 			.transition(t0)
@@ -444,7 +471,8 @@
 		var gX = svg.select("g.x.axis")
 		gX.selectAll("text")
 			.attr("class", "x tick")
-			.attr("transform", "rotate(-40)")
+			.attr("class", "x tick")
+			.attr("transform", "rotate(-35)")
 			.style("text-anchor", "end")
 			.text(function(d, i){ 
 				var result = null;

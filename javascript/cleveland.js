@@ -1,12 +1,12 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-	var padding = 20;
+	var padding = 30;
 	var xoffset = 200;
 	var yoffset = 40;
 	var xcutoff = 0;
 	var ycutoff = 0;
-	var max_names_len = 50;
+	var max_names_len = 40;
 	var top_rows = 15;
 	var r = 5;
 
