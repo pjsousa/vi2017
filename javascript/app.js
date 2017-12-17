@@ -50,7 +50,7 @@
 			drawHighlightt5(from);
 		}
 
-		if(from != "dtl"){
+		if(from != "dtl" && from != "t1"){
 			drawdtl(from);
 		}
 
