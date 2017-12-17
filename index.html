@@ -89,7 +89,10 @@
 						</div>
 						<div id="t2Viz" class="panel-body">
 							<div class="col-xs-12 text-center">
-								<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+								<a id="synct2" class="btn btn-default btn-xs"> 
+									<span class="glyphicon glyphicon-filter"></span>
+									<span class="glyphicon glyphicon-transfer"></span>
+								</a>
 
 								<select id="t2Atts" class="t2Atts selectpicker show-menu-arrow" >
 								  <option data-tokens="Platform">Platform</option>
@@ -101,6 +104,8 @@
 								
 								<select id="t2Values" class="t2Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
 								</select>
+
+								<a id="cleart2" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 							</div>
 							<img class="img-responsive" src="images/t2.png" />
 							<svg></svg>
@@ -136,18 +141,20 @@
 					<!-- ./clvPanel -->
 				</div>
 				<div class="right-panel col-xs-3">
-					<div id="dtlPanel" class="panel panel-default panel-viz">
+					<div id="dtlPanel" class="panel panel-default panel-viz" style="overflow-y: hidden;">
 						<div class="panel-heading">
-								<h2 id="name" style="text-align: center; white-space: nowrap;text-overflow: ellipsis;">Name</h2>
-								<h5 style="text-align: center;">
-									<span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
-								</h5>
-								<div class="row" style="margin: 20px 0">
+								<div class="row">
+									<h5 id="name" style="margin-top:0; text-align: center; white-space: nowrap; overflow-x: auto;">Name</h5>
+									<h5 style="margin-bottom:0; text-align: center;">
+										<span id="platform">Platform</span> - <span id="year_of_release">year_of_release</span>
+									</h5>
+								</div>
+								<div class="row" style="margin: 5px 0">
 									<div class="col-xs-6" style="text-align: center;">
-											<p><small>Score ( / 100 )</small></p><h5 id="mean_usercritic_score">mean_usercritic_score</h5>
+											<p style="margin: 5px 0 0;"><small>Score ( / 100 )</small></p><h5 id="mean_usercritic_score" style="margin: 0 5px;">mean_usercritic_score</h5>
 									</div>
 									<div class="col-xs-6" style="text-align: center;">
-											<p><small>Global Sales ( Million Units )</small></p><h5 id="global_sales">global_sales</h5>
+											<p style="margin: 5px 0 0;"><small>Global Sales ( Units )</small></p><h5 id="global_sales" style="margin: 0 5px;">global_sales</h5>
 									</div>
 								</div>
 								
@@ -155,16 +162,34 @@
 						</div>
 						<div id="dtlViz" class="panel-body">
 							<div class="row">
-								<div id="sales" class="col-xs-12">
-									<h5 style="text-align: center;">Sales by region</h5>
+								<div id="sales" class="col-xs-12" style="margin-bottom: 10px;">
+									<h5 style="text-align: left; margin: 0 0 5px 0;">Sales by region (Million Units)</h5>
 									<svg id="salesViz"></svg>
 									<div id="salesLegend" class="row">
 									</div>
 								</div>
 							</div>
 							<div class="row">
-								<div class="lead text-center">
+								<div class="lead text-center" style="font-size: 1em; min-height: 3em;">
 									<span id="genre">Action</span> game from <span id="publisher">Publisher</span> developed by <span id="developer">Developer</span>.
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-8 scoresVizParent">
+									<svg id="scoresViz"></svg>
+								</div>
+								<div class="col-xs-4" style="padding: 0;">
+									<div class="row">
+										<div class="col-xs-12" style="text-align: center;">
+												<p style="margin: 5px 0 0; font-size: 0.7em;"><small>User|Critic Diff.</small></p><h5 id="usercritic_diff" style="font-size:0.65em; ;margin: 0 5px;">mean_usercritic_score</h5>
+										</div>
+										<div class="col-xs-12" style="text-align: center;">
+												<p style="margin: 5px 0 0; font-size: 0.7em;"><small>User Count</small></p><h5 id="user_count" style="font-size:0.65em; ;margin: 0 5px;">mean_usercritic_score</h5>
+										</div>
+										<div class="col-xs-12" style="text-align: center;">
+												<p style="margin: 5px 0 0; font-size: 0.7em;"><small>Critic Count</small></p><h5 id="critc_count" style="font-size:0.65em; ;margin: 0 5px;">global_sales</h5>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -265,6 +290,9 @@
 			  title:"Choose one of the following...",
 			  width: "100px"
 			});
+
+			$("#synct2").on("click", syncdropdownt2_click);
+			$("#cleart2").on("click", cleardropdownt2_click);
 			
             $('.t1Atts').selectpicker({
 				style: 'btn-link btn-xs',
@@ -297,6 +325,7 @@
 			main();
 			// step 2. the world!
 			// 
+
 		})
 
 		$(window).resize(function(){

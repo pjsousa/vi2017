@@ -1,10 +1,10 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-	var padding = 20;
-	var xoffset = 30;
+	var padding = 30;
+	var xoffset = 40;
 	var yoffset = 130;
-	var xcutoff = 80;
+	var xcutoff = 100;
 	var ycutoff = 0;
 	
 	var xoffset_h = 20;
@@ -12,18 +12,19 @@
 	var xcutoff_h = 0;
 	var ycutoff_h = 0;
 
-	var max_names_len = 50;
-	var top_rows = 15;
+	var max_names_len = 40;
+	var top_rows = 10;
 
 	var y_var = "Global_Sales";
 	var x_var = "Name";
 
 	var sort_var = "Global_Sales";
 
-	var dispatch = d3.dispatch("gamehover", "gameout");
+	var dispatch = d3.dispatch("gamehover", "gameout", "dropdowatt", "dropdowvals");
 
 	var localstate = {
 		datasetRows: [],
+		drawnRows: [],
 		selectedRows: [],
 		highlightedRows: [],
 		data_slices: {},
@@ -37,6 +38,8 @@
 	var yrange = null;
 	var xscale = null;
 	var yscale = null;
+	var xscale_h = null;
+	var yscale_h = null;
 
 	var axis_0;
 	var yaxis;
@@ -46,7 +49,9 @@
 	var dataset_h;
 	var rows_order;
 
-	var initdropdowns_quirk = false;
+	var svg;
+
+	var initdropdowns_happenedonce = false;
 
 	dispatch.on("gamehover.t2", function(d){
 		mouse_coord = d3.mouse(this);
@@ -58,6 +63,32 @@
 	dispatch.on("gameout.t2", function(d){
 		appstate.highlightedRows.splice(appstate.highlightedRows.indexOf(d), 1);
 		drawHighlightt2("t2");
+	});
+
+	dispatch.on("dropdowatt", function(idx, value_str){
+		value_str = value_str.split(" ").join("_");
+		resetDropdownValues();
+		slice_util.clearSlice(localstate.data_slices, "t2", "");
+		slice_util.setSlice(localstate.data_slices, "t2", "", value_str, null)
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		initt2();
+		updatePlot(localstate.drawnRows);
+	});
+
+	dispatch.on("dropdowvals", function(idx, value_str){
+		var current_dropdownatt = dropdown_util.read_atts(".t2Atts");
+		slice_util.setSlice(localstate.data_slices, "t2", "", current_dropdownatt, value_str)
+		
+		d3.select("#cleart2")
+			.style("visibility", "visible")
+			.style("pointer-events", "all");
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		initt2();
+		updatePlot(localstate.drawnRows);
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -85,11 +116,6 @@
 		return result;
 	};
 
-	function centered_value(row_num, variable){
-
-		return raw_value(row_num, variable);
-	};
-
 	function value(row_num, variable){
 		var result;
 		var raw_v = raw_value(row_num, variable);
@@ -100,11 +126,9 @@
 	function drawHighlightt2(from_target){
 		var row_nums = appstate.highlightedRows;
 
-		// if(row_nums.length > 0){
-		// 	localstate.datasetRows = localSlicet2(appstate.datasetRows);
-		// 	initt2();
-		// 	updatePlot(localstate.datasetRows);
-		// }
+		if(from_target != "t2"){
+			updatePlot(localstate.drawnRows);
+		}
 
 		var g = d3.selectAll("#t2Viz svg g.highlight");
 
@@ -121,20 +145,33 @@
 			.attr("fill","rgb(255,0,255)")
 			.style("pointer-events", "none")
 			.attr("x",function(d) {
-				var i = dataset.indexOf(d);
+				var i = rows_order.indexOf(d);
 
 				if(i == -1){
 					return -1000;
 				}
 
-				return  xscale(rows_order[i]);
+				return  xscale(i);
 			})
-			.attr("y", function(d, i) {
+			.attr("y", function(d) {
+				var i = rows_order.indexOf(d);
+
+				if(i == -1){
+					return -1000;
+				}
+
 				var v = value(d, y_var);
+
 				return yscale(v);
 			})
 			.attr("width", xscale.bandwidth())
-			.attr("height", function(d, i) {
+			.attr("height", function(d) {
+				var i = rows_order.indexOf(d);
+
+				if(i == -1){
+					return 0;
+				}
+
 				var v = value(d, y_var);
 				
 				return yscale.range()[1] - yscale(v);
@@ -154,7 +191,7 @@
 
 	function localSlicet2(row_numbers, highlighted_row, rules){
 		highlighted_row = typeof highlighted_row === "number" ? highlighted_row : appstate.highlightedRows[0];
-		rules = rules || appstate.data_slices;
+		rules = rules || localstate.data_slices;
 
 		var result;
 		var current_dropdownatt = rules["t2"][0];
@@ -178,81 +215,108 @@
 	};
 
 	function initDropdowns(){
-		if(!initdropdowns_quirk){
-			initdropdowns_quirk = true;
+		if(!initdropdowns_happenedonce){
+			initdropdowns_happenedonce = true;
 
 			resetDropdownValues();
 			
 			dropdown_util.setSelection_values('.t2Values', appstate.data_slices["t2"][1])
 
 			dropdown_util.register_listener("#t2Atts", function(idx, value_str){
-				value_str = value_str.split(" ").join("_");
-				resetDropdownValues();
-				slice_util.clearSlice(appstate.data_slices, "t2", "");
-				slice_util.setSlice(appstate.data_slices, "t2", "", value_str, null)
-				appdispatch.dataslice.call("dataslice", this, "t2");
+				dispatch.call("dropdowatt", null, idx, value_str);
 			});
 
 			dropdown_util.register_listener("#t2Values", function(idx, value_str){
-				var current_dropdownatt = dropdown_util.read_atts();
-				slice_util.setSlice(appstate.data_slices, "t2", "", current_dropdownatt, value_str)
-				appdispatch.dataslice.call("dataslice", this, "t2");
+				dispatch.call("dropdowvals", null, idx, value_str);
 			});
 		}
 	};
 
 	function resetDropdownValues(){
-		var current_dropdownatt = dropdown_util.read_atts();
+		var current_dropdownatt = dropdown_util.read_atts(".t2Atts");
 
 		localstate.dropdown_vals = data_utils.get_uniquevalues_dataset(current_dropdownatt);
 		dropdown_util.setValueList_values(".t2Values", localstate.dropdown_vals);
 	};
 
-	function updatePanelHeader(){
-		var current_att = dropdown_util.read_atts();
-		var current_val;
+	function syncdropdownt2_click(evt){
+		var current_att = dropdown_util.read_atts(".t2Atts");
+		var current_val = dropdown_util.read_values(".t2Values");
 
-		if ( dataset_h && dataset_h.length){
-			current_val = raw_value(dataset_h[0], current_att)
-		}
-		else{
-			current_val = dropdown_util.read_values();
-		}
+		syncdropdownt4(current_att, current_val);
+		syncdropdownt6(current_att, current_val);
+
+		evt.preventDefault();
+	};
+
+	function syncdropdownt2(att, value){
+		dropdown_util.setSelection_atts(".t2Atts", att);
+		resetDropdownValues();
+		dropdown_util.setSelection_values(".valSelector", value);
+
+		initt2();
+		updatePlot(localstate.drawnRows);
+	};
+
+	function cleardropdownt2_click(evt){
+		resetDropdownValues();
+
+		var current_dropdownatt = dropdown_util.read_atts(".t2Atts");
+		slice_util.clearSlice(localstate.data_slices, "t2", "")
+		slice_util.setSlice(localstate.data_slices, "t2", "", current_dropdownatt, null);
 		
+		d3.select("#cleart2")
+			.style("visibility", "hidden")
+			.style("pointer-events", "none");
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		initt2();
+		updatePlot(localstate.drawnRows);
+
+		evt.preventDefault();
+	};
+
+	function updatePanelHeader(){
+		var current_att = dropdown_util.read_atts(".t2Atts");
+		var current_val = dropdown_util.read_values(".t2Values");
+		var result = "Best Sellers";
+		var game_name;
+
+		
+
+		if (current_val){
+			result = result + " in the " + current_val + " " + current_att
+		}
+
+		if ( dataset_h && dataset_h.length == 1){
+			game_name = raw_value(dataset_h[0], "Name")
+			game_name = _.truncate(game_name, {'length': max_names_len, 'omission': '...'});
+			result = result + " vs " + game_name;
+		}
+
+
 		d3.select("#t2Panel .panel-heading small")
-			.html("Best Sellers in the " + current_val + " " + current_att)
+			.html(result);
 	};
 
 	function initt2(){
-		var aux_order;
+		var dataset = localstate.drawnRows;
 
-		dataset = localstate.datasetRows;
+		rows_order = data_utils.sortBy(dataset, y_var);
+		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
+		rows_order = rows_order.reverse();
 
-		aux_order = dataset.map(function(d){ return d; });
-		aux_order = aux_order.sort(function(a,b){
-			return value(b, y_var) - value(a, y_var);
-		})
-		aux_order = aux_order.slice(0, top_rows);
-
-		rows_order = _.range(aux_order.length);
-
-		if (sort_var == y_var){
-			rows_order = rows_order.sort(function(a, b){ 
-				var result;
-				var v1 = value(aux_order[a], sort_var);
-				var v2 = value(aux_order[b], sort_var);
-				
-				result = v2.localeCompare(v1);
-				
-				return result; })
+		if(sort_var == x_var){
+			rows_order = data_utils.sortBy(dataset, sort_var);
 		}
 
-		dataset = aux_order;
+
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		ydomain = [];
-		ydomain[0] = 1.05 * d3.max(dataset, function(d) { return parseFloat(raw_value(d, y_var)) });
-		ydomain[1] = d3.min([0, 0.95 * d3.min(dataset, function(d) { return parseFloat(raw_value(d, y_var)) })]);
+		ydomain[0] = 1.05 * d3.max(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) });
+		ydomain[1] = d3.min([0, 0.95 * d3.min(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) })]);
 
 		xdomain = [];
 		xdomain[0] = 0;
@@ -283,10 +347,10 @@
 			.enter().append("defs").append("clipPath")
 				.attr("id","t2clip")
 				.append("rect")
-				.attr("x",xrange[0])
-				.attr("y",yrange[0])
-				.attr("width",xrange[1]-xrange[0])
-				.attr("height",yrange[1]-yrange[0]);
+				.attr("x",xrange[0]-10)
+				.attr("y",yrange[0]-10)
+				.attr("width",xrange[1]-xrange[0]+20)
+				.attr("height",yrange[1]-yrange[0]+20);
 
 
 		// 4) Creating the scales
@@ -326,6 +390,8 @@
 			.data([0]).enter().append("g")
 				.attr("transform","translate(0," + axis_0["y"] + ")")
 				.attr("class", "x axis")
+				.call(xaxis);
+
 
 		svg.selectAll("g.y.axis")
 			.data([0]).enter().append("g")
@@ -363,6 +429,8 @@
 		svg.selectAll("g.highlight")
 			.data([0]).enter().append("g")
 				.attr("class", "highlight")
+				.attr("clip-path","url(#t2clip)")
+
 
 
 		// X) Append group for catching events
@@ -374,43 +442,45 @@
 
 		// draws the Y axis with text label
 		svg.selectAll("text.y-axis-label")
+			.data([0])
+			.enter().append("text")
+			.attr("class", "y-axis-label")
+			.attr("transform", "rotate(-90)")
 			.attr("x", -yrange[0])
-			.attr("y", xrange[0] - xoffset)
+			.attr("y", xoffset - 10)
 			.attr("fill", "black")
 			.style("text-anchor", "end")
 			.text("Global Sales ( Million Units )")
 	};
 
 	function updatePlot(row_numbers){
-		var aux_order;
 		dataset = row_numbers;
 
-		// update plot
 		var t0 = svg.transition().duration(100);
 		var t1 = svg.transition().delay(100).duration(500);
 
 		updatePanelHeader();
 
-		aux_order = appstate.datasetRows.map(function(d){ return d; });
-		aux_order = aux_order.sort(function(a,b){
-			return value(b, y_var) - value(a, y_var);
-		})
-		aux_order = aux_order.slice(0, top_rows);
+		rows_order = data_utils.sortBy(dataset, y_var);
+		rows_order = rows_order.slice(rows_order.length - top_rows, rows_order.length);
+		rows_order = rows_order.reverse();
 
-		rows_order = _.range(aux_order.length);
-
-		if (sort_var == y_var){
-			rows_order = rows_order.sort(function(a, b){ 
-				var result;
-				var v1 = value(aux_order[a], sort_var);
-				var v2 = value(aux_order[b], sort_var);
-				
-				result = v2.localeCompare(v1);
-				
-				return result; })
+		if(sort_var == x_var){
+			rows_order = data_utils.sortBy(rows_order, sort_var);
 		}
 
-		dataset = aux_order;
+		// 1) Settle the values for the x and y domains (this are the values in the data)
+		if( appstate.highlightedRows.length == 1 ){
+			ydomain = [];
+			ydomain[0] = 1.05 * d3.max(rows_order.concat(appstate.highlightedRows[0]), function(d) { return parseFloat(raw_value(d, y_var)) });
+			ydomain[1] = d3.min([0, 0.95 * d3.min(rows_order.concat(appstate.highlightedRows[0]), function(d) { return parseFloat(raw_value(d, y_var)) })]);
+		}
+		else{
+			ydomain = [];
+			ydomain[0] = 1.05 * d3.max(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) });
+			ydomain[1] = d3.min([0, 0.95 * d3.min(rows_order, function(d) { return parseFloat(raw_value(d, y_var)) })]);
+		}
+		yscale.domain(ydomain);
 
 
 		// 5) Create X and Y axis
@@ -420,16 +490,15 @@
 
 		// draws the X axis with text label
 		var gX = svg.select("g.x.axis")
-			.call(xaxis);
-
 		gX.selectAll("text")
 			.attr("class", "x tick")
-			.attr("transform", "rotate(-40)")
+			.attr("class", "x tick")
+			.attr("transform", "rotate(-35)")
 			.style("text-anchor", "end")
 			.text(function(d, i){ 
 				var result = null;
 				try{
-					var game_name = raw_value(rows_order[i], x_var);
+					var game_name = raw_value(rows_order[d], x_var);
 				}
 				catch(e){
 					var game_name = "";
@@ -454,7 +523,7 @@
 				.attr("stroke", "rgba(120,120,120,0.2)");
 		svg.select("g.background").selectAll("line.y-grid")
 			.data(yscale.ticks())
-			.exit().remove()
+			.exit().remove();
 		svg.select("g.background").selectAll("line.y-grid")
 				.transition(t1)
 				.attr("y1", function(d){ return yscale(d); })
@@ -465,18 +534,24 @@
 		// 7) Plot the data itself
 		// draws the plot itself
 		svg.select("g.datapoints").selectAll("rect.data-point")
-			.data(dataset)
+			.data(rows_order)
 			.enter().append("rect")
 			.attr("class", "data-point")
 			.attr("fill","rgb(0,127,255)")
 			.attr("opacity", 1)
 		svg.select("g.datapoints").selectAll("rect.data-point")
-			.data(dataset)
+			.data(rows_order)
 			.exit().remove();
 		svg.select("g.datapoints").selectAll("rect.data-point")
 			.transition().duration(750)
-			.attr("x",function(d, i) {
-				return  xscale(rows_order[i]);
+			.attr("x",function(d) {
+				var i = rows_order.indexOf(d);
+
+				if (i==-1){
+					return -100000;
+				}
+
+				return  xscale(i);
 			})
 			.attr("y", function(d, i) {
 				var v = value(d, y_var);
@@ -495,12 +570,18 @@
 			svg.select("g.brush").selectAll("rect.event-grabbers")
 				.remove();
 			svg.select("g.brush").selectAll("rect.event-grabbers")
-				.data(dataset)
+				.data(rows_order)
 				.enter().append("rect")
 				.attr("class", "event-grabbers")
 				.attr("fill","rgba(200, 0, 200, 0.0)")
-				.attr("x",function(d, i) {
-					return  xscale(rows_order[i]);
+				.attr("x",function(d){
+					var i = rows_order.indexOf(d);
+
+					if (i==-1){
+						return -100000;
+					}
+
+					return  xscale(i);
 				})
 				.attr("width", xscale.bandwidth())
 				.attr("y", yrange[0])
@@ -530,11 +611,14 @@
 		var t0 = svg.transition().delay(100).duration(300);
 		var t1 = svg.transition().duration(100);
 
-		if(row_numbers.length == 0){
+		if(row_numbers.length !== 1){
 			svg.select("g.datapoints-h").selectAll("rect.data-point")
 				.transition(t1)
 				.attr("y", yscale(0))
 				.attr("height", 0)
+
+			svg.select("g.x.axis-h").selectAll("text")
+				.text("");
 			return;
 		}
 
@@ -552,7 +636,7 @@
 		yrange[1] = h - padding - yoffset_h;
 		var xrange = [];
 		xrange[0] = w - padding - xcutoff + xoffset_h;
-		xrange[1] = xrange[1] = w - padding - xcutoff_h;
+		xrange[1] = w - padding - xcutoff_h;
 
 
 
@@ -584,7 +668,10 @@
 		// draws the X axis with text label
 		var gX = svg.select("g.x.axis-h")
 			.attr("transform","translate(0," + axis_0["y"] + ")")
-			.call(xaxis);
+
+		if (gX.selectAll("text").empty()){
+			gX.call(xaxis);
+		}
 
 		gX.selectAll("text")
 			.attr("class", "x tick")
@@ -593,7 +680,7 @@
 			.text(function(d, i){ 
 				var result = null;
 				try{
-					var game_name = raw_value(d, x_var);
+					var game_name = raw_value(dataset_h[i], x_var);
 				}
 				catch(e){
 					var game_name = "";
@@ -663,17 +750,21 @@
 			svg = d3.select(svgelement);
 		}
 
-		localstate.datasetRows = localSlicet2(appstate.datasetRows);
+		localstate.datasetRows = app_row_numbers;
+		localstate.drawnRows = localstate.datasetRows;
 
 		initDropdowns();
-
 		initt2();
-
-		updatePlot(localstate.datasetRows);
+		updatePlot(localstate.drawnRows);
 	};
+
+	localstate.data_slices = slice_util.slicerules_factory();
 
 	window.drawt2 = drawt2;
 	window.setSizest2 = setSizest2;
 	window.drawHighlightt2 = drawHighlightt2;
 	window.localSlicet2 = localSlicet2;
+	window.syncdropdownt2 = syncdropdownt2;
+	window.syncdropdownt2_click = syncdropdownt2_click;
+	window.cleardropdownt2_click = cleardropdownt2_click;
 })();
