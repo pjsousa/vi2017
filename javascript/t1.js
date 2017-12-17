@@ -67,14 +67,14 @@
 
         var range = x_brush.range();
         
-        if(s[1]-s[0] <=60 || s[1]-s[0] < 0){
-            svg.select(".selection").attr("width","60");
-            s[1] = s[0]+60;
+        if(s[1]-s[0] <=70 || s[1]-s[0] < 0){
+            svg.select(".selection").attr("width","70");
+            s[1] = s[0]+70;
             if(s[1]>range[1]){
                 s[1] = range[1];
-                s[0] = range[1] - 60;
-                svg.select(".handle--w").attr("x",s[1]-60);
-                svg.select(".selection").attr("x",s[1]-60-3);
+                s[0] = range[1] - 70;
+                svg.select(".handle--w").attr("x",s[1]-70);
+                svg.select(".selection").attr("x",s[1]-70-3);
             }
             svg.select(".handle--e").attr("x",s[1]);
         }
