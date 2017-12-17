@@ -595,6 +595,9 @@
 				.transition(t1)
 				.attr("y", yscale(0))
 				.attr("height", 0)
+
+			svg.select("g.x.axis-h").selectAll("text")
+				.text("");
 			return;
 		}
 
