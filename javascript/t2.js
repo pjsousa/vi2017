@@ -219,7 +219,7 @@
 			initdropdowns_happenedonce = true;
 
 			resetDropdownValues();
-			
+
 			dropdown_util.setSelection_values('.t2Values', appstate.data_slices["t2"][1])
 
 			dropdown_util.register_listener("#t2Atts", function(idx, value_str){
@@ -243,7 +243,7 @@
 		var current_att = dropdown_util.read_atts(".t2Atts");
 		var current_val = dropdown_util.read_values(".t2Values");
 
-		syncdropdownt4(current_att, current_val);
+		// syncdropdownt4(current_att, current_val);
 		syncdropdownt6(current_att, current_val);
 
 		evt.preventDefault();
@@ -252,10 +252,9 @@
 	function syncdropdownt2(att, value){
 		dropdown_util.setSelection_atts(".t2Atts", att);
 		resetDropdownValues();
-		dropdown_util.setSelection_values(".valSelector", value);
+		dropdown_util.setSelection_values(".t2Values", value);
 
-		initt2();
-		updatePlot(localstate.drawnRows);
+		dispatch.call("dropdowvals", null, -1, value);
 	};
 
 	function cleardropdownt2_click(evt){

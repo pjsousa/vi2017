@@ -56,6 +56,8 @@
 							</select>
 							<select id="t1Values" class="t1Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
 							</select>
+
+							<a id="cleart1" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 						</div>
 						<div id="t1Viz" class="panel-body">
 							<img class="img-responsive" src="images/t1.png" />
@@ -97,10 +99,10 @@
 								</a>
 
 								<select id="t2Atts" class="t2Atts selectpicker show-menu-arrow" >
-								  <option data-tokens="Platform">Platform</option>
-								  <option data-tokens="Genre">Genre</option>
-								  <option data-tokens="Publisher">Publisher</option>
-								  <option data-tokens="Developer">Developer</option>
+									<option data-tokens="Platform">Platform</option>
+									<option data-tokens="Genre">Genre</option>
+									<option data-tokens="Publisher">Publisher</option>
+									<option data-tokens="Developer">Developer</option>
 								</select>
 
 								
@@ -216,20 +218,25 @@
 						</div>
 						<div id="t6Viz" class="panel-body">
 							<div class="col-xs-12 text-center">
-								<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+								<a id="synct6" class="btn btn-default btn-xs"> 
+									<span class="glyphicon glyphicon-filter"></span>
+									<span class="glyphicon glyphicon-transfer"></span>
+								</a>
 
-							  <select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
-							      <option data-tokens="Platform">Platform</option>
-							      <option data-tokens="Genre">Genre</option>
-							      <option data-tokens="Publisher">Publisher</option>
-							      <option data-tokens="Developer">Developer</option>
-							  </select>
+								<select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
+										<option data-tokens="Platform">Platform</option>
+										<option data-tokens="Genre">Genre</option>
+										<option data-tokens="Publisher">Publisher</option>
+										<option data-tokens="Developer">Developer</option>
+								</select>
 
-							  <select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
-							  </select>
+								<select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+								</select>
+
+								<a id="cleart6" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 							</div>
 							<img class="img-responsive" src="images/t6.png" />
-              <svg></svg>
+							<svg></svg>
 						</div>
 					</div>
 					<!-- ./t6Panel -->
@@ -251,16 +258,16 @@
 		<!-- ./page-content -->
 	</div>
 
-    <div id="myModal" class="modal">
+		<div id="myModal" class="modal">
 
-      <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p id="info-text">Some text in the Modal..</p>
-      </div>
+			<!-- Modal content -->
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<p id="info-text">Some text in the Modal..</p>
+			</div>
 
-    </div>
-    
+		</div>
+		
 	<!-- Os "includes" das nossas sources -->
 	<script src="javascript/app.js" ></script>
 	<script src="javascript/datahandler.js" ></script>
@@ -283,52 +290,50 @@
 
 			$('.t2Atts').selectpicker({
 				style: 'btn-link btn-xs',
-			  header: "Select a data attribute",
-			  width: "100px"
+				header: "Select a data attribute",
+				width: "100px"
 			});
 
 			$('.t2Values').selectpicker({
-			  style: 'btn-link btn-xs',
-			  header: "Select a value to filter your data",
-			  title:"Choose one of the following...",
-			  width: "100px"
+				style: 'btn-link btn-xs',
+				header: "Select a value to filter your data",
+				title:"Choose one of the following...",
+				width: "100px"
 			});
+
+			$("#cleart1").on("click", cleardropdownt1_click);
 
 			$("#synct2").on("click", syncdropdownt2_click);
 			$("#cleart2").on("click", cleardropdownt2_click);
-			
-            $('.t1Atts').selectpicker({
+
+			$("#synct6").on("click", syncdropdownt6_click);
+			$("#cleart6").on("click", cleardropdownt6_click);
+
+			$('.t1Atts').selectpicker({
 				style: 'btn-link btn-xs',
-			  width: "100px"
+				width: "100px"
 			});
 
 			$('.t1Values').selectpicker({
-			  style: 'btn-link btn-xs',
-			  header: "Select a value to filter your data",
-			  title:"Choose one of the following...",
-			  width: "100px"
-			});
-            
-            			
-            $('.t6Atts').selectpicker({
 				style: 'btn-link btn-xs',
-			  width: "100px"
+				header: "Select a value to filter your data",
+				title:"Choose one of the following...",
+				width: "100px"
+			});
+
+			$('.t6Atts').selectpicker({
+				style: 'btn-link btn-xs',
+				width: "100px"
 			});
 
 			$('.t6Values').selectpicker({
-			  style: 'btn-link btn-xs',
-			  header: "Select a value to filter your data",
-			  title:"Choose one of the following...",
-			  width: "100px"
+				style: 'btn-link btn-xs',
+				header: "Select a value to filter your data",
+				title:"Choose one of the following...",
+				width: "100px"
 			});
-            
-            
-            
-			// step 1. fetch data
-			main();
-			// step 2. the world!
-			// 
 
+			main();
 		})
 
 		$(window).resize(function(){

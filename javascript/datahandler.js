@@ -314,7 +314,7 @@
 				var new_row = {};
 				for(var i = 0; i < datasources.data_v2.length; i++){
 						var row = datasources.data_v2[i];
-						if(row.Year_of_Release == year && row["Genre"]==ref_col_value){
+						if(row.Year_of_Release == year && (row["Genre"]==ref_col_value || ref_col_value == null)){
 								JP += parseFloat(row["JP_Sales"]);
 								EU += parseFloat(row["EU_Sales"]);
 								NA += parseFloat(row["NA_Sales"]);
