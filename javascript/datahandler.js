@@ -330,6 +330,88 @@
 		
 		return res;
 	};
+    
+    
+    function get_rating_counts(rows){
+		/*
+			get_rating_counts(null)  /// devolve o somatorio de ocorrencias de cada rating, para cada ano
+			> [
+					23:{Year_of_Release: "2002.0", E: 362, T: 231, M: 62, E10+: 0, …}
+                    24:{Year_of_Release: "2003.0", E: 289, T: 238, M: 83, E10+: 3, …}
+                    25:{Year_of_Release: "2004.0", E: 269, T: 218, M: 101, E10+: 10, …}
+                    26:{Year_of_Release: "2005.0", E: 246, T: 220, M: 135, E10+: 102, …}
+				]
+		 */
+		var rows;
+
+		if (rows === null){
+			rows = appstate.datasetRows;
+		}
+        
+        //get a specific game with index row_number p.e. datasources["data_v2"][5] ->
+        //{Name: "Tetris", Platform: "GB", Year_of_Release: "1989.0", Genre: "Puzzle", Publisher: "Nintendo", …}
+		rows = rows.map(function(row_num){ return datasources["data_v2"][row_num]; });
+
+		var count = [];
+		var res = [];
+		var n = 0;
+		
+		//get the total different years there are
+        var r = datasources.data_v2.map(a => a["Year_of_Release"]);
+		var uniqueYears = _.uniq(r);
+        
+        //for each year
+		for(var ind = 0; ind < uniqueYears.length; ind++){
+				//a counter for each rating
+                var year = uniqueYears[ind];
+				var Unknown = 0;
+				var E = 0;
+				var T = 0;
+				var M = 0;
+				var E10 = 0;
+				var AO = 0;
+				var EC = 0;
+				var KA = 0;
+				var RP = 0;
+				var new_row = {};
+             
+                var yearToUse = data_utils.get_records(["Year_of_Release"], [year]);
+				for(var i = 0; i < yearToUse.length; i++){
+						var row = yearToUse[i];
+                        if(row.Rating == "Unknown")
+                            Unknown++;
+                        else if(row.Rating == "E")
+                            E++;
+                        else if(row.Rating == "T")
+                            T++;
+                        else if(row.Rating == "M")
+                            M++;
+                        else if(row.Rating == "E10+")
+                            E10++;
+                        else if(row.Rating == "AO")
+                            AO++;
+                        else if(row.Rating == "EC")
+                            EC++;
+                        else if(row.Rating == "KA")
+                            KA++;
+                        else if(row.Rating == "RP")
+                            RP++;
+				}
+				new_row["Year_of_Release"] = year;
+				//new_row[ref_col_name] = ref_col_value;
+                new_row["E"] = E;
+                new_row["T"] = T;
+                new_row["M"] = M;
+                new_row["E10"] = E10;
+                new_row["AO"] = AO;
+                new_row["EC"] = EC;
+                new_row["KA"] = KA;
+                new_row["RP"] = RP;
+				new_row["Unknown"] = Unknown;
+				res[ind] = new_row;
+		}
+		return res;
+	};
 
 	function read_value(row_number, col_name){
 		var result;
@@ -418,7 +500,8 @@
 		fetch_alldata: fetch_alldata,
 		read_column: read_column,
 		get_sales_sum: get_sales_sum,
-		get_records: get_records,
+        get_records: get_records,
+		get_rating_counts: get_rating_counts,
 		get_index: get_index,
 		column_hasvalue: column_hasvalue,
 		read_value: read_value,
