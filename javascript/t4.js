@@ -39,7 +39,7 @@ var y_variable = "Rating";
     var space_bet_bar_y = 5;
     
     //
-    var current_year_index;
+    var first_bar = true;
     
     var wscale = d3.scaleLinear()
                  .domain([0, 100])
@@ -53,7 +53,7 @@ var y_variable = "Rating";
     
     var xaxis = d3.axisTop()
                     .scale(wscale)
-                    .ticks(3)
+                    .ticks(4)
                     .tickFormat(d3.format(".0s"))
     ;
     
@@ -62,12 +62,48 @@ var y_variable = "Rating";
                     .ticks(10)
     
     ;
-                
+    //color vars
+    var default_bar_color   = "blue";
+    var hover_bar_color     = "cyan";
+    var clicked_bar_color  = "deeppink";
     
-    var formatPercent = d3.format(".0%");
+    
+    //VARS PARA O PEDRO USAR LÁ FORA
+    var current_year_selected;
+    var current_rating_selected;
+    //DISPATCH    
+    var clicked_bar, hovered_bar;
+    var dispatch = d3.dispatch("RatingHover", "RatingClick");
+    
+    dispatch.on("RatingHover", function (d){ ratingHover(d); } )
+    dispatch.on("RatingClick", function (d){ ratingClick(d); } )
+    
+    //click on a bar, displays the rating (d) and year ( current_year_selected )
+    function ratingClick(d)
+    {
+        current_rating_selected = d;
+        clicked_bar.attr("fill", clicked_bar_color);
+        console.log("Rating: " + current_rating_selected + " Year: " + current_year_selected);
+    }
+    
+    //hover over a bar, displays the rating (d) and year ( current_year_selected )
+    function ratingHover(d)
+    {
+        var id_to_locate = d.concat(current_year_selected);
+        
+        console.log(id_to_locate);
+        if(hovered_bar != null)
+            hovered_bar.attr("fill", default_bar_color);
+        hovered_bar = d3.select("#" + id_to_locate)
+                        .attr("fill", hover_bar_color);
+               /*if(hovered_bar != null)
+                    console.log(hovered_bar.attr("id"));*/
+        //selected_bar.attr("fill", clicked_bar_color);
+        //console.log("Rating: " + d + " Year: " + current_year_selected);
+    }
     
     function drawt4(app_row_numbers){
-        //DATA RELATED   
+//DATA RELATED   
         //dataset contains the count of each rating for each year p.e. 
         //{Year_of_Release: "2001.0", E: 205, T: 107, M: 27, E10+: 0, …}
         dataset = data_utils.get_rating_counts(app_row_numbers);
@@ -97,9 +133,9 @@ var y_variable = "Rating";
                     .attr("y", function(d, i) {return calc_mult_y(i); } )   
                     .attr("x", function(d, i) {return calc_mult_x(i); } ) 
                     //this calculates the rating with the highest count for this year, so that this value can be used when doing percentages for each bar
-                    .attr("max", function (d) { var yearly_ratings = Object.values(d); 
-                                               yearly_ratings = yearly_ratings.slice(1, yearly_ratings.length);
-                                               var max = yearly_ratings.reduce(function(a, b) {
+                    .attr("max", function (d) {    var yearly_ratings = Object.values(d); 
+                                                   yearly_ratings = yearly_ratings.slice(1, yearly_ratings.length);
+                                                   var max = yearly_ratings.reduce(function(a, b) {
                                                     return Math.max(a, b);
                                                 });
                                                return max; } ) 
@@ -130,7 +166,8 @@ var y_variable = "Rating";
                         .data(["E", "T", "M", "E10", "AO", "EC", "KA", "RP", "Unknown"]).enter()
                         .append("rect")
                         .attr("class", "datapoints")
-                        .attr("id", function(d) { return d; } )//function(d, i) { return calc_bar_id(d, i); } )
+                        .attr("year", function (d) { return d3.select(this.parentNode).attr("id"); } )
+                        .attr("id", function(d) { return d.concat(d3.select(this.parentNode).attr("id").substring(0,4)); } )
                         .attr("x", function(d, i) { return calc_bar_x(d, i) ; } )
                         .attr("y", function(d, i) {return calc_bar_y(d, i); } )
                         .attr("width", function(d) {    var thisValue = itr[d]; 
@@ -139,30 +176,21 @@ var y_variable = "Rating";
 
                                                         return finalWidth; } )
                         .attr("height", bar_height)
-                        .attr("fill", "blue")
+                        .attr("fill", default_bar_color)
+                        .on("click", function (d) { current_year_selected = d3.select(this).attr("year").substring(0,4);
+                                                       //small cheat to reset the color of the previous clicked bar 
+                                                       if(!first_bar) {                                                clicked_bar.attr("fill", default_bar_color);
+                                                        
+                                                       }else first_bar = false;
+                                                        clicked_bar = d3.select(this);
+                                                       dispatch.call("RatingClick", d, d)})
+                
+                        .on("mouseover", function(d) {current_year_selected = d3.select(this).attr("year").substring(0,4);
+                                                      dispatch.call("RatingHover", d, d); } )
                     })
-        
-                    //each bar of multiple multiple_index   
-                    /*.selectAll("rect")
-                    .data(dataset)
-                    .enter().append("rect")
-                        .attr("width", function(d, i) { calc_bar_width(d, i); } )
-                        .attr("height", bar_height)
-                        .attr("x", function(d, i) { calc_bar_x(d, i); } )
-                        .attr("y", function(d, i) { calc_bar_y(d, i); } )
-                        .attr("fill", "black")*/
                     ;      
        } 
-    
-        function calc_small_multiple_max_width(itr_data)
-    {
-        var thisValue = itr_data; 
-        var parentXValue = d3.select(this.parentNode).attr("max");
-        var finalWidth = ( thisValue / parentXValue ) * small_mult_width; 
         
-        return finalWidth;
-    }
-    
         function calc_translate(i)
         {
             var x = calc_mult_x(i);
@@ -170,54 +198,6 @@ var y_variable = "Rating";
             return "translate(" + x + ", " + y + ")";
         }
     
-        function what_year(d,i)
-        {
-            //console.log(Object.values(d));
-            return Object.values(d);
-        }
-    
-        function calc_bar_id(d, i)
-        {
-            console.log("d: " + d + "i: " + i );
-        if(i == 0)
-            return "AO = " + d.AO;
-        else if(i == 1)
-            return "E = " + d.E;
-        else if(i == 2)
-            return "E10+ = " + d.E10;
-        
-            else return 5;//d.M;
-        }
-    
-        function calc_bar_width(d, i)
-        {
-            console.log(Object.values(d));
-            if(d == "E")
-                return d.E;
-            else if(d == "T")
-                return d.E;
-            else if(d == "M")
-                return d.E;
-            else if(d == "E10")
-                return d.E;
-            else if(d == "AO")
-                return d.E;
-            else if(d == "EC")
-                return d.E;
-            else if(d == "KA")
-                return d.E;
-            else if(d == "RP")
-                return d.E;
-            else if(d == "Unknown")
-                return d.E;
-                    /*case(M):
-                        console.log("E: " + dataset[current_year_index].E);
-                        //return dataset[current_year_index].E;
-                    case(1):
-                        console.log("T: " + dataset[current_year_index].T);
-                        //return dataset[current_year_index].T;   */
-        }
-                
         function calc_bar_x(d, i)
         {
             return 20;
@@ -250,12 +230,13 @@ var y_variable = "Rating";
             return d.Year_of_Release;
         }
     
-        function setSizest4(boundingRect){
+        function setSizest4(boundingRect)
+        {
             w = boundingRect.width;
             h = boundingRect.height;
+            small_mult_per_column = parseInt(h / (small_mult_height + space_bet_mult_y)) - 1;
             small_mult_height = h/ small_mult_per_column;
-            console.log(w,h);
-	       };
+        };
     
     
     window.drawt4 = drawt4;
