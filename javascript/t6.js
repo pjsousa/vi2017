@@ -79,36 +79,42 @@
 	function setSizest6(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-		legendElementWidth = gridSizeX;
-		legendYoffset = 60;
-		legendXoffset = 120;
-	};
+    legendElementWidth = gridSizeX;
+    legendYoffset = 60;
+    legendXoffset = 120;
+	}
+    
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-heatmap");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This graph displays the games according to their score and year of release. Each square represents the group of games whose score fit in the correspondent interval of the square, and also the year of release. The color scale represents the number of games that are represented in each cell. You can chose the filters for the games by selecting one of the values in each of the drop down menus.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
+
 	
-	function showInfo(){
-		var modal = document.getElementById('myModal');
-		var btn = document.getElementById("button-info-heatmap");
-		var span = document.getElementsByClassName("close")[4];
-		var text = document.getElementById("info-text");
+	
 
-		// When the user clicks on the button, open the modal 
-		btn.onclick = function() {
-			modal.style.display = "block";
-			text.innerHTML = "This is the heatmap chart";
-		}
-
-		// When the user clicks on <span> (x), close the modal
-		span.onclick = function() {
-			console.log("here");
-			modal.style.display = "none";
-		}
-
-		// When the user clicks anywhere outside of the modal, close it
-		window.onclick = function(event) {
-			if (event.target == modal) {
-				modal.style.display = "none";
-			}
-		}
-	};
 	
 	function initDropdowns(){
 		if(!initdropdowns_quirk){
@@ -196,59 +202,61 @@
 		//years.splice(index,1);
 		
 		initDropdowns();
-		aux = new Array(years.length);
-		for(var i = 0; i< years.length; i++){
-			aux[i] = new Array(scoreIntervals.length);
-		}
-		
-		initt6();
-		createScroll();
-		showInfo();
-	};
-	
-	function getNumber(d){
-		var yearInd = years.findIndex(x=> x == d.year);
-		var intInd = scoreIntervals.findIndex(x => x == d.interval);
-		if(aux[yearInd][intInd] == -1){ return emptyColor};
-		return aux[yearInd][intInd];
-	};
+        aux = new Array(years.length);
+        for(var i = 0; i< years.length; i++){
+            aux[i] = new Array(scoreIntervals.length);
+        }
+        
+        initt6();
+        createScroll();
+        showInfo();
+    }
+    
+    function getNumber(d){
+        var yearInd = years.findIndex(x=> x == d.year);
+        var intInd = scoreIntervals.findIndex(x => x == d.interval);
+        if(aux[yearInd][intInd] == -1){ return emptyColor};
+        return aux[yearInd][intInd];
+    }
 
-	function createScroll(){
-		var content = document.getElementById("t6Viz");
-		content.addEventListener('scroll',function(evt){
-			var head = document.getElementById("score-container");
-			var children = head.children;
-			var n = 0;
-			for(var i = 0; i < children.length; i++){
-				if(head.children[i].getAttribute("id") == "score"){
-					head.children[i].setAttribute("transform","translate("+ (xScale+ gridSizeX*n) + ","+ (yoffset+this.scrollTop) +") rotate(-40)");
-					n++;
-				}else if(head.children[i].getAttribute("id") == "score-rect"){
-					head.children[i].setAttribute("y",this.scrollTop);
-				}
-			}
-			
-			var heatmapLegends = document.getElementsByClassName("legend-heatmap");
-			for(var i = 0; i < heatmapLegends.length; i++){
-				document.getElementsByClassName("legend-heatmap")[i].children[0].setAttribute("y", legendElementWidth * i + legendYoffset + this.scrollTop);
-				document.getElementsByClassName("legend-heatmap")[i].children[1].setAttribute("y", legendElementWidth * i + legendYoffset + 25 + this.scrollTop);
-			}
-		}, false);
-	};
+    
+    function createScroll(){
+        var content = document.getElementById("t6Viz");
+        content.addEventListener('scroll',function(evt){
+            var head = document.getElementById("score-container");
+            var children = head.children;
+            var n = 0;
+            for(var i = 0; i < children.length; i++){
+                if(head.children[i].getAttribute("id") == "score"){
+                    head.children[i].setAttribute("transform","translate("+ (xScale+ gridSizeX*n) + ","+ (yoffset+this.scrollTop) +") rotate(-40)");
+                    n++;
+                }else if(head.children[i].getAttribute("id") == "score-rect"){
+                    head.children[i].setAttribute("y",this.scrollTop);
+                }
+            }
+            
+            var heatmapLegends = document.getElementsByClassName("legend-heatmap");
+            for(var i = 0; i < heatmapLegends.length; i++){
+                document.getElementsByClassName("legend-heatmap")[i].children[0].setAttribute("y", legendElementWidth * i + legendYoffset + this.scrollTop);
+                document.getElementsByClassName("legend-heatmap")[i].children[1].setAttribute("y", legendElementWidth * i + legendYoffset + 25 + this.scrollTop);
+                
+            }
+            document.getElementById("t6-buttons-div").style.top = (this.scrollTop) + 'px';
+            document.getElementById("t6-buttons-div").style.background = "#eee";
+            document.getElementById("t6-buttons-div").style.border = "#eee";
+            
+            
+        }, false);
+    }
+    
+    function drawHighlightt6(from_target){
+        
+    }
+    
+    
+    // Create Event Handlers for mouse
 
-	function drawHighlightt6(from_target){
-	};
-
-	// Create Event Handlers for mouse
-	function handleMouseOver(d, i) {
-
-	};
-
-	function handleMouseOut(d, i) {
-
-	};
-
-	function handleClick(d, i){
+function handleClick(d, i){
 		clearSelectiont6()
 
 		var _fill = d3.select(this).style("fill");
@@ -275,182 +283,190 @@
 			.style("fill", function(d){ return d3.select(this).attr("data-fill"); })
 			.classed("selected", false)
 	};
-	
-	function handleInformation(d){
-	};
-	
-	function initt6(){
-		dataset = data_utils.read_column(localstate.drawnRows,["Mean_UserCritic_Score","Year_of_Release"]);
+    
+    
+	function initt6(){	
+        d3.select("#t6Viz > img").remove();
+        //var row_indexes = data_utils.get_index(["Genre"],["Shooter"]);
+        //var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
 
-		d3.select("#t6Viz > img").remove();
-
-		yScale = ycutoff + yoffset+padding;
-		xScale = xcutoff  + xoffset+50;
-		xrange[0] = padding + xoffset;
+        yScale = ycutoff + yoffset+padding;
+        xScale = xcutoff  + xoffset+50;
+        xrange[0] = padding + xoffset;
 		xrange[1] = w-padding - xcutoff;
-		
-		svg = d3.select("#t6Viz svg")
-								.attr("width", w)
-								.attr("height", h+520);
+        
+        svg = d3.select("#t6Viz svg")
+                                .attr("width", w)
+                                .attr("height", h+520);
+        
 
-		svg.selectAll(".yearLabel").remove();
-		svg.selectAll(".scoreLabel").remove();
-		svg.selectAll(".year").remove();
-		svg.selectAll(".legend-heatmap").remove();
-		
-		var yearLabels = svg.selectAll(".yearLabel")
-			.data(years)
-			.enter().append("text")
-				.attr("class","year-legend");
-	
-		svg.selectAll(".year-legend")
-			.attr("transform",function(d,i){
-				return "translate(" + (padding + xoffset )+"," + (yScale + gridSizeY* i)+ ")";
-			})
-			.style("text-anchor","middle")
-			.attr("class",function(d,i){return ((i>=0 && i<=40) ? "yearLabel mono axis axis-year" : "yearLabel mono axis");})
-			.text(function(d){ return d.split(".")[0]; });
+        svg.selectAll(".yearLabel").remove();
+        svg.selectAll(".scoreLabel").remove();
+        svg.selectAll(".year").remove();
+        svg.selectAll(".legend-heatmap").remove();
+        
+        var yearLabels = svg.selectAll(".yearLabel")
+            .data(years)
+            .enter().append("text")
+                .attr("class","year-legend");
+    
+        svg.selectAll(".year-legend")    
+            .attr("transform",function(d,i){
+                return "translate(" + (padding + xoffset )+"," + (yScale + gridSizeY* i)+ ")";
+            })
+            .style("text-anchor","middle")                
+            .attr("class",function(d,i){return ((i>=0 && i<=40) ? "yearLabel mono axis axis-year" : "yearLabel mono axis");})
+            .text(function(d){ return d.split(".")[0]; });
+       
 
 
-		var setInterval = function(value){
-			if(value >= 90 && value < 100){
-				return scoreIntervals[0];
-			}
-			else if(value >= 80 && value < 90){
-				return scoreIntervals[1];
-			}
-			else if(value >= 70 && value < 80){
-				return scoreIntervals[2];
-			}
-			else if(value >= 60 && value < 70){
-				return scoreIntervals[3];
-			}
-			else if(value >= 50 && value < 60){
-				return scoreIntervals[4];
-			}
-			else if(value >= 40 && value < 50){
-				return scoreIntervals[5];
-			}
-			else if(value >= 30 && value < 40){
-				return scoreIntervals[6];
-			}
-			else if(value >= 20 && value < 30){
-				return scoreIntervals[7];
-			}
-			else if(value >= 10 && value < 20){
-				return scoreIntervals[8];
-			}
-			else if(value < 10){
-				return scoreIntervals[9];
-			}
-		};
 
-		var grouped = [];
-		
-		dataset.forEach(function(d,i){
-			var interval = setInterval(d.Mean_UserCritic_Score);
-			var year = d.Year_of_Release;
-			
-			grouped.push({
-				year: year,
-				interval: interval,
-				value: d.Mean_UserCritic_Score
-			});
-			
-			var yearInd = years.findIndex(x=> x == year);
-			var intInd = scoreIntervals.findIndex(x => x == interval);
+        
+        var setInterval = function(value){
+            if(value >= 90 && value < 100){
+                return scoreIntervals[0];
+            }
+            else if(value >= 80 && value < 90){
+                return scoreIntervals[1];
+            }
+            else if(value >= 70 && value < 80){
+                return scoreIntervals[2];
+            }
+            else if(value >= 60 && value < 70){
+                return scoreIntervals[3];
+            }
+            else if(value >= 50 && value < 60){
+                return scoreIntervals[4];
+            }
+            else if(value >= 40 && value < 50){
+                return scoreIntervals[5];
+            }
+            else if(value >= 30 && value < 40){
+                return scoreIntervals[6];
+            }
+            else if(value >= 20 && value < 30){
+                return scoreIntervals[7];
+            }
+            else if(value >= 10 && value < 20){
+                return scoreIntervals[8];
+            }
+            else if(value < 10){
+                return scoreIntervals[9];
+            }
+        };
+        
+        
+        var grouped = [];
 
-			var element = aux[yearInd][intInd];
-			if(element == null)
-				aux[yearInd][intInd] = 1;
-			else
-				aux[yearInd][intInd]+= 1;
-		});
-		
-		for(var i = 0; i< years.length; i++){
-			for(var j = 0; j < scoreIntervals.length; j++){
-				if(aux[i][j]==null){
-					aux[i][j] = -1;
-					grouped.push({
-						year: years[i],
-						interval: scoreIntervals[j],
-						value: 0
-					})
-				}
-			}
-		}
+        
+        dataset.forEach(function(d,i){
+            
+            var interval = setInterval(d.Mean_UserCritic_Score);
+            var year = d.Year_of_Release;
+            
+            grouped.push({
+                year: year,
+                interval: interval,
+                value: d.Mean_UserCritic_Score
+            });
+            
+            var yearInd = years.findIndex(x=> x == year);
+            var intInd = scoreIntervals.findIndex(x => x == interval);
 
-		
-		
-		var colorScale = d3.scaleQuantile()
-						.domain([0, buckets - 1, d3.max(grouped, function(d){      
-							return getNumber(d);
-						})])
-						.range(colors);
-		
-		var cards = svg.selectAll(".year")
-				.data(grouped, function(d){
-					return d.interval + ":" + d.year;
-				});
+            var element = aux[yearInd][intInd];
+            if(element == null)
+                aux[yearInd][intInd] = 1;
+            else
+                aux[yearInd][intInd]+= 1;
+        });
+        
+        for(var i = 0; i< years.length; i++){
+            for(var j = 0; j < scoreIntervals.length; j++){
+                if(aux[i][j]==null){
+                    aux[i][j] = -1;
+                    grouped.push({
+                        year: years[i],
+                        interval: scoreIntervals[j],
+                        value: 0
+                    })
+                }
+            }
+        }
+        
+        
+        
+        var colorScale = d3.scaleQuantile()
+                        .domain([0, buckets - 1, d3.max(grouped, function(d){      
+                            return getNumber(d);
+                        })])
+                        .range(colors);
+        
+        var cards = svg.selectAll(".year")
+                .data(grouped, function(d){
+                    return d.interval + ":" + d.year;
+                });
 
-		cards.append("title");
-		
-		cards.enter().append("rect")
-			.attr("x", function(d,i){ return xcutoff+ xoffset+10 +(scoreIntervals.findIndex(x => x == d.interval) ) * gridSizeX; })
-			.attr("y", function(d,i){ return yoffset+ycutoff+4 + (years.findIndex(x=> x ==d.year)) * gridSizeY; })
-			.attr("class","score bordered")
-			.attr("width", gridSizeX)
-			.attr("height", gridSizeY)
-			.style("fill", function(d){
-				if(!isNaN(getNumber(d)) )
-					return colorScale(getNumber(d))
-				return getNumber(d);
-			})
-			.on("mousedown",handleClick)
-			.on("mouseover",handleMouseOver)
-			.on("mouseout", handleMouseOut);
-		
-		
-		var legend = svg.selectAll(".legend-heatmap")
-			.data([0].concat(colorScale.quantiles()), function(d){ return d; });
-		
-		legend.enter().append("g")
-			.attr("class","legend-heatmap");
-		
-		svg.selectAll(".legend-heatmap").append("rect")
-			.attr("id","legend-heatmap-rect")
-			.attr("x", w-legendXoffset)
-			.attr("y",function(d,i){ return legendElementWidth * i + legendYoffset;})
-			.attr("width", gridSizeX/2)
-			.attr("height", legendElementWidth)
-			.style("fill", function(d,i){ return colors[i];});
-		
-		svg.selectAll(".legend-heatmap").append("text")
-			.attr("class", "mono")
-			.attr("id","legend-heatmap-text")
-			.style("fill","#000000")
-			.text(function(d) { return "≥ " + Math.round(d); })
-			.attr("x", w-legendXoffset+30)
-			.attr("y", function(d,i){ return legendElementWidth * i + legendYoffset + 25;});
-		
-		var container = svg.append("g").attr("id","score-container");
-		container.append("rect")
-			.attr("id","score-rect")
-			.attr("x",0)
-			.attr("y",0)
-			.attr("width",500)
-			.attr("height",60)
-			.style("fill","#eee");
-		
-		scoreLabels = container.selectAll(".scoreLabel")
-			.data(scoreIntervals)
-			.enter().append("text").attr("transform",function(d,i){
-					return "translate("+ (xScale+ gridSizeX*i) + ","+ (yoffset)+ ") rotate(-40)"
-				})
-				.attr("id","score")
-				.attr("class",function(d,i){return ((i>=0 && i<=9) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");})
-			.text(function(d){return d;})
-			.style("text-anchor","end"); 
+        cards.append("title");
+        
+        cards.enter().append("rect")
+            .attr("x", function(d,i){ return xcutoff+ xoffset+10 +(scoreIntervals.findIndex(x => x == d.interval) ) * gridSizeX; })
+            .attr("y", function(d,i){ return yoffset+ycutoff+4 + (years.findIndex(x=> x ==d.year)) * gridSizeY; })
+            .attr("class","score bordered")
+            .attr("width", gridSizeX)
+            .attr("height", gridSizeY)
+            .style("fill", function(d){
+                if(!isNaN(getNumber(d)) )
+                    return colorScale(getNumber(d))
+                return getNumber(d);
+            })
+            .on("mouseover",handleMouseOver)
+            .on("mouseout", handleMouseOut)
+			      .on("mousedown",handleClick);
+        
+        
+        var legend = svg.selectAll(".legend-heatmap")
+            .data([0].concat(colorScale.quantiles()), function(d){ return d; });
+        
+        legend.enter().append("g")
+            .attr("class","legend-heatmap");
+        
+        svg.selectAll(".legend-heatmap").append("rect")
+            .attr("id","legend-heatmap-rect")
+            .attr("x", w-legendXoffset)
+            .attr("y",function(d,i){ return legendElementWidth * i + legendYoffset;})
+            .attr("width", gridSizeX/2)
+            .attr("height", legendElementWidth)
+            .style("fill", function(d,i){ return colors[i];});
+        
+        svg.selectAll(".legend-heatmap").append("text")
+            .attr("class", "mono")
+            .attr("id","legend-heatmap-text")
+            .style("fill","#000000")
+            .text(function(d) { return "≥ " + Math.round(d); })
+            .attr("x", w-legendXoffset+30)
+            .attr("y", function(d,i){ return legendElementWidth * i + legendYoffset + 25;});
+        
+        var container = svg.append("g").attr("id","score-container");
+        container.append("rect")
+            .attr("id","score-rect")
+            .attr("x",0)
+            .attr("y",0)
+            .attr("width",500)
+            .attr("height",60)
+            .style("fill","#eee");
+        
+        scoreLabels = container.selectAll(".scoreLabel")
+            .data(scoreIntervals)
+            .enter().append("text").attr("transform",function(d,i){
+                    return "translate("+ (xScale+ gridSizeX*i) + ","+ (yoffset)+ ") rotate(-40)"
+                })
+                .attr("id","score")
+                .attr("class",function(d,i){return ((i>=0 && i<=9) ? "scoreLabel mono axis axis-interval" : "scoreLabel mono axis");})
+            .text(function(d){return d;})
+            .style("text-anchor","end"); 
+        
+        //d3.select("#t6-buttons").append("rect").attr("height",20).attr("width",500).style("fill","#eee");
+        
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();
