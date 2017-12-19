@@ -86,14 +86,14 @@
 			.map(x_brush.invert, x_brush)
 			.map(function(e){ return e.getFullYear(); });
 
-		if(s[1]-s[0] <=70 || s[1]-s[0] < 0){
-				svg.select(".selection").attr("width","70");
-				s[1] = s[0]+70;
+		if(s[1]-s[0] <=160 || s[1]-s[0] < 0){
+				svg.select(".selection").attr("width","160");
+				s[1] = s[0]+160;
 				if(s[1]>range[1]){
 						s[1] = range[1];
-						s[0] = range[1] - 70;
-						svg.select(".handle--w").attr("x",s[1]-70);
-						svg.select(".selection").attr("x",s[1]-70-3);
+						s[0] = range[1] - 160;
+						svg.select(".handle--w").attr("x",s[1]-160);
+						svg.select(".selection").attr("x",s[1]-160-3);
 				}
 				svg.select(".handle--e").attr("x",s[1]);
 		}
