@@ -124,12 +124,11 @@
         // When the user clicks on the button, open the modal 
         btn.onclick = function() {
             modal.style.display = "block";
-            text.innerHTML = "This is the line chart";
+            text.innerHTML = "This graph ilustrates the sales evolution of a specific genre over time. To change the genre, select one of the options from the drop down menu. To show fewer or more years, increase the size of the grey bar by clicking on one of its sides with the mouse, and dragging the bar. You can also move the bar to show different intervals.";
         }
 
         // When the user clicks on <span> (x), close the modal
         span.onclick = function() {
-            console.log("here");
             modal.style.display = "none";
         }
 
@@ -280,6 +279,7 @@
 		//legendas   
 		var legW = 200;
 		var legH = 100;
+        d3.select("#t1Viz").selectAll("div.t1Legend").selectAll(".legend").remove();
 		var legend = d3.select("#t1Viz").selectAll("div.t1Legend").append("svg")
 			.attr("width",legW)
 			.attr("height",legH)
@@ -507,7 +507,7 @@
 		context.append("g")
 			.attr("class","brush")
 			.call(brush)
-			.call(brush.move, x_brush.range());
+			.call(brush.move, [xrange[1]-200,xrange[1]]);
         
 		//////////////////////////////////////////////////////////////////////////END BRUSH
 

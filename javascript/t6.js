@@ -55,12 +55,11 @@
         // When the user clicks on the button, open the modal 
         btn.onclick = function() {
             modal.style.display = "block";
-            text.innerHTML = "This is the heatmap chart";
+            text.innerHTML = "This graph displays the games according to their score and year of release. Each square represents the group of games whose score fit in the correspondent interval of the square, and also the year of release. The color scale represents the number of games that are represented in each cell. You can chose the filters for the games by selecting one of the values in each of the drop down menus.";
         }
 
         // When the user clicks on <span> (x), close the modal
         span.onclick = function() {
-            console.log("here");
             modal.style.display = "none";
         }
 
@@ -166,7 +165,9 @@
                 document.getElementsByClassName("legend-heatmap")[i].children[1].setAttribute("y", legendElementWidth * i + legendYoffset + 25 + this.scrollTop);
                 
             }
-            
+            document.getElementById("t6-buttons-div").style.top = (this.scrollTop) + 'px';
+            document.getElementById("t6-buttons-div").style.background = "#eee";
+            document.getElementById("t6-buttons-div").style.border = "#eee";
             
             
         }, false);
@@ -368,7 +369,7 @@
             .text(function(d){return d;})
             .style("text-anchor","end"); 
         
-        
+        //d3.select("#t6-buttons").append("rect").attr("height",20).attr("width",500).style("fill","#eee");
         
 	};
     
