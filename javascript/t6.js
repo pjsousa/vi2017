@@ -25,7 +25,7 @@
 
 	var dispatch = d3.dispatch("gamehover", "gameout", "dropdowatt", "dropdowvals");
 
-	var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
+	var colors = ["#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0","#045a8d","#023858","#01131e"];//["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
 	var emptyColor = "#ffffff";
 	var scoreIntervals = ["90/100","80/90","70/80","60/70","50/60","40/50","30/40","20/30","10/20","0/10"];
 	var years;
@@ -368,12 +368,6 @@ function handleClick(d, i){
             var interval = setInterval(d.Mean_UserCritic_Score);
             var year = d.Year_of_Release;
             
-            grouped.push({
-                year: year,
-                interval: interval,
-                value: d.Mean_UserCritic_Score
-            });
-            
             var yearInd = years.findIndex(x=> x == year);
             var intInd = scoreIntervals.findIndex(x => x == interval);
 
@@ -382,7 +376,17 @@ function handleClick(d, i){
                 aux[yearInd][intInd] = 1;
             else
                 aux[yearInd][intInd]+= 1;
+            
+            grouped.push({
+                year: year,
+                interval: interval,
+                value: d.Mean_UserCritic_Score,
+                number: 0
+            });
+            
+
         });
+
         
         for(var i = 0; i< years.length; i++){
             for(var j = 0; j < scoreIntervals.length; j++){
@@ -397,7 +401,13 @@ function handleClick(d, i){
             }
         }
         
-        
+        for(var i = 0; i < grouped.length; i++){
+            var yearInd = years.findIndex(x=> x == grouped[i].year);
+            var intInd = scoreIntervals.findIndex(x => x == grouped[i].interval);
+            var element = aux[yearInd][intInd];
+            
+            grouped[i].number = element;
+        }
         
         var colorScale = d3.scaleQuantile()
                         .domain([0, buckets - 1, d3.max(grouped, function(d){      
@@ -423,8 +433,9 @@ function handleClick(d, i){
                     return colorScale(getNumber(d))
                 return getNumber(d);
             })
-            .on("mousedown",handleClick);
-
+            .on("mousedown",handleClick)
+            .append("svg:title")
+              .text(function(d) { return d.number; });
         
         
         var legend = svg.selectAll(".legend-heatmap")
