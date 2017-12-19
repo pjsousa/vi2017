@@ -74,7 +74,6 @@ var y_variable = "Rating";
     //aux function used to calculate the total amount of ratings per year
     const sum = (accumulator, currentValue) => accumulator + currentValue;
     
-    
     //color vars
     var default_bar_color   = "blue";
     var hover_bar_color     = "cyan";
@@ -207,14 +206,32 @@ var y_variable = "Rating";
                         .on("mouseover", function(d) {current_year_selected = d3.select(this).attr("year").substring(0,4);
                                                       dispatch.call("RatingHover", d, d); } )
                     })
-                    ;   
+                    ;
         
-    //modifications to the axis    
+        
+        //add count at the bottom of the plot
+        add_count_to_plot();
+        //modifications to the axis    
         modify_axis();  
         
         
        } 
         
+        //add count at the bottom of the plot
+        function add_count_to_plot()
+        {
+            svg.selectAll("svg.small_multiples")
+                .append("g")
+                .attr("count", function(d) {var count = d3.select(this.parentNode).attr("count"); return count; } )
+                .append("text")
+                    .attr("text-anchor", "start")
+                    .attr("x", small_mult_width/3)
+                    .attr("font-size", 12)
+                    .attr("y", small_mult_height - title_padding_y)
+                    .text( function(d) { var count = d3.select(this.parentNode).attr("count"); return "Count: " + count; } )
+            ;
+        }
+    
         function modify_axis()
         {
             var gY = svg.selectAll("g.y.axis");
