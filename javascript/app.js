@@ -91,6 +91,12 @@
 			drawt5(row_numbers);
 		}
 
+		if(from=="t4"){
+			drawt2(row_numbers);
+			drawclv(row_numbers);
+			drawt5(row_numbers);
+		}
+
 		if(from=="t5"){
 			drawclv(row_numbers);
 			drawt2(row_numbers);

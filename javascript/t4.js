@@ -42,8 +42,17 @@ var y_variable = "Rating";
     var bar_height = parseInt(small_mult_height / number_of_ratings - 5);
     var space_bet_bar_y = 4;
     
-    //
     var first_bar = true;
+
+    var localstate = {
+        datasetRows: [],
+        drawnRows: [],
+        selectedRows: [],
+        selectedAttr: [],
+        highlightedRows: [],
+        data_slices: {},
+        clearbrush_quirk: null
+    };
     
     //axis
     var rating_domain = ["E", "T", "M", "E10", "AO", "EC", "KA", "RP", "None"];
@@ -58,8 +67,8 @@ var y_variable = "Rating";
     
     //color vars
     var default_bar_color   = "blue";
-    var hover_bar_color     = "cyan";
-    var clicked_bar_color  = "deeppink";
+    var hover_bar_color     = "rgb(255, 86, 0)";
+    var clicked_bar_color  = "rgba(255, 86, 0, 0.5)";
     
     
     //VARS PARA O PEDRO USAR LÁ FORA
@@ -78,6 +87,14 @@ var y_variable = "Rating";
         current_rating_selected = d;
         clicked_bar.attr("fill", clicked_bar_color);
         console.log("Rating: " + current_rating_selected + " Year: " + current_year_selected);
+
+        localstate.selectedAttr = [current_rating_selected, current_year_selected];
+        slice_util.setSlice(localstate.data_slices, "t4", "Rating", "Rating", current_rating_selected)
+        slice_util.setSlice(localstate.data_slices, "t4", "Year_of_Release", parseInt(current_year_selected), parseInt(current_year_selected));
+
+        localstate.selectedRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+        appdispatch.dataslice.call("dataslice", this, "t4", localstate.selectedRows);
     }
     
     //hover over a bar, displays the rating (d) and year ( current_year_selected )
@@ -100,6 +117,7 @@ var y_variable = "Rating";
 //DATA RELATED   
         //dataset contains the count of each rating for each year p.e. 
         //{Year_of_Release: "2001.0", E: 205, T: 107, M: 27, E10+: 0, …}
+        localstate.datasetRows = app_row_numbers;
         dataset = data_utils.get_rating_counts(app_row_numbers);
         
         dataset.sort(function(x,y) { return d3.descending(x.Year_of_Release, y.Year_of_Release)} );
@@ -113,7 +131,7 @@ var y_variable = "Rating";
                 //.data([0]).enter()
                 .append("svg")
                 .attr("id", "t4viewport")
-                .attr("width", w)
+                .attr("width", w+250)
                 .attr("height", h)
                 ;
 //GOOD ONE
@@ -314,72 +332,9 @@ var y_variable = "Rating";
             small_mult_height = h/ small_mult_per_column;
         };
     
+    localstate.data_slices = slice_util.slicerules_factory();
     
     window.drawt4 = drawt4;
     window.setSizest4 = setSizest4;
     
 })();
-    
-  /*  
-    
-var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-
-var y = d3.scale.linear().range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickFormat(d3.time.format("%Y-%m"));
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10);
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", 
-          "translate(" + margin.left + "," + margin.top + ")");
-
-d3.csv("bar-data.csv", function(error, data) {
-
-    data.forEach(function(d) {
-        d.date = parseDate(d.date);
-        d.value = +d.value;
-    });
-	
-  x.domain(data.map(function(d) { return d.date; }));
-  y.domain([0, d3.max(data, function(d) { return d.value; })]);
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-    .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", "-.55em")
-      .attr("transform", "rotate(-90)" );
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Value ($)");
-
-  svg.selectAll("bar")
-      .data(data)
-    .enter().append("rect")
-      .style("fill", "steelblue")
-      .attr("x", function(d) { return x(d.date); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); });
-
-    })*/
