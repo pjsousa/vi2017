@@ -202,6 +202,33 @@
 
 		drawHighlightt5();
 	};
+    
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-correlation");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This graph displays the correlation between the number of global sales and the score values for each game. You can perform a zoom on the graph, by clicking and dragging the mouse over the graph, selecting the section you want to zoom in to. To zoom out you double click the mouse button. The games displayed in this graph are filtered according to the the filters of the other graphs, or according to a selected component.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
 
 	function drawHighlightt5(from_target){
 		var row_nums = appstate.highlightedRows;
@@ -688,6 +715,7 @@
 		initt5();
 
 		updatePlot(localstate.datasetRows);
+        showInfo();
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();

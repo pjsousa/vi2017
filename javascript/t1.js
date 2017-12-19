@@ -384,9 +384,9 @@
 			.attr("id","t1clip")
 			.append("rect")
 			.attr("x",xrange[0])
-			.attr("y",yrange[0])
+			.attr("y",yrange[0]-10)
 			.attr("width",xrange[1]-xrange[0])
-			.attr("height",yrange[1]-yrange[0]);
+			.attr("height",yrange[1]-yrange[0]+10);
 		
 				svg.select(".y-axis-label").remove();
 				svg.select(".y-axis").remove();
@@ -419,7 +419,7 @@
 			.style("text-anchor", "end")
 			.text("Year");
 				
-				svg.select(".line1").remove();
+        svg.select(".line1").remove();
 		svg.append("path")
 			.datum(dataset) 
 			.attr("class", "line1")
@@ -429,7 +429,7 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline);
 
-				svg.select(".line2").remove();
+        svg.select(".line2").remove();
 		svg.append("path")
 			.datum(dataset)
 			.attr("class", "line2")
@@ -439,7 +439,7 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline2);
 		
-				svg.select(".line3").remove();
+        svg.select(".line3").remove();
 		svg.append("path")
 			.datum(dataset)
 			.attr("class", "line3")
@@ -455,7 +455,7 @@
 				
 		all_points = _.flatten(all_points);
 				
-				svg.selectAll("g.g-focus").remove();
+        svg.selectAll("g.g-focus").remove();
 		var gfocus = svg.selectAll("g.g-focus")
 			.data([0])
 			.enter().append("g")

@@ -213,6 +213,33 @@
 		return result;
 	};
 
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-bars");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This graph displays the top 10 best selling games in a specific year, according to their global sales. On the right most section of the graph, it is display the game that is hightlighted in other graphs. You can chose the filters for the games by selecting one of the values in each of the drop down menus. If you click on the button next to the filters, you can propagate them to the other graphs.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
 	function initDropdowns(){
 		if(!initdropdowns_happenedonce){
 			initdropdowns_happenedonce = true;
@@ -754,6 +781,7 @@
 		initDropdowns();
 		initt2();
 		updatePlot(localstate.drawnRows);
+        showInfo();
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();
