@@ -1,12 +1,12 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-	var padding = 20;
-	var xoffset = 30;
+	var padding = 30;
+	var xoffset = 40;
 	var yoffset = 30;
-	var xcutoff = 30;
+	var xcutoff = 50;
 	var ycutoff = 0;
-	var r = 2;
+	var r = 3;
 	var voronoiRadius = 30;
 
 	var y_var = "Global_Sales";
@@ -16,6 +16,7 @@
 
 	var localstate = {
 		datasetRows: [],
+		drawnRows: [],
 		selectedRows: [],
 		highlightedRows: [],
 		data_slices: {},
@@ -120,24 +121,30 @@
 			localstate.clearbrush_quirk = false;
 		}
 
-		localstate.data_slices = brushedNodes;
-		slice_util.setSlice(appstate.data_slices, "t5", x_var, 
-												xscale.domain()[0], xscale.domain()[1])
-		slice_util.setSlice(appstate.data_slices, "t5", y_var, 
-												yscale.domain()[1], yscale.domain()[0])
+		localstate.drawnRows = brushedNodes;
+		// global slice
+		// slice_util.setSlice(appstate.data_slices, "t5", x_var, 
+		// 										xscale.domain()[0], xscale.domain()[1])
+		// slice_util.setSlice(appstate.data_slices, "t5", y_var, 
+		// 										yscale.domain()[1], yscale.domain()[0])
+		// local slice
+		// slice_util.setSlice(localstate.data_slices, "t5", x_var, 
+		// 										xscale.domain()[0], xscale.domain()[1])
+		// slice_util.setSlice(localstate.data_slices, "t5", y_var, 
+		// 										yscale.domain()[1], yscale.domain()[0])
 
 
 		// ### X) Calculate Voronoi points
-		voronoi = vizutils.processVoronoi(brushedNodes, valueX, valueY, 
+		voronoi = vizutils.processVoronoi(localstate.drawnRows, valueX, valueY, 
 																		[xrange[0], yrange[0]], [xrange[1], yrange[1]])
 
 		// ### X) generate a quadtree for faster lookups for brushing
-		quadtree = vizutils.processQuadtree(brushedNodes, valueX, valueY)
+		quadtree = vizutils.processQuadtree(localstate.drawnRows, valueX, valueY)
 
 		// update plot
 		updatePlot(localstate.datasetRows);
 
-		appdispatch.dataslice.call("dataslice", this, "t5");
+		appdispatch.dataslice.call("dataslice", this, "t5", localstate.drawnRows);
 	});
 
 	function axisOrigins(xdomain, ydomain, xrange, yrange, xscale, yscale){
@@ -195,6 +202,33 @@
 
 		drawHighlightt5();
 	};
+    
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-correlation");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This graph displays the correlation between the number of global sales and the score values for each game. The score values are the mean of the difference between the critics and the users scores. You can perform a zoom on the graph, by clicking and dragging the mouse over the graph, selecting the section you want to zoom in to. To zoom out you double click the mouse button. The games displayed in this graph are filtered according to the the filters of the other graphs, or according to a selected component.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
 
 	function drawHighlightt5(from_target){
 		var row_nums = appstate.highlightedRows;
@@ -293,7 +327,6 @@
 	function setSizest5(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-		console.log(w,h);
 	};
 
 	function initt5(){
@@ -301,11 +334,11 @@
 
 		// 1) Settle the values for the x and y domains (this are the values in the data)
 		ydomain = [];
-		ydomain[0] = d3.max(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });
-		ydomain[1] = d3.min(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });;
+		ydomain[0] = 1.05 * d3.max(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });
+		ydomain[1] = 0.95 * d3.min(dataset, function(d){ return parseFloat(raw_value(d, y_var)); });;
 		xdomain = [];
-		xdomain[0] = d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });;
-		xdomain[1] = d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
+		xdomain[0] = 0.95 * d3.min(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });;
+		xdomain[1] = 1.05 * d3.max(dataset, function(d) { return parseFloat(raw_value(d, x_var)) });
 
 
 
@@ -377,7 +410,8 @@
 		// X) Append group for Axis and background grid
 		svg.selectAll("g.background")
 			.data([0]).enter().append("g")
-				.attr("class", "background");
+				.attr("class", "background")
+				.attr("clip-path","url(#t5clip)");
 
 		svg.selectAll("g.x.axis")
 			.data([0]).enter().append("g")
@@ -403,6 +437,7 @@
 		svg.selectAll("g.highlight")
 			.data([0]).enter().append("g")
 				.attr("class", "highlight")
+				.attr("clip-path","url(#t5clip)")
 
 
 
@@ -596,6 +631,36 @@
 			.transition(t1)
 			.attr("cx",valueX)
 			.attr("cy",valueY)
+
+
+		// 8) Draw the regression line and the pearson's r value
+		var corr = data_utils.compute_personsr_linregress(dataset, x_var, y_var);
+
+		svg.select("g.datapoints").selectAll("line.corr-line")
+			.data([0])
+			.enter().append("line")
+				.attr("class", "corr-line");
+		svg.select("g.datapoints").selectAll("line.corr-line")
+				.attr("x1", function(d){ return xscale(xdomain[0]) - 5; })
+				.attr("y1", function(d){ return yscale(corr["slope"]*xdomain[0] + corr["intercept"])})
+				.attr("x2", function(d){ return xscale(xdomain[1]) - 5; })
+				.attr("y2", function(d){ return yscale(corr["slope"]*xdomain[1] + corr["intercept"]); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "red");
+
+		// draws the pearsons r value of the right handside of the line
+		svg.select("g.datapoints").selectAll("text.pearsonsr")
+			.data([0])
+			.enter().append("text")
+				.attr("class", "pearsonsr")
+		svg.select("g.datapoints").selectAll("text.pearsonsr")
+				.attr("y", function(d){ return yscale(corr["slope"]*xdomain[1] + corr["intercept"]); })
+				.attr("x", function(d){ return xscale(xdomain[1]) + 5; })
+				.attr("fill", "red")
+				.style("text-anchor", "start")
+				.style("font-size", "10px")
+				.text(function(d){ return "r: " + d3.format(".3f")(corr["pearsonr"]); });
+
 	};
 
 	function drawt5(app_row_numbers, svgelement){
@@ -644,12 +709,16 @@
 			svg = d3.select(svgelement);
 		}
 
-		localstate.datasetRows = appstate.datasetRows.map(function(e){ return e; });
+		localstate.datasetRows = app_row_numbers;
+		localstate.drawnRows = localstate.datasetRows
 
 		initt5();
 
 		updatePlot(localstate.datasetRows);
+        showInfo();
 	};
+
+	localstate.data_slices = slice_util.slicerules_factory();
 
 	window.drawt5 = drawt5;
 	window.setSizest5 = setSizest5;

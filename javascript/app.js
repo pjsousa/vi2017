@@ -50,7 +50,7 @@
 			drawHighlightt5(from);
 		}
 
-		if(from != "dtl"){
+		if(from != "dtl" && from != "t1"){
 			drawdtl(from);
 		}
 
@@ -72,34 +72,37 @@
 			drawHighlightclv();
 		}
 
+		cleardropdowngamefind();
 	});
 
-	appdispatch.dataslice.on("dataslice", function(from){
-		appstate.datasetRows = d3.range(datasources["data_v2"].length);
-		appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
+	appdispatch.dataslice.on("dataslice", function(from, row_numbers){
+		//appstate.datasetRows = d3.range(datasources["data_v2"].length);
+		//appstate.datasetRows = slice_util.sliceRows(appstate.data_slices, appstate.datasetRows);
 
-		
-		// if(from!="t1"){
-		// 	drawt1(appstate.datasetRows);
-		// }
-
-		if(from!="t5"){
-			drawt5(appstate.datasetRows);
+		if(from=="t1"){
+			drawt2(row_numbers);
+			drawclv(row_numbers);
+			drawt5(row_numbers);
 		}
 
-		
-		drawt2(appstate.datasetRows);
-		
+		if(from=="t6"){
+			drawt2(row_numbers);
+			drawclv(row_numbers);
+			drawt5(row_numbers);
+		}
 
-		if(from!="clv"){
-			drawclv(appstate.datasetRows);
+		if(from=="t5"){
+			drawclv(row_numbers);
+			drawt2(row_numbers);
+		}
+
+		if(from!="t6"){
+			clearSelectiont6()
 		}
 
 	});
 
 	function main(){
-		console.log("HEY! Main here. Lets start!")
-		
 		setVizSizes();
 		data_utils.fetch_alldata();
 	};
@@ -124,7 +127,7 @@
 				setSizesdtl(this.getClientRects()[0]);
 			}
 			else if(_id == "t6Viz"){
-				//setSizest6(this.getClientRects()[0])
+				setSizest6(this.getClientRects()[0]);
 			}
 			else if(_id == "t4Viz"){
 				setSizest4(this.getClientRects()[0]);
@@ -133,7 +136,7 @@
 	}
 
 	function data_ready(){
-		console.log("All data fetched!!!");
+		initDropDownFind();
 
 		appstate.data_slices = slice_util.slicerules_factory()
 		appstate.datasetRows = d3.range(datasources["data_v2"].length);
@@ -143,7 +146,8 @@
 		drawt1(appstate.datasetRows);
 		drawt5(appstate.datasetRows);
 		drawt2(appstate.datasetRows);
-        drawt4(appstate.datasetRows);
+    drawt4(appstate.datasetRows);
+    drawt6(appstate.datasetRows);
 		drawclv(appstate.datasetRows);
 	};
 

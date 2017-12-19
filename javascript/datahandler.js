@@ -108,7 +108,6 @@
 		 Quando todos os ficheiros retornam, chama o main.
 		 */
 		done_callback = done_callback || function(){ };
-		console.log("Lets fetch ALLLLLL THE DATAS!!!");
 		data_keys.forEach(function(itr, idx){
 			var ext = file_extensions[idx];
 			var fetch_path = "data/" + itr + "." +ext;
@@ -284,7 +283,7 @@
 			return result;
 	};
 
-	function get_sales_sum(rows, ref_col_name, ref_col_value){
+	function get_sales_sum(rows, ref_col_value){
 		/*
 			get_sum(null, "Genre","Action")  /// devolve o somatorio dos valores das Sales em cada ano em relaçao ao Genre de Action
 			> [
@@ -314,14 +313,14 @@
 				var new_row = {};
 				for(var i = 0; i < datasources.data_v2.length; i++){
 						var row = datasources.data_v2[i];
-						if(row.Year_of_Release == year && row[ref_col_name]==ref_col_value){
+						if(row.Year_of_Release == year && (row["Genre"]==ref_col_value || ref_col_value == null)){
 								JP += parseFloat(row["JP_Sales"]);
 								EU += parseFloat(row["EU_Sales"]);
 								NA += parseFloat(row["NA_Sales"]);
 						}
 				}
 				new_row["Year_of_Release"] = year;
-				new_row[ref_col_name] = ref_col_value;
+				new_row["Genre"] = ref_col_value;
 				new_row["JP_Sales"] = JP;
 				new_row["EU_Sales"] = EU;
 				new_row["NA_Sales"] = NA;
@@ -431,7 +430,6 @@
 
 	function compute_personsr_linregress(row_nums, x_var, y_var){
 		/*
-			@TODO: Talvez mudar isto daqui para ser genérico entre qualquer par de colunas?
 
 			Por um lado, isto deviam ser 2 funções:
 				- compute pearson's r (a correlação)
@@ -493,6 +491,30 @@
 		return result;
 	};
 
+	function sortBy(row_numbers, col_name){
+		var result = row_numbers.map(function(e){ return e; });
+
+		result = _.sortBy(result, [function(a){ 
+			var _v = read_value(a, col_name);
+			var _vParsed = parseFloat(_v);
+
+			return  isNaN(_vParsed) ? _v : _vParsed}]);
+
+		return result;
+	};
+
+	function get_sortindex(row_numbers, col_name, desc){
+		var result = sortBy(row_numbers, col_name);
+
+		result = row_numbers.map(function(e){ return result.indexOf(e); });
+
+		if (desc){
+			result = result.reverse();
+		}
+
+		return result;
+	};
+
 	// isto faz com que a datasources exista nos outros ficheiros.
 	window.datasources = datasources;
 	window.data_utils = {
@@ -506,6 +528,8 @@
 		column_hasvalue: column_hasvalue,
 		read_value: read_value,
 		compute_personsr_linregress: compute_personsr_linregress,
-		get_uniquevalues_dataset: get_uniquevalues_dataset
+		get_uniquevalues_dataset: get_uniquevalues_dataset,
+		sortBy: sortBy,
+		get_sortindex: get_sortindex
 	}
 })();
