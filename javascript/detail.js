@@ -55,7 +55,8 @@
 
 		var total_var = "Global_Sales";
 		var detail_vars = ["JP_Sales", "EU_Sales", "NA_Sales"];
-		var sales_colors = [ "#e41a1c", "#377eb8", "#4daf4a" ]; // these were taken from color brewer
+		//var sales_colors = [ "#e41a1c", "#377eb8", "#4daf4a" ]; // these were taken from color brewer
+		var sales_colors = [ "#cf171a", "#4e92ca", "#4daf4a" ]; // these were +- taken from color brewer [68%, 70%, 49%]
 		var detail_vars_captions = ["Japan", "Europe", "N. America"];
 
 		var isLogScale = false;
