@@ -142,7 +142,7 @@
 
 		g.selectAll("rect.highlight")
 			.attr("opacity", 1)
-			.attr("fill","rgb(255,0,255)")
+			.attr("fill","rgb(255, 86, 0)")
 			.style("pointer-events", "none")
 			.attr("x",function(d) {
 				var i = rows_order.indexOf(d);
@@ -213,6 +213,33 @@
 		return result;
 	};
 
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-bars");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This visualization displays the top 10 best selling games in a specific year, according to their global sales. On the right most section of the visualization, it is displayed the game that is hightlighted in the others. You can chose  the local filters for the games by selecting one of the values in each of the drop down menus. If you click on the button next to the dropdowns, the current local filtering will be propagated to the 'Most Praised' visualization.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
 	function initDropdowns(){
 		if(!initdropdowns_happenedonce){
 			initdropdowns_happenedonce = true;
@@ -717,7 +744,7 @@
 			.data(dataset)
 			.enter().append("rect")
 			.attr("class", "data-point")
-			.attr("fill","rgb(255,0,255)")
+			.attr("fill","rgb(255, 86, 0)")
 			.attr("opacity", 1)
 		svg.select("g.datapoints-h").selectAll("rect.data-point")
 			.data(dataset)
@@ -754,6 +781,7 @@
 		initDropdowns();
 		initt2();
 		updatePlot(localstate.drawnRows);
+        showInfo();
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();

@@ -11,7 +11,7 @@
 
 	var x_variable = "Year_of_Release";
 	var y_variable = ["JP_Sales", "EU_Sales", "NA_Sales"];
-	var colors = [ "#e41a1c", "#377eb8", "#4daf4a" ]; // these were taken from color brewer
+	var colors = [ "#cf171a", "#4e92ca", "#4daf4a" ]; // these were +- taken from color brewer [68%, 70%, 49%]
 
 	var dispatch = d3.dispatch("gamehover", "gameout", "dropdowvals");
 
@@ -338,10 +338,11 @@
 		var legendNames = ["Japan", "Europe", "North America"];
 		legendNames.forEach(function(d,i){
 			
-			legend.append("circle")
-				.attr("r",3)
-				.attr("cx",10)
-				.attr("cy",legendSpace * i/2 + legendSpace - 5)
+			legend.append("rect")
+				.attr("x",5)
+				.attr("y",legendSpace * i/2 + legendSpace - 10)
+				.attr("width", 4)
+				.attr("height", 10)
 				.attr("class","legend")
 				.style("fill",function(d){return colors[i];});
 											
@@ -384,9 +385,9 @@
 			.attr("id","t1clip")
 			.append("rect")
 			.attr("x",xrange[0])
-			.attr("y",yrange[0])
+			.attr("y",yrange[0]-10)
 			.attr("width",xrange[1]-xrange[0])
-			.attr("height",yrange[1]-yrange[0]);
+			.attr("height",yrange[1]-yrange[0]+10);
 		
 				svg.select(".y-axis-label").remove();
 				svg.select(".y-axis").remove();
@@ -419,7 +420,7 @@
 			.style("text-anchor", "end")
 			.text("Year");
 				
-				svg.select(".line1").remove();
+        svg.select(".line1").remove();
 		svg.append("path")
 			.datum(dataset) 
 			.attr("class", "line1")
@@ -429,7 +430,7 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline);
 
-				svg.select(".line2").remove();
+        svg.select(".line2").remove();
 		svg.append("path")
 			.datum(dataset)
 			.attr("class", "line2")
@@ -439,7 +440,7 @@
 			.attr("stroke-width",3)
 			.attr("d",valueline2);
 		
-				svg.select(".line3").remove();
+        svg.select(".line3").remove();
 		svg.append("path")
 			.datum(dataset)
 			.attr("class", "line3")
@@ -455,7 +456,7 @@
 				
 		all_points = _.flatten(all_points);
 				
-				svg.selectAll("g.g-focus").remove();
+        svg.selectAll("g.g-focus").remove();
 		var gfocus = svg.selectAll("g.g-focus")
 			.data([0])
 			.enter().append("g")
@@ -502,9 +503,9 @@
 				focus.select(".y-hover-line").attr("x2", w + w);
 
 				focus.style("display", null);
-				d3.selectAll(".hover-line").style("stroke","fuchsia");//colors[y_variable.indexOf(column_name)]);
+				d3.selectAll(".hover-line").style("stroke","rgb(255, 86, 0)");//colors[y_variable.indexOf(column_name)]);
 				d3.selectAll(".focus").style("stroke","black");
-				d3.selectAll(".focus circle").style("stroke","fuchsia");//colors[y_variable.indexOf(column_name)]);
+				d3.selectAll(".focus circle").style("stroke","rgb(255, 86, 0)");//colors[y_variable.indexOf(column_name)]);
 			})
 			.on("mouseout", function(d){
 				// lets notify ourselves!

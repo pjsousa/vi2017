@@ -289,6 +289,7 @@ function handleClick(d, i){
     
 	function initt6(){	
         dataset = data_utils.read_column(localstate.drawnRows,["Mean_UserCritic_Score","Year_of_Release"]);
+
         d3.select("#t6Viz > img").remove();
         //var row_indexes = data_utils.get_index(["Genre"],["Shooter"]);
         //var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
@@ -423,6 +424,7 @@ function handleClick(d, i){
                 return getNumber(d);
             })
             .on("mousedown",handleClick);
+
         
         
         var legend = svg.selectAll(".legend-heatmap")

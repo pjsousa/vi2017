@@ -287,7 +287,7 @@
 			.data([0, 1])
 			.enter().append("rect")
 			.attr("class", "data-point")
-			.attr("fill","rgb(255,127,0)")
+			.attr("fill","rgb(255, 197, 0)")
 			.attr("opacity", 1)
 		svg.select("g.datapoints").selectAll("rect.data-point")
 			.data([0, 1])

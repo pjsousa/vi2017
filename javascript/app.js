@@ -91,6 +91,12 @@
 			drawt5(row_numbers);
 		}
 
+		if(from=="t4"){
+			drawt2(row_numbers);
+			drawclv(row_numbers);
+			drawt5(row_numbers);
+		}
+
 		if(from=="t5"){
 			drawclv(row_numbers);
 			drawt2(row_numbers);
@@ -129,8 +135,8 @@
 			else if(_id == "t6Viz"){
 				setSizest6(this.getClientRects()[0]);
 			}
-			else if(_id == "t4Panel"){
-				//setSizest4(this.getClientRects()[0])
+			else if(_id == "t4Viz"){
+				setSizest4(this.getClientRects()[0]);
 			}
 		})
 	}
@@ -146,7 +152,8 @@
 		drawt1(appstate.datasetRows);
 		drawt5(appstate.datasetRows);
 		drawt2(appstate.datasetRows);
-        drawt6(appstate.datasetRows);
+    drawt4(appstate.datasetRows);
+    drawt6(appstate.datasetRows);
 		drawclv(appstate.datasetRows);
 	};
 

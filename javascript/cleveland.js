@@ -102,6 +102,33 @@
 		drawclv(localstate.drawnRows);
 	};
 
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-cleveland");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This visualization ilustrates the top 15 best selling games, according to their global sales. You can sort the games by their name or by their sales numbers, by clicking the sort button at the top of the panel. The games displayed in this visualization change according to the selected games in other visualizations, or their choosen filters.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
 	function drawHighlightclv(from_target){
 		var row_nums = appstate.highlightedRows;
 		
@@ -118,7 +145,7 @@
 		g.selectAll("circle.highlight")
 			.attr("r", r+1)
 			.style("pointer-events", "none")
-			.attr("fill", "fuchsia")
+			.attr("fill", "rgb(255, 86, 0)")
 			.attr("cx", function(row_num){ return xscale(value(row_num, x_var))})
 			.attr("cy", function(row_num){ 
 				var i = rows_order.indexOf(row_num);
@@ -579,7 +606,7 @@
 			.delay(500)
 			.duration(500)
 			.attr("r",r)
-			.attr("fill","rgb(255,0,255)")
+			.attr("fill","rgb(255, 86, 0)")
 			.style("cursor", "none")
 			.attr("cx",function(d, i) {
 				var v = value(d, x_var);
@@ -603,6 +630,7 @@
 
 		initclv();
 		updatePlot(localstate.drawnRows);
+        showInfo();
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();

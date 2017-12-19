@@ -202,6 +202,33 @@
 
 		drawHighlightt5();
 	};
+    
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-correlation");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This visualization displays the correlation between the number of global sales and the score values for each game. The score values are the mean of the difference between the critics and the users scores. You can perform a zoom on the visualization, by clicking and dragging the mouse over the visualization, selecting the section you want to zoom in to. To zoom out you double click the mouse button. The games displayed in this visualization are filtered according to the the selections and clicks of the other visualizations.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
 
 	function drawHighlightt5(from_target){
 		var row_nums = appstate.highlightedRows;
@@ -219,7 +246,7 @@
 
 		g.selectAll("circle.x-crossair.y-crossair")
 			.style("pointer-events", "none")
-			.attr("fill", "fuchsia")
+			.attr("fill", "rgb(255, 86, 0)")
 			.attr("cx", valueX)
 			.attr("cy", valueY)
 
@@ -469,7 +496,7 @@
 					.attr("y2", -1000) // this value doesn't matter. we just don't want to see it right away
 					.attr("stroke-width", 1)
 					.style("pointer-events", "none")
-					.attr("stroke", "fuchsia");
+					.attr("stroke", "rgb(255, 86, 0)");
 
 			// Draw the X crossair
 			svg.select("g.highlight").selectAll("line.x-crossair")
@@ -483,7 +510,7 @@
 					.attr("y2", yrange[1]) 
 					.attr("stroke-width", 1)
 					.style("pointer-events", "none")
-					.attr("stroke", "fuchsia");
+					.attr("stroke", "rgb(255, 86, 0)");
 
 
 			// 10) Place tooltips
@@ -495,7 +522,7 @@
 					.style("position", "absolute")
 					.style("z-index", "10")
 					.style("opacity", 0)
-					.style("border", "solid 3px rgba(0,0,0,0.7)")
+					.style("border", "solid 3px rgba(255, 86, 0,0.7)")
 					.style("background-color", "rgba(255,255,255,0.7)")
 					.style("pointer-events", "none")
 					.style("padding", "5px 10px")
@@ -688,6 +715,7 @@
 		initt5();
 
 		updatePlot(localstate.datasetRows);
+        showInfo();
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();
