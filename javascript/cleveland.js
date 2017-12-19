@@ -102,6 +102,33 @@
 		drawclv(localstate.drawnRows);
 	};
 
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-cleveland");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "This graph ilustrates the top 15 best selling games, according to their global sales. You can sort the games by their name or by their sales numbers, by clicking the button at ________. The games displayed in this graph change according to the selected games in other graphs, or their choosen filters.";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
 	function drawHighlightclv(from_target){
 		var row_nums = appstate.highlightedRows;
 		
@@ -603,6 +630,7 @@
 
 		initclv();
 		updatePlot(localstate.drawnRows);
+        showInfo();
 	};
 
 	localstate.data_slices = slice_util.slicerules_factory();

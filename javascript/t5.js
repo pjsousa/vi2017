@@ -212,7 +212,7 @@
         // When the user clicks on the button, open the modal 
         btn.onclick = function() {
             modal.style.display = "block";
-            text.innerHTML = "This graph displays the correlation between the number of global sales and the score values for each game. You can perform a zoom on the graph, by clicking and dragging the mouse over the graph, selecting the section you want to zoom in to. To zoom out you double click the mouse button. The games displayed in this graph are filtered according to the the filters of the other graphs, or according to a selected component.";
+            text.innerHTML = "This graph displays the correlation between the number of global sales and the score values for each game. The score values are the mean of the difference between the critics and the users scores. You can perform a zoom on the graph, by clicking and dragging the mouse over the graph, selecting the section you want to zoom in to. To zoom out you double click the mouse button. The games displayed in this graph are filtered according to the the filters of the other graphs, or according to a selected component.";
         }
 
         // When the user clicks on <span> (x), close the modal
