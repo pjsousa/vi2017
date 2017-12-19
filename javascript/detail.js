@@ -155,6 +155,9 @@
 
 		var row_number = appstate.highlightedRows[0];
 
+		var score_counts = [data_utils.read_value(row_number, user_var_c), 
+									data_utils.read_value(row_number, critic_var_c)]
+
 		var svg = d3.select("#dtlPanel").selectAll("#scoresViz");
 
 		svg
@@ -337,7 +340,7 @@
 				var v = data_utils.read_value(row_number, _var[i]);
 				var result;
 
-				if (v < 0){
+				if (v < 0 || score_counts[i] < 0){
 					result = yscale(50);
 				}
 				else{
@@ -351,7 +354,7 @@
 				var v = data_utils.read_value(row_number, _var[i]);
 				var result;
 
-				if (v < 0){
+				if (v < 0 || score_counts[i] < 0){
 					result = "Unknown";
 				}
 				else{
@@ -364,8 +367,8 @@
 			var dtl = d3.select("#dtlPanel");
 
 			dtl.selectAll("#usercritic_diff").html(data_utils.read_value(row_number, "Critic_User_Diff"));
-			dtl.selectAll("#user_count").html(data_utils.read_value(row_number, "User_Count"));
-			dtl.selectAll("#critc_count").html(data_utils.read_value(row_number, "Critic_Count"));
+			dtl.selectAll("#user_count").html(Math.max(score_counts[0],0));
+			dtl.selectAll("#critc_count").html(Math.max(score_counts[1],0));
 	};
 
 	window.drawdtl = drawdtl;

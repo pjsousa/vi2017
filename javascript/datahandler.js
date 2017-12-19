@@ -348,7 +348,6 @@
 
 	function compute_personsr_linregress(row_nums, x_var, y_var){
 		/*
-			@TODO: Talvez mudar isto daqui para ser genérico entre qualquer par de colunas?
 
 			Por um lado, isto deviam ser 2 funções:
 				- compute pearson's r (a correlação)
