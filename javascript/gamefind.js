@@ -1,5 +1,5 @@
 ;(function(){
-	localstate = {
+	var localstate = {
 		dropdown_vals: [],
 		picked_value: null
 	}
@@ -8,7 +8,7 @@
 
 	dispatch.on("dropdowvals", function(idx, value_str){
 		var row_num = localstate.dropdown_vals[idx];
-		picked_value = row_num;
+		localstate.picked_value = row_num;
 		
 		d3.select("#cleargamefind")
 			.style("visibility", "visible")
@@ -54,9 +54,9 @@
 	};
 
 	function cleardropdowngamefind(){
-		var _pos = appstate.highlightedRows.indexOf(picked_value);
+		var _pos = appstate.highlightedRows.indexOf(localstate.picked_value);
 
-		if(picked_value == null){
+		if(localstate.picked_value == null){
 			return;
 		}
 
@@ -70,8 +70,8 @@
 			.style("visibility", "hidden")
 			.style("pointer-events", "none");
 
-		picked_value = null;
-		appdispatch.gameout.call("gameout", this, picked_value, "gamefind");
+		localstate.picked_value = null;
+		appdispatch.gameout.call("gameout", this, localstate.picked_value, "gamefind");
 	};
 
 	window.initDropDownFind = initDropDownFind;

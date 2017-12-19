@@ -39,7 +39,7 @@
 		$(valSelector).selectpicker('refresh');
 	};
 
-	function setValueList_values(valSelector, values_arr){
+	function setValueList_values(valSelector, values_arr, note_arr){
 		valSelector = valSelector || ".t2Values";
 
 		d3.selectAll(valSelector + " select option")
@@ -48,7 +48,8 @@
 		d3.select(valSelector + " select").selectAll("option")
 			.data(values_arr)
 			.enter().append("option")
-			.html(function(d){ return d; })
+				.attr("data-subtext", function(d,i){ return note_arr ? note_arr[i] : ""})
+				.html(function(d){ return d; })
 
 		$(valSelector).selectpicker('refresh');
 	}
@@ -63,6 +64,7 @@
 		$(target_dropdown).on('changed.bs.select', function (event, clickedIndex, selected, state) {
 			fn_callback.apply(this, [clickedIndex - 1, $(this).selectpicker('val')].concat(arguments));
 		});
+
 	};
 
 	dutil["read_atts"] = read_atts;

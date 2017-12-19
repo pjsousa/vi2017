@@ -4,9 +4,9 @@
 	var padding = 30;
 	var xoffset = 40;
 	var yoffset = 30;
-	var xcutoff = 40;
+	var xcutoff = 50;
 	var ycutoff = 0;
-	var r = 2;
+	var r = 3;
 	var voronoiRadius = 30;
 
 	var y_var = "Global_Sales";
@@ -604,6 +604,36 @@
 			.transition(t1)
 			.attr("cx",valueX)
 			.attr("cy",valueY)
+
+
+		// 8) Draw the regression line and the pearson's r value
+		var corr = data_utils.compute_personsr_linregress(dataset, x_var, y_var);
+
+		svg.select("g.datapoints").selectAll("line.corr-line")
+			.data([0])
+			.enter().append("line")
+				.attr("class", "corr-line");
+		svg.select("g.datapoints").selectAll("line.corr-line")
+				.attr("x1", function(d){ return xscale(xdomain[0]) - 5; })
+				.attr("y1", function(d){ return yscale(corr["slope"]*xdomain[0] + corr["intercept"])})
+				.attr("x2", function(d){ return xscale(xdomain[1]) - 5; })
+				.attr("y2", function(d){ return yscale(corr["slope"]*xdomain[1] + corr["intercept"]); })
+				.attr("stroke-width", 1)
+				.attr("stroke", "red");
+
+		// draws the pearsons r value of the right handside of the line
+		svg.select("g.datapoints").selectAll("text.pearsonsr")
+			.data([0])
+			.enter().append("text")
+				.attr("class", "pearsonsr")
+		svg.select("g.datapoints").selectAll("text.pearsonsr")
+				.attr("y", function(d){ return yscale(corr["slope"]*xdomain[1] + corr["intercept"]); })
+				.attr("x", function(d){ return xscale(xdomain[1]) + 5; })
+				.attr("fill", "red")
+				.style("text-anchor", "start")
+				.style("font-size", "10px")
+				.text(function(d){ return "r: " + d3.format(".3f")(corr["pearsonr"]); });
+
 	};
 
 	function drawt5(app_row_numbers, svgelement){

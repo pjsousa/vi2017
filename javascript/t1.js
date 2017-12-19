@@ -282,7 +282,7 @@
 		dataset.forEach(function(d) {
 			var date = d.Year_of_Release.split(".");
 			if(date[0]==-1){
-				date[0] = 1970;
+				date[0] = 1995;
 			}
 			d.Year_of_Release= parseTime(date[0]);
 		});
@@ -458,7 +458,7 @@
 		gfocus.selectAll("circle.data-points")
 			.data(all_points)
 			.enter().append("circle")
-				.attr("class", "data-points");        
+				.attr("class", "data-points");
 	
 		gfocus.selectAll("circle.data-points-hidden")
 			.data(all_points)

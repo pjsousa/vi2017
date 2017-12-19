@@ -243,9 +243,32 @@
 
 	// Create Event Handlers for mouse
 	function handleMouseOver(d, i) {
+
 	};
 
 	function handleMouseOut(d, i) {
+
+	};
+
+	function handleClick(d, i){
+		clearSelection()
+
+		var _fill = d3.select(this).style("fill");
+
+		d3.select(this)
+			.classed("selected", true)
+			.attr("data-fill", _fill)
+			.style("fill", "rgb(255,0,255)")
+
+		debugger;
+
+		appdispatch.dataslice.call("dataslice", this, "t6", localstate.drawnRows);
+	}
+
+	function clearSelection(){
+		d3.selectAll("rect.selected")
+			.style("fill", function(d){ return d3.select(this).attr("data-fill"); })
+			.classed("selected", false)
 	};
 	
 	function handleInformation(d){
@@ -378,6 +401,7 @@
 					return colorScale(getNumber(d))
 				return getNumber(d);
 			})
+			.on("mousedown",handleClick)
 			.on("mouseover",handleMouseOver)
 			.on("mouseout", handleMouseOut);
 		
