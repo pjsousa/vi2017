@@ -36,8 +36,6 @@
 		highlightedRows: [],
 		data_slices: {},
 		clearbrush_quirk: null,
-		selectedAttr: "Platform",
-		selectedValue: "PS2"
 	};
 
 	dispatch.on("dropdowatt", function(idx, value_str){
@@ -251,7 +249,7 @@
 	};
 
 	function handleClick(d, i){
-		clearSelection()
+		clearSelectiont6()
 
 		var _fill = d3.select(this).style("fill");
 
@@ -261,11 +259,18 @@
 			.style("fill", "rgb(255,0,255)")
 
 		debugger;
+		var interval_val = d.interval.split("/").map(function(d){ return parseFloat(d); })
+		slice_util.setSlice(localstate.data_slices, "t6", "Year_of_Release", 
+												parseInt(d.year), parseInt(d.year))
+		slice_util.setSlice(localstate.data_slices, "t6", "Mean_UserCritic_Score", 
+												interval_val[0], interval_val[1])
 
-		appdispatch.dataslice.call("dataslice", this, "t6", localstate.drawnRows);
+		localstate.selectedRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		appdispatch.dataslice.call("dataslice", this, "t6", localstate.selectedRows);
 	}
 
-	function clearSelection(){
+	function clearSelectiont6(){
 		d3.selectAll("rect.selected")
 			.style("fill", function(d){ return d3.select(this).attr("data-fill"); })
 			.classed("selected", false)
@@ -455,4 +460,5 @@
 	window.syncdropdownt6 = syncdropdownt6;
 	window.syncdropdownt6_click = syncdropdownt6_click;
 	window.cleardropdownt6_click = cleardropdownt6_click;
+	window.clearSelectiont6 = clearSelectiont6;
 })();

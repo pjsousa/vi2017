@@ -96,6 +96,10 @@
 			drawt2(row_numbers);
 		}
 
+		if(from!="t6"){
+			clearSelectiont6()
+		}
+
 	});
 
 	function main(){
