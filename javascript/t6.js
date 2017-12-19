@@ -97,7 +97,9 @@
         }
 
         // When the user clicks on <span> (x), close the modal
+        console.log(span);
         span.onclick = function() {
+        console.log(span);
             modal.style.display = "none";
         }
 
@@ -286,8 +288,8 @@ function handleClick(d, i){
     
     
 	function initt6(){	
-        
-		dataset = data_utils.read_column(localstate.drawnRows,["Mean_UserCritic_Score","Year_of_Release"]);
+        dataset = data_utils.read_column(localstate.drawnRows,["Mean_UserCritic_Score","Year_of_Release"]);
+
         d3.select("#t6Viz > img").remove();
         //var row_indexes = data_utils.get_index(["Genre"],["Shooter"]);
         //var dataset = data_utils.read_column(row_indexes,["Mean_UserCritic_Score","Year_of_Release"]);
@@ -421,7 +423,8 @@ function handleClick(d, i){
                     return colorScale(getNumber(d))
                 return getNumber(d);
             })
-			      .on("mousedown",handleClick);
+            .on("mousedown",handleClick);
+
         
         
         var legend = svg.selectAll(".legend-heatmap")
