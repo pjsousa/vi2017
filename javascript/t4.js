@@ -26,6 +26,8 @@ var y_variable = "Rating";
     var small_mult_height = 80;
     var space_bet_mult_y = 3;
     var space_bet_mult_x = 20;
+    var small_mult_padding_x = 8;
+    var small_mult_padding_y = 3;
     
     //title (header) of the small multiple dimensions
     var small_multiple_title_height = 20;
@@ -37,39 +39,19 @@ var y_variable = "Rating";
     
     //bar dimensions
     var bar_width = small_mult_width;
-    var bar_height = small_mult_height / number_of_ratings - 5;
-    var space_bet_bar_y = 5;
+    var bar_height = parseInt(small_mult_height / number_of_ratings - 5);
+    var space_bet_bar_y = 4;
     
     //
     var first_bar = true;
     
     //axis
-    var rating_domain = ["E", "T", "M", "E10", "AO", "EC", "KA", "RP", "Unknown"];
-    var range_divider = 80 / rating_domain.length;//trocar 60 por small_multiple_height
-    var rating_range = [0,range_divider, 2*range_divider, 3*range_divider, 4*range_divider, 5*range_divider, 6*range_divider, 7*range_divider, 8*range_divider];
+    var rating_domain = ["E", "T", "M", "E10", "AO", "EC", "KA", "RP", "None"];
+    var range_divider = parseInt(small_mult_height / rating_domain.length);//trocar 60 por small_multiple_height
+    var rating_range = [small_mult_padding_y, range_divider, 2*range_divider, 3*range_divider, 4*range_divider, 5*range_divider, 6*range_divider, 7*range_divider, 8*range_divider];
     
+    var yearly_max;
     
-    var wscale = d3.scaleLinear()
-                 .domain([0, 100])
-                 .range([0, small_mult_width - 20])
-    ;
-    
-    var hscale = d3.scaleOrdinal()
-                    .domain(rating_domain)
-                    .range(rating_range) //trocar 60 por small_multiple_height
-    ;
-    
-    var xaxis = d3.axisTop()
-                    .scale(wscale)
-                    .ticks(4)
-                    .tickFormat(d3.format(".0s"))
-    ;
-    
-    var yaxis = d3.axisLeft()
-                    .scale(hscale)
-                    .ticks(4)
-    
-    ;
     
     //aux function used to calculate the total amount of ratings per year
     const sum = (accumulator, currentValue) => accumulator + currentValue;
@@ -147,10 +129,10 @@ var y_variable = "Rating";
                     //this calculates the rating with the highest count for this year, so that this value can be used when doing percentages for each bar
                     .attr("max", function (d) {    var yearly_ratings = Object.values(d); 
                                                    yearly_ratings = yearly_ratings.slice(1, yearly_ratings.length);
-                                                   var max = yearly_ratings.reduce(function(a, b) {
+                                                   yearly_max = yearly_ratings.reduce(function(a, b) {
                                                     return Math.max(a, b);
                                                 });
-                                               return max; } ) 
+                                               return yearly_max; } ) 
                     .attr("count", function(d) {var yearly_ratings = Object.values(d);
                                                 yearly_ratings = yearly_ratings.slice(1, yearly_ratings.length);
                                                 var count = yearly_ratings.reduce(sum);
@@ -163,20 +145,30 @@ var y_variable = "Rating";
                         .attr("font-size", "1.1em")
                         //.attr("y", 10)
                         .text(function (d, i) { return d.Year_of_Release.substring(0, 4); } )
-        //eixos    
-        svg.selectAll("svg.small_multiples")
-                    .append("g")
-                        .attr("transform","translate(20, " + (small_multiple_title_height + title_padding_y) + ")")  
-                        .attr("class","x axis")
-                        .attr("width", small_mult_width - 20)
-                        .call(xaxis)  
-                    svg.selectAll("svg.small_multiples")
-                        .append("g")
-                        .attr("font-size", 20)
-                        .attr("transform","translate(20, " + (small_multiple_title_height + title_padding_y) + ")") 
-                        .attr("class", "y axis")
-                        .call(yaxis)
+        
 
+        //init axis
+                    var wscale = d3.scaleLinear()
+                             .domain([0, yearly_max])
+                             .range([0, small_mult_width - 20 - small_mult_padding_x])
+                    ;
+
+                    var hscale = d3.scaleOrdinal()
+                                    .domain(rating_domain)
+                                    .range(rating_range) //trocar 60 por small_multiple_height
+                    ;
+
+                    var xaxis = d3.axisTop()
+                                    .scale(wscale)
+                                    .ticks(2)
+                                    .tickFormat(d3.format(".0s"))
+                    ;
+
+                    var yaxis = d3.axisLeft()
+                                    .scale(hscale)
+                                    .ticks(4)
+
+                    ;
             //cada barra do multiple
             svg.selectAll("svg.small_multiples")
                     .each(function (itr) { 
@@ -190,9 +182,9 @@ var y_variable = "Rating";
                         .attr("y", function(d, i) {return calc_bar_y(d, i); } )
                         .attr("width", function(d) {    var thisValue = itr[d]; 
                                                         var parentXValue = d3.select(this.parentNode).attr("max");
-                                                        var finalWidth = ( thisValue / parentXValue ) * small_mult_width; 
+                                                        var finalWidth = ( thisValue / parentXValue ) * (small_mult_width - small_mult_padding_x - d3.select(this).attr("x")); 
 
-                                                        return finalWidth; } )
+                                                        return parseInt(finalWidth); } )
                         .attr("height", bar_height)
                         .attr("fill", default_bar_color)
                         .on("click", function (d) { current_year_selected = d3.select(this).attr("year").substring(0,4);
@@ -208,7 +200,20 @@ var y_variable = "Rating";
                     })
                     ;
         
-        
+                    //eixos    
+                    svg.selectAll("svg.small_multiples")
+                                .append("g")
+                                    .attr("transform","translate(20, " + (small_multiple_title_height + title_padding_y - 1) + ")")  
+                                    .attr("class","x axis")
+                                    .attr("width", small_mult_width - 20)
+                                    .call(xaxis) 
+                                svg.selectAll("svg.small_multiples")
+                                    .append("g")
+                                    .attr("font-size", 20)
+                                    .attr("transform","translate(20, " + (small_multiple_title_height + title_padding_y) + ")") 
+                                    .attr("class", "y axis")
+                                    .call(yaxis)
+
         //add count at the bottom of the plot
         add_count_to_plot();
         //modifications to the axis    
@@ -227,7 +232,7 @@ var y_variable = "Rating";
                     .attr("text-anchor", "start")
                     .attr("x", small_mult_width/3)
                     .attr("font-size", 12)
-                    .attr("y", small_mult_height - title_padding_y)
+                    .attr("y", parseInt(small_mult_height - small_multiple_title_height))
                     .text( function(d) { var count = d3.select(this.parentNode).attr("count"); return "Count: " + count; } )
             ;
         }
@@ -246,7 +251,7 @@ var y_variable = "Rating";
 
             gY.selectAll("line")
                 //.attr("display", "none")
-                .attr("x2", -3)
+                .attr("x2", -2)
             ;
             
             //years - X axis
@@ -258,7 +263,7 @@ var y_variable = "Rating";
             ;
             
             gX.selectAll("line")
-                .attr("y2", -3)
+                .attr("y2", -2)
             ;
         }
     
@@ -276,7 +281,7 @@ var y_variable = "Rating";
         
         function calc_bar_y(d, i)
         {
-            return  small_multiple_title_height + title_padding_y + i * (bar_height + space_bet_bar_y); 
+            return  parseInt(small_multiple_title_height) + title_padding_y + i * parseInt(range_divider); 
         }
         
         function calc_mult_y(i)
@@ -292,7 +297,7 @@ var y_variable = "Rating";
         {
             if( i % small_mult_per_column == 0)
                 current_col++;
-            return  (small_mult_width + space_bet_mult_x)  * current_col;
+            return  small_mult_padding_x + (small_mult_width + space_bet_mult_x)  * current_col;
         }
         
         //calculate the year corresponding to the small multiple
@@ -305,7 +310,7 @@ var y_variable = "Rating";
         {
             w = boundingRect.width;
             h = boundingRect.height;
-            small_mult_per_column = parseInt(h / (small_mult_height + space_bet_mult_y)) - 1;
+            small_mult_per_column = parseInt(h / (small_mult_height + space_bet_mult_y)) - 2;
             small_mult_height = h/ small_mult_per_column;
         };
     
