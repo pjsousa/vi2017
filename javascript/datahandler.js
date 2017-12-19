@@ -108,7 +108,6 @@
 		 Quando todos os ficheiros retornam, chama o main.
 		 */
 		done_callback = done_callback || function(){ };
-		console.log("Lets fetch ALLLLLL THE DATAS!!!");
 		data_keys.forEach(function(itr, idx){
 			var ext = file_extensions[idx];
 			var fetch_path = "data/" + itr + "." +ext;

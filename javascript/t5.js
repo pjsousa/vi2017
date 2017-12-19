@@ -300,7 +300,6 @@
 	function setSizest5(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-		console.log(w,h);
 	};
 
 	function initt5(){

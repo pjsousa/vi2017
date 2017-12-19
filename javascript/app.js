@@ -72,6 +72,7 @@
 			drawHighlightclv();
 		}
 
+		cleardropdowngamefind();
 	});
 
 	appdispatch.dataslice.on("dataslice", function(from, row_numbers){
@@ -98,8 +99,6 @@
 	});
 
 	function main(){
-		console.log("HEY! Main here. Lets start!")
-		
 		setVizSizes();
 		data_utils.fetch_alldata();
 	};
@@ -133,7 +132,7 @@
 	}
 
 	function data_ready(){
-		console.log("All data fetched!!!");
+		initDropDownFind();
 
 		appstate.data_slices = slice_util.slicerules_factory()
 		appstate.datasetRows = d3.range(datasources["data_v2"].length);

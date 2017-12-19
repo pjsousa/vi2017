@@ -186,7 +186,6 @@
 	function setSizest2(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-		console.log(w,h);
 	};
 
 	function localSlicet2(row_numbers, highlighted_row, rules){
