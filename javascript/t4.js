@@ -13,7 +13,9 @@ var y_variable = "Rating";
     
     //t4 viewport
     var w = 400;// -1;//500
-    var h = 380;//-1;//420
+    var h = 390;//-1;//420
+    
+    var svg;
    
     //number of different ratings to display 
     var number_of_ratings = 9;
@@ -41,14 +43,20 @@ var y_variable = "Rating";
     //
     var first_bar = true;
     
+    //axis
+    var rating_domain = ["E", "T", "M", "E10", "AO", "EC", "KA", "RP", "Unknown"];
+    var range_divider = 80 / rating_domain.length;//trocar 60 por small_multiple_height
+    var rating_range = [0,range_divider, 2*range_divider, 3*range_divider, 4*range_divider, 5*range_divider, 6*range_divider, 7*range_divider, 8*range_divider];
+    
+    
     var wscale = d3.scaleLinear()
                  .domain([0, 100])
                  .range([0, small_mult_width - 20])
     ;
     
     var hscale = d3.scaleOrdinal()
-                    .domain(["E", "T", "M", "E10", "AO", "EC", "KA", "RP", "Unknown"])
-                    .range([0, small_mult_height])
+                    .domain(rating_domain)
+                    .range(rating_range) //trocar 60 por small_multiple_height
     ;
     
     var xaxis = d3.axisTop()
@@ -59,9 +67,14 @@ var y_variable = "Rating";
     
     var yaxis = d3.axisLeft()
                     .scale(hscale)
-                    .ticks(10)
+                    .ticks(4)
     
     ;
+    
+    //aux function used to calculate the total amount of ratings per year
+    const sum = (accumulator, currentValue) => accumulator + currentValue;
+    
+    
     //color vars
     var default_bar_color   = "blue";
     var hover_bar_color     = "cyan";
@@ -115,7 +128,7 @@ var y_variable = "Rating";
 				.remove();
         
         //drawing viewport
-        var svg = d3.select("#t4Viz")
+        svg = d3.select("#t4Viz")
                 //.data([0]).enter()
                 .append("svg")
                 .attr("id", "t4viewport")
@@ -139,6 +152,11 @@ var y_variable = "Rating";
                                                     return Math.max(a, b);
                                                 });
                                                return max; } ) 
+                    .attr("count", function(d) {var yearly_ratings = Object.values(d);
+                                                yearly_ratings = yearly_ratings.slice(1, yearly_ratings.length);
+                                                var count = yearly_ratings.reduce(sum);
+                                                return count;
+                                               })
                     //title of each small multiple
                     .append("text")
                         .attr("dy", ".71em")
@@ -149,13 +167,14 @@ var y_variable = "Rating";
         //eixos    
         svg.selectAll("svg.small_multiples")
                     .append("g")
-                        .attr("transform","translate(20, " + small_multiple_title_height + ")")  
+                        .attr("transform","translate(20, " + (small_multiple_title_height + title_padding_y) + ")")  
                         .attr("class","x axis")
                         .attr("width", small_mult_width - 20)
                         .call(xaxis)  
                     svg.selectAll("svg.small_multiples")
                         .append("g")
-                        .attr("transform","translate(20, " + small_multiple_title_height + ")") 
+                        .attr("font-size", 20)
+                        .attr("transform","translate(20, " + (small_multiple_title_height + title_padding_y) + ")") 
                         .attr("class", "y axis")
                         .call(yaxis)
 
@@ -188,9 +207,44 @@ var y_variable = "Rating";
                         .on("mouseover", function(d) {current_year_selected = d3.select(this).attr("year").substring(0,4);
                                                       dispatch.call("RatingHover", d, d); } )
                     })
-                    ;      
+                    ;   
+        
+    //modifications to the axis    
+        modify_axis();  
+        
+        
        } 
         
+        function modify_axis()
+        {
+            var gY = svg.selectAll("g.y.axis");
+            var gX = svg.selectAll("g.x.axis");
+            //ratings - Y axis
+            gY.selectAll("text")
+                .attr("class", "x tick")
+                 //.attr("transform", "rotate(40)")
+                 .style("text-anchor", "begin")
+            ;
+
+
+            gY.selectAll("line")
+                //.attr("display", "none")
+                .attr("x2", -3)
+            ;
+            
+            //years - X axis
+            gX.selectAll("text")
+                .attr("class", "x tick")
+                 //.attr("transform", "rotate(40)")
+                .style("text-anchor", "begin")
+                .attr("dy", 5)
+            ;
+            
+            gX.selectAll("line")
+                .attr("y2", -3)
+            ;
+        }
+    
         function calc_translate(i)
         {
             var x = calc_mult_x(i);
