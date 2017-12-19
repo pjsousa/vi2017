@@ -1,49 +1,87 @@
 ;(function(){
 	var w = -1;
 	var h = -1;
-    var gridSizeX = 40;
-    var gridSizeY = 25;
-    var legendElementWidth = -1;
-    var buckets = 10;
+	var gridSizeX = 40;
+	var gridSizeY = 25;
+	var legendElementWidth = -1;
+	var buckets = 10;
 	var padding = 20;
-    
+	
 	var xoffset = 30;
 	var yoffset = 30;
-    
+	
 	var xcutoff = 30;
 	var ycutoff = 30;
-    
-    var dataset;
-    var initdropdowns_quirk = false;
-    var aux;
-    var y_brush, x_brush,xrange=[];
-    var xScale, yScale;
-    var scoreLabels;
-    var legendYoffset, legendXoffset;
-    
-    var infoOn = false;
-    
-    var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
-    var emptyColor = "#ffffff";
-    var scoreIntervals = ["90/100","80/90","70/80","60/70","50/60","40/50","30/40","20/30","10/20","0/10"];
-    var years;
-    
-    var localstate = {
+	
+	var dataset;
+	var initdropdowns_quirk = false;
+	var aux;
+	var y_brush, x_brush,xrange=[];
+	var xScale, yScale;
+	var scoreLabels;
+	var legendYoffset, legendXoffset;
+
+	var infoOn = false;
+
+	var dispatch = d3.dispatch("gamehover", "gameout", "dropdowatt", "dropdowvals");
+
+	var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58","#000000"];
+	var emptyColor = "#ffffff";
+	var scoreIntervals = ["90/100","80/90","70/80","60/70","50/60","40/50","30/40","20/30","10/20","0/10"];
+	var years;
+	
+	var localstate = {
 		datasetRows: [],
 		selectedRows: [],
 		highlightedRows: [],
 		data_slices: {},
 		clearbrush_quirk: null,
-        selectedAttr: "Platform",
-        selectedValue: "PS2"
 	};
+
+	dispatch.on("dropdowatt", function(idx, value_str){
+		value_str = value_str.split(" ").join("_");
+		resetDropdownValues();
+		localstate.selectedAttr = value_str;
+		slice_util.clearSlice(localstate.data_slices, "t6", "");
+		slice_util.setSlice(localstate.data_slices, "t6", "", value_str, null)
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		aux = new Array(years.length);
+		for(var i = 0; i< years.length; i++){
+			aux[i] = new Array(scoreIntervals.length);
+		}
+
+
+		initt6();
+	});
+
+	dispatch.on("dropdowvals", function(idx, value_str){
+		var current_dropdownatt = dropdown_util.read_atts(".t6Atts");
+		localstate.selectedValue = value_str;
+		slice_util.setSlice(localstate.data_slices, "t6", "", current_dropdownatt, value_str)
+		
+		d3.select("#cleart6")
+			.style("visibility", "visible")
+			.style("pointer-events", "all");
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		aux = new Array(years.length);
+		for(var i = 0; i< years.length; i++){
+			aux[i] = new Array(scoreIntervals.length);
+		}
+
+
+		initt6();
+	});
 
 	function setSizest6(boundingRect){
 		w = boundingRect.width;
 		h = boundingRect.height;
-        legendElementWidth = gridSizeX;
-        legendYoffset = 60;
-        legendXoffset = 120;
+    legendElementWidth = gridSizeX;
+    legendYoffset = 60;
+    legendXoffset = 120;
 	}
     
     function showInfo(){
@@ -73,58 +111,96 @@
         
     }
     
-    function initDropdowns(){
+
+	
+	
+
+	
+	function initDropdowns(){
 		if(!initdropdowns_quirk){
 			initdropdowns_quirk = true;
 
 			resetDropdownValues();
 			
 			dropdown_util.setSelection_values('.t6Values', appstate.data_slices["t6"][1]);
-            
+
 			dropdown_util.register_listener("#t6Atts", function(idx, value_str){
-				value_str = value_str.split(" ").join("_");
-				resetDropdownValues();
-                localstate.selectedAttr = value_str;
-				slice_util.clearSlice(appstate.data_slices, "t6", "");
-				slice_util.setSlice(appstate.data_slices, "t6", "", value_str, null);
-				appdispatch.dataslice.call("dataslice", this, "t6");
+				dispatch.call("dropdowatt", null, idx, value_str);
 			});
 
 			dropdown_util.register_listener("#t6Values", function(idx, value_str){
-				var current_dropdownatt = dropdown_util.read_atts();
-                localstate.selectedValue = value_str;
-				slice_util.setSlice(appstate.data_slices, "t6", "", current_dropdownatt, value_str)
-				appdispatch.dataslice.call("dataslice", this, "t6");
+				dispatch.call("dropdowvals", null, idx, value_str);
 			});
-            
 		}
 	};
-    
-    function resetDropdownValues(){
+
+	function syncdropdownt6_click(evt){
+		var current_att = dropdown_util.read_atts(".t6Atts");
+		var current_val = dropdown_util.read_values(".t6Values");
+
+		// syncdropdownt4(current_att, current_val);
+		syncdropdownt2(current_att, current_val);
+
+		evt.preventDefault();
+	};
+
+	function syncdropdownt6(att, value){
+		dropdown_util.setSelection_atts(".t6Atts", att);
+		resetDropdownValues();
+		dropdown_util.setSelection_values(".t6Values", value);
+
+		dispatch.call("dropdowvals", null, -1, value);
+	};
+
+	function cleardropdownt6_click(evt){
+		resetDropdownValues();
+
+		var current_dropdownatt = dropdown_util.read_atts(".t6Atts");
+		slice_util.clearSlice(localstate.data_slices, "t6", "")
+		slice_util.setSlice(localstate.data_slices, "t6", "", current_dropdownatt, null);
+		
+		d3.select("#cleart6")
+			.style("visibility", "hidden")
+			.style("pointer-events", "none");
+
+		localstate.drawnRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		aux = new Array(years.length);
+		for(var i = 0; i< years.length; i++){
+			aux[i] = new Array(scoreIntervals.length);
+		}
+
+
+		initt6();
+
+		evt.preventDefault();
+	};
+
+	function resetDropdownValues(){
 		var current_dropdownatt = dropdown_util.read_atts(".t6Atts");
 		localstate.dropdown_vals = data_utils.get_uniquevalues_dataset(current_dropdownatt);
 		dropdown_util.setValueList_values(".t6Values", localstate.dropdown_vals);
 	};
 
-    function drawt6(app_row_numbers){
-        if(typeof svgelement === "undefined"){
+	function drawt6(app_row_numbers){
+		if(typeof svgelement === "undefined"){
 			svg = d3.selectAll("#t6Viz svg");
 		}
 		else{
 			svg = d3.select(svgelement);
 		}
 
-        localstate.datasetRows = data_utils.get_index([localstate.selectedAttr],[localstate.selectedValue]);//app_row_numbers;
-		dataset = data_utils.read_column(localstate.datasetRows,["Mean_UserCritic_Score","Year_of_Release"]);
+		//localstate.datasetRows = data_utils.get_index([localstate.selectedAttr],[localstate.selectedValue]);
+		localstate.datasetRows = app_row_numbers;
+		localstate.drawnRows = localstate.datasetRows;
 
-        years = data_utils.get_uniquevalues_dataset("Year_of_Release");
-        years.reverse();
-        //var index = years.indexOf("2017.0");
-        //years.splice(index,1);
-        //index = years.indexOf("2020.0");
-        //years.splice(index,1);
-        
-        
+		years = data_utils.get_uniquevalues_dataset("Year_of_Release");
+		years.reverse();
+		//var index = years.indexOf("2017.0");
+		//years.splice(index,1);
+		//index = years.indexOf("2020.0");
+		//years.splice(index,1);
+		
 		initDropdowns();
         aux = new Array(years.length);
         for(var i = 0; i< years.length; i++){
@@ -179,16 +255,35 @@
     
     
     // Create Event Handlers for mouse
-    function handleMouseOver(d, i) {  
-    }
 
-    function handleMouseOut(d, i) {
+function handleClick(d, i){
+		clearSelectiont6()
 
-    }
+		var _fill = d3.select(this).style("fill");
+
+		d3.select(this)
+			.classed("selected", true)
+			.attr("data-fill", _fill)
+			.style("fill", "rgb(255,0,255)")
+
+		debugger;
+		var interval_val = d.interval.split("/").map(function(d){ return parseFloat(d); })
+		slice_util.setSlice(localstate.data_slices, "t6", "Year_of_Release", 
+												parseInt(d.year), parseInt(d.year))
+		slice_util.setSlice(localstate.data_slices, "t6", "Mean_UserCritic_Score", 
+												interval_val[0], interval_val[1])
+
+		localstate.selectedRows = slice_util.sliceRows(localstate.data_slices, localstate.datasetRows);
+
+		appdispatch.dataslice.call("dataslice", this, "t6", localstate.selectedRows);
+	}
+
+	function clearSelectiont6(){
+		d3.selectAll("rect.selected")
+			.style("fill", function(d){ return d3.select(this).attr("data-fill"); })
+			.classed("selected", false)
+	};
     
-    function handleInformation(d){
-        
-    }
     
 	function initt6(){	
         d3.select("#t6Viz > img").remove();
@@ -325,7 +420,8 @@
                 return getNumber(d);
             })
             .on("mouseover",handleMouseOver)
-            .on("mouseout", handleMouseOut);
+            .on("mouseout", handleMouseOut)
+			      .on("mousedown",handleClick);
         
         
         var legend = svg.selectAll(".legend-heatmap")
@@ -372,7 +468,13 @@
         //d3.select("#t6-buttons").append("rect").attr("height",20).attr("width",500).style("fill","#eee");
         
 	};
-    
-    window.drawt6 = drawt6;
-    window.setSizest6 = setSizest6;
+
+	localstate.data_slices = slice_util.slicerules_factory();
+
+	window.drawt6 = drawt6;
+	window.setSizest6 = setSizest6;
+	window.syncdropdownt6 = syncdropdownt6;
+	window.syncdropdownt6_click = syncdropdownt6_click;
+	window.cleardropdownt6_click = cleardropdownt6_click;
+	window.clearSelectiont6 = clearSelectiont6;
 })();

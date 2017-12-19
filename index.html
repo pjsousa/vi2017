@@ -19,16 +19,12 @@
 <body>
 	<div class="container-fluid">
 		<div class="page-toolbar row">
-			<div class="col-xs-8 col-xs-offset-2">
+			<div class="col-xs-4 col-xs-offset-4">
 				<div class="panel" style="margin:0">
 					<div class="panel-body text-center">
-						<div class="col-xs-6 col-xs-offset-3">
-							<div class="input-group">
-								<div class="input-group-addon"> <span class="glyphicon glyphicon-search"></span> </div>
-								<input type="text" class="form-control input-sm" id="exampleInputAmount" placeholder="Look for a game name">
-							</div>
-						</div>
-							
+							<select id="gamefind" class="gamefind selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+							</select>
+							<a id="cleargamefind" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 					</div>
 				</div>
 			</div>
@@ -49,16 +45,16 @@
 							</div>
 						</div>
 						<div class="col-xs-12 text-center">
-							<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
-
 							<select id="t1Atts" class="t1Atts selectpicker show-menu-arrow" >
 								<option data-tokens="Genre">Genre</option>
 							</select>
 							<select id="t1Values" class="t1Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
 							</select>
+
+							<a id="cleart1" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 						</div>
 						<div id="t1Viz" class="panel-body">
-							<img class="img-responsive" src="images/t1.png" />
+							<!-- <img class="img-responsive" src="images/t1.png" /> -->
 							<svg></svg>
 							<div class="t1Legend"></div>
 						</div>
@@ -72,7 +68,7 @@
 							<span>Games Sales/Scores correlation</span>
 						</div>
 						<div id="t5Viz" class="panel-body">
-							<img class="img-responsive" src="images/t5.png" />
+							<!-- <img class="img-responsive" src="images/t5.png" /> -->
 							<svg></svg>
 						</div>
 					</div>
@@ -97,10 +93,10 @@
 								</a>
 
 								<select id="t2Atts" class="t2Atts selectpicker show-menu-arrow" >
-								  <option data-tokens="Platform">Platform</option>
-								  <option data-tokens="Genre">Genre</option>
-								  <option data-tokens="Publisher">Publisher</option>
-								  <option data-tokens="Developer">Developer</option>
+									<option data-tokens="Platform">Platform</option>
+									<option data-tokens="Genre">Genre</option>
+									<option data-tokens="Publisher">Publisher</option>
+									<option data-tokens="Developer">Developer</option>
 								</select>
 
 								
@@ -109,7 +105,7 @@
 
 								<a id="cleart2" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 							</div>
-							<img class="img-responsive" src="images/t2.png" />
+							<!-- <img class="img-responsive" src="images/t2.png" /> -->
 							<svg></svg>
 						</div>
 					</div>
@@ -136,7 +132,7 @@
 							&nbsp;
 						</div>
 						<div id="clvViz" class="panel-body">
-							<img class="img-responsive" src="images/clv.png" />
+							<!-- <img class="img-responsive" src="images/clv.png" /> -->
 							<svg></svg>
 						</div>
 					</div>
@@ -215,21 +211,27 @@
 							</div>
 						</div>
 						<div id="t6Viz" class="panel-body">
+
 							<div class="col-xs-12 text-center" id="t6-buttons-div">
-								<a class="btn btn-link btn-xs"> <span class="glyphicon glyphicon-filter"></span> </a>
+								<a id="synct6" class="btn btn-default btn-xs"> 
+									<span class="glyphicon glyphicon-filter"></span>
+									<span class="glyphicon glyphicon-transfer"></span>
+								</a>
 
-							  <select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
-							      <option data-tokens="Platform">Platform</option>
-							      <option data-tokens="Genre">Genre</option>
-							      <option data-tokens="Publisher">Publisher</option>
-							      <option data-tokens="Developer">Developer</option>
-							  </select>
+								<select id="t6Atts" class="t6Atts selectpicker show-menu-arrow" >
+										<option data-tokens="Platform">Platform</option>
+										<option data-tokens="Genre">Genre</option>
+										<option data-tokens="Publisher">Publisher</option>
+										<option data-tokens="Developer">Developer</option>
+								</select>
 
-							  <select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
-							  </select>
+								<select id="t6Values" class="t6Values selectpicker show-menu-arrow" data-live-search="true" data-size="8">
+								</select>
+
+								<a id="cleart6" class="btn btn-default btn-xs" style="visibility: hidden; pointer-events: none;"> <span class="glyphicon glyphicon-remove"></span> </a>
 							</div>
-							<img class="img-responsive" src="images/t6.png" />
-              <svg></svg>
+							<!-- <img class="img-responsive" src="images/t6.png" /> -->
+							<svg></svg>
 						</div>
 					</div>
 					<!-- ./t6Panel -->
@@ -240,7 +242,7 @@
 							<span>% Releases by rating</span>
 						</div>
 						<div id="t4Viz" class="panel-body">
-							<img class="img-responsive" src="images/t4.png" />
+							<!-- <img class="img-responsive" src="images/t4.png" /> -->
 						</div>
 					</div>
 					<!-- ./t4Panel -->
@@ -251,22 +253,23 @@
 		<!-- ./page-content -->
 	</div>
 
-    <div id="myModal" class="modal">
+		<div id="myModal" class="modal">
 
-      <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p id="info-text">Some text in the Modal..</p>
-      </div>
+			<!-- Modal content -->
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<p id="info-text">Some text in the Modal..</p>
+			</div>
 
-    </div>
-    
+		</div>
+		
 	<!-- Os "includes" das nossas sources -->
 	<script src="javascript/app.js" ></script>
 	<script src="javascript/datahandler.js" ></script>
 	<script src="javascript/sliceutils.js" ></script>
 	<script src="javascript/vizutils.js" ></script>
 	<script src="javascript/dropdownutil.js" ></script>
+	<script src="javascript/gamefind.js" ></script>
  
 	<script src="javascript/t1.js" ></script>
 	<script src="javascript/t2.js" ></script>
@@ -280,55 +283,62 @@
 		$(document).ready(function(){
 			// esta função vai disparar quando todo o HTML tiver carregado e quando todas as 
 			// sources files estiverem do nosso lado.
+			// 
+			
+			$('.gamefind').selectpicker({
+				style: 'btn-link btn-xs',
+				title: "Look for a game name",
+				width: "fit"
+			});
+
+			$("#cleargamefind").on("click", cleardropdowngamefind_click);
 
 			$('.t2Atts').selectpicker({
 				style: 'btn-link btn-xs',
-			  header: "Select a data attribute",
-			  width: "100px"
+				header: "Select a data attribute",
+				width: "100px"
 			});
 
 			$('.t2Values').selectpicker({
-			  style: 'btn-link btn-xs',
-			  header: "Select a value to filter your data",
-			  title:"Choose one of the following...",
-			  width: "100px"
+				style: 'btn-link btn-xs',
+				header: "Select a value to filter your data",
+				title:"Choose one of the following...",
+				width: "100px"
 			});
+
+			$("#cleart1").on("click", cleardropdownt1_click);
 
 			$("#synct2").on("click", syncdropdownt2_click);
 			$("#cleart2").on("click", cleardropdownt2_click);
-			
-            $('.t1Atts').selectpicker({
+
+			$("#synct6").on("click", syncdropdownt6_click);
+			$("#cleart6").on("click", cleardropdownt6_click);
+
+			$('.t1Atts').selectpicker({
 				style: 'btn-link btn-xs',
-			  width: "100px"
+				width: "100px"
 			});
 
 			$('.t1Values').selectpicker({
-			  style: 'btn-link btn-xs',
-			  header: "Select a value to filter your data",
-			  title:"Choose one of the following...",
-			  width: "100px"
-			});
-            
-            			
-            $('.t6Atts').selectpicker({
 				style: 'btn-link btn-xs',
-			  width: "100px"
+				header: "Select a value to filter your data",
+				title:"Choose one of the following...",
+				width: "100px"
+			});
+
+			$('.t6Atts').selectpicker({
+				style: 'btn-link btn-xs',
+				width: "100px"
 			});
 
 			$('.t6Values').selectpicker({
-			  style: 'btn-link btn-xs',
-			  header: "Select a value to filter your data",
-			  title:"Choose one of the following...",
-			  width: "100px"
+				style: 'btn-link btn-xs',
+				header: "Select a value to filter your data",
+				title:"Choose one of the following...",
+				width: "100px"
 			});
-            
-            
-            
-			// step 1. fetch data
-			main();
-			// step 2. the world!
-			// 
 
+			main();
 		})
 
 		$(window).resize(function(){

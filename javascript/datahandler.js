@@ -108,7 +108,6 @@
 		 Quando todos os ficheiros retornam, chama o main.
 		 */
 		done_callback = done_callback || function(){ };
-		console.log("Lets fetch ALLLLLL THE DATAS!!!");
 		data_keys.forEach(function(itr, idx){
 			var ext = file_extensions[idx];
 			var fetch_path = "data/" + itr + "." +ext;
@@ -314,7 +313,7 @@
 				var new_row = {};
 				for(var i = 0; i < datasources.data_v2.length; i++){
 						var row = datasources.data_v2[i];
-						if(row.Year_of_Release == year && row["Genre"]==ref_col_value){
+						if(row.Year_of_Release == year && (row["Genre"]==ref_col_value || ref_col_value == null)){
 								JP += parseFloat(row["JP_Sales"]);
 								EU += parseFloat(row["EU_Sales"]);
 								NA += parseFloat(row["NA_Sales"]);
@@ -349,7 +348,6 @@
 
 	function compute_personsr_linregress(row_nums, x_var, y_var){
 		/*
-			@TODO: Talvez mudar isto daqui para ser genérico entre qualquer par de colunas?
 
 			Por um lado, isto deviam ser 2 funções:
 				- compute pearson's r (a correlação)

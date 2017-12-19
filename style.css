@@ -131,3 +131,8 @@ text.axis-year {
     cursor: pointer;
 }
 
+div.gamefind .dropdown-menu.open{
+    width:"100px" !important;
+}
+
+
