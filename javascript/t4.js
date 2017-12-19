@@ -113,6 +113,33 @@ var y_variable = "Rating";
         //console.log("Rating: " + d + " Year: " + current_year_selected);
     }
     
+    function showInfo(){
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("button-info-ratings");
+        var span = document.getElementsByClassName("close")[4];
+        var text = document.getElementById("info-text");
+
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+            text.innerHTML = "The Entertainment Software Rating Board (ESRB) ratings provide guidance about video games and apps so that consumers, especially parents, can make informed choices about the ones they deem suitable for their family.  ET       T - Teen        M - Mature 17+              E10 - Everyone 10+      AO - Adults Only 18+        EC - Early Childhood        KA - Kids to Adults (changed to everyone)       RP - Rating Pending         None - rating not available for this game" ;
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        
+    }
+    
     function drawt4(app_row_numbers){
 //DATA RELATED   
         //dataset contains the count of each rating for each year p.e. 
@@ -232,6 +259,7 @@ var y_variable = "Rating";
                                     .attr("class", "y axis")
                                     .call(yaxis)
 
+        showInfo();
         //add count at the bottom of the plot
         add_count_to_plot();
         //modifications to the axis    
