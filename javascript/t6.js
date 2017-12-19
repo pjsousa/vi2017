@@ -266,9 +266,8 @@ function handleClick(d, i){
 		d3.select(this)
 			.classed("selected", true)
 			.attr("data-fill", _fill)
-			.style("fill", "rgb(255,0,255)")
+			.style("fill", "rgb(255, 86, 0)")
 
-		debugger;
 		var interval_val = d.interval.split("/").map(function(d){ return parseFloat(d); })
 		slice_util.setSlice(localstate.data_slices, "t6", "Year_of_Release", 
 												parseInt(d.year), parseInt(d.year))
